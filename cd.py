@@ -217,14 +217,14 @@ class ChooseDir: #first window allowing user to choose directory
         self.frame = Frame(master)
         master.title('Choose Directory')
         self.frame.grid()
-        
+
         self.directory = StringVar()
+	self.directory.set(os.curdir)
         self.dirInput = Entry(self.frame,textvariable=self.directory,width=40)
         self.dirInput.grid()
 
         self.okButton = Button(self.frame,text='OK',command=self.ShowLab)
         self.okButton.grid()   
-
 
     def ShowLab(self):
         '''Shows label if okay button is pressed'''
@@ -244,10 +244,10 @@ class ChooseDir: #first window allowing user to choose directory
                 self.contButton = Button(text='CONTINUE',command = self.master.destroy) #brings up continue button which will close window
                 self.contButton.grid()
             else:
-                self.dirLabel = Label(self.frame,text='Invalid Directory')
+                self.dirLabel = Label(self.frame,text='No gif files found in the directory')
                 self.dirLabel.grid() #Prints invalid if no .gifs in file
         else:
-            self.dirLabel = Label(self.frame,text='Invalid Directory')
+            self.dirLabel = Label(self.frame,text=directory+' - Invalid Directory')
             self.dirLabel.grid() #prints invalid is directory is invalid
         
 
