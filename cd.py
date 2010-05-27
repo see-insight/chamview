@@ -10,7 +10,7 @@ class PickClick:#second 'main' window
     def __init__(self, master, directory,fList):
 
         self.directory = directory
-        self.dirList = self.directory.split("\\")#only one backslash in reality
+        self.dirList = self.directory.split(os.path.sep)#only one backslash in reality
 
         self.fList = fList
         self.fDic = {}
@@ -61,7 +61,7 @@ class PickClick:#second 'main' window
         self.canv = Canvas(self.frame)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)#span starts in top left
         
-        imageFile = self.directory+"\\"+self.fDic[self.num.get()]
+        imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
         self.photo = PhotoImage(file = imageFile)
         #returns id as self.obj
         self.obj = self.canv.create_image(2,2 ,image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor neccessary or image will not fit correctly
@@ -80,7 +80,7 @@ class PickClick:#second 'main' window
         try:
             self.num.set(int(self.num.get())+1)
 
-            imageFile = self.directory+"\\"+self.fDic[self.num.get()]
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
             self.photo = PhotoImage(file = imageFile)
             self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
@@ -99,7 +99,7 @@ class PickClick:#second 'main' window
         #self.canv.delete(self.obj)
         try:
             self.num.set(int(self.num.get())-1)
-            imageFile = self.directory+"\\"+self.fDic[self.num.get()]
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
             self.photo = PhotoImage(file = imageFile)
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
@@ -208,7 +208,7 @@ class PickClick:#second 'main' window
         fo.close()
 
     def SaveImg(self):
-        self.canv.postscript(file=(self.directory+"\\"+self.fDic[self.num.get()][0:-4]+'.ps'),height=self.photo.height(),width=self.photo.width(),colormode="color")
+        self.canv.postscript(file=(self.directory+os.path.sep+self.fDic[self.num.get()][0:-4]+'.ps'),height=self.photo.height(),width=self.photo.width(),colormode="color")
 
 class ChooseDir: #first window allowing user to choose directory
     def __init__(self,master):
@@ -233,8 +233,10 @@ class ChooseDir: #first window allowing user to choose directory
             self.dirLabel.destroy()
         except:
             pass
-        if os.path.isdir(self.directory.get()):#checks if this is a valid directory
-            self.picList = dircache.listdir(self.directory.get())
+        directory = self.directory.get().strip()
+        print directory
+        if os.path.isdir(directory):#checks if this is a valid directory
+            self.picList = dircache.listdir(directory)
             for pic in self.picList:
                 if '.gif' in pic or '.GIF' in pic: #checks if pictures are .gifs
                     boo = True
@@ -256,7 +258,7 @@ root.mainloop()
 
 
 
-directory = app.directory.get()#name of directory as string
+directory = app.directory.get().strip()#name of directory as string
 fList = app.picList #list of files in directory including non-.gifs
         
         
