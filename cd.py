@@ -2,6 +2,7 @@ from Tkinter import *
 import string
 import dircache
 import os
+import Image
 
 #button fxns will run as soon as button is made if callback includes ()
 
@@ -15,11 +16,19 @@ class PickClick:#second 'main' window
         self.fList = fList
         self.fDic = {}
         n = 1
-        for image in self.fList: #puts files in order so they can be iterated through one at a time
-            if '.gif' in image or '.GIF' in image:
-                self.fDic[str(n)] = image
-                n = n + 1
+        for image in self.fList:#makes .gif of all .png files
+            if '.PNG' in image or '.png' in image:
+                Image.open(image).save(image[0:-4]+'.gif')
+                self.fList = dircache.listdir(directory)
 
+            
+        for image2 in self.fList: #puts files in order so they can be iterated through one at a time
+            if '.gif' in image2 or '.GIF' in image2:
+                self.fDic[str(n)] = image2
+                n = n + 1
+                
+                
+        
         
         fo = open(self.dirList[-1]+'.txt','a')#open file for reading/writing coords
         #name based on given image directory
@@ -208,7 +217,9 @@ class PickClick:#second 'main' window
         fo.close()
 
     def SaveImg(self):
-        self.canv.postscript(file=(self.directory+os.path.sep+self.fDic[self.num.get()][0:-4]+'.ps'),height=self.photo.height(),width=self.photo.width(),colormode="color")
+        filename = self.directory+os.path.sep+self.fDic[self.num.get()][0:-4]
+        self.canv.postscript(file=(filename+'.ps'),height=self.photo.height(),width=self.photo.width(),colormode="color")
+        Image.open(filename+'.ps').save(filename+'.png')
 
 class ChooseDir: #first window allowing user to choose directory
     def __init__(self,master):
@@ -234,17 +245,16 @@ class ChooseDir: #first window allowing user to choose directory
         except:
             pass
         directory = self.directory.get().strip()
-        print directory
         if os.path.isdir(directory):#checks if this is a valid directory
             self.picList = dircache.listdir(directory)
             for pic in self.picList:
-                if '.gif' in pic or '.GIF' in pic: #checks if pictures are .gifs
+                if '.png' in pic or '.PNG' in pic: #checks if pictures are .gifs
                     boo = True
             if boo == True: #will bring up continue button if everything works
                 self.contButton = Button(text='CONTINUE',command = self.master.destroy) #brings up continue button which will close window
                 self.contButton.grid()
             else:
-                self.dirLabel = Label(self.frame,text='No gif files found in the directory')
+                self.dirLabel = Label(self.frame,text='No png files found in the directory')
                 self.dirLabel.grid() #Prints invalid if no .gifs in file
         else:
             self.dirLabel = Label(self.frame,text=directory+' - Invalid Directory')
