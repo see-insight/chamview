@@ -3,9 +3,9 @@ import string
 import dircache
 import os
 import Image
+import time
 
 #button fxns will run as soon as button is made if callback includes ()
-
 class PickClick:#second 'main' window
 
     def __init__(self, master, directory,fList):
@@ -26,9 +26,8 @@ class PickClick:#second 'main' window
             if '.gif' in image2 or '.GIF' in image2:
                 self.fDic[str(n)] = image2
                 n = n + 1
-                
-                
-        
+
+        self.length = len(self.fDic)
         
         fo = open(self.dirList[-1]+'.txt','a')#open file for reading/writing coords
         #name based on given image directory
@@ -38,34 +37,59 @@ class PickClick:#second 'main' window
         
         self.frame = Frame(master)
         master.title('ChamView')
-        self.frame.grid(columnspan=8,rowspan=4)
+        self.frame.grid(columnspan=8,rowspan=5)
+        self.frame.bind_all('<a>', self.Prev)
+        self.frame.bind_all('<A>', self.Prev)
+        self.frame.bind_all('<d>', self.Nxt)
+        self.frame.bind_all('<d>', self.Nxt)
+##        self.frame.bind_all('<p>', self.Play)
+        
+        
         
         self.quitB = Button(self.frame,text='QUIT',command = master.quit)#quit button
         self.quitB.grid(column=8,row=1)
 
         self.prevB = Button(self.frame, text = 'PREV',command = self.Prev) #previous button
-        self.prevB.grid(column=1,row=1,sticky=W)
+        self.prevB.grid(column=4,row=5)
+
+        self.prev10B = Button(self.frame, text = 'PREV10',command = self.Prev10)
+        self.prev10B.grid(column=3,row=5)
+
+        self.prev50B = Button(self.frame, text = 'PREV100',command = self.Prev100)
+        self.prev50B.grid(column=2,row=5)
+
+        self.firstB = Button(self.frame, text = 'FIRST',command = self.First)
+        self.firstB.grid(column=1,row=5)
         
         self.nextB = Button(self.frame,text='NEXT',command = self.Nxt)#next button
-        self.nextB.grid(column=2,row=1,sticky=W)
+        self.nextB.grid(column=5,row=5)
+        
+        self.next10B = Button(self.frame, text = 'NEXT10',command = self.Nxt10)
+        self.next10B.grid(column=6,row=5)
 
+        self.next50B = Button(self.frame, text = 'NEXT100',command = self.Nxt100)
+        self.next50B.grid(column=7,row=5)
+
+        self.lastB = Button(self.frame,text='LAST',command = self.Last)
+        self.lastB.grid(row=5,column=8)
+        
         self.numLab = Label(self.frame,textvariable = self.num)#label depicting current frame
-        self.numLab.grid(column=3,row=1,sticky=W)
+        self.numLab.grid(column=1,row=1,sticky=W)
 
         self.clearB = Button(self.frame,text='CLEAR ALL',command = self.Clear)
-        self.clearB.grid(column=5,row=1,sticky=W) #clears all point data
+        self.clearB.grid(column=7,row=1,sticky=E) #clears all point data
 
         self.clearFrameB = Button(self.frame,text='CLEAR FRAME',command=self.ClearPic)
-        self.clearFrameB.grid(column=4,row=1,sticky=W)
+        self.clearFrameB.grid(column=6,row=1,sticky=E) #clears points on current frame
 
-        self.saveB = Button(self.frame,text = 'SAVE FRAME AS IMAGE',command = self.SaveImg)
-        self.saveB.grid(column=7,row=1)
+        self.saveB = Button(self.frame,text = 'SAVE IMAGE',command = self.SaveImg)
+        self.saveB.grid(column=2,row=1)#saves frame with points as postscript image
 
         self.dirLab = Label(self.frame,text=self.directory)
-        self.dirLab.grid(row=4,column=1,columnspan=4,rowspan=1)
+        self.dirLab.grid(row=4,column=1,columnspan=4,rowspan=1,sticky=W)
 
         self.fileLab = Label(self.frame,text = self.dirList[-1]+'.txt')
-        self.fileLab.grid(row=4,column=5,columnspan=4,rowspan=1)
+        self.fileLab.grid(row=4,column=5,columnspan=4,rowspan=1,sticky=E)
         
         self.canv = Canvas(self.frame)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)#span starts in top left
@@ -83,9 +107,8 @@ class PickClick:#second 'main' window
         fo.close()
         
 
-    def Nxt(self):
+    def Nxt(self,event=''):
         '''Advances picture in directory'''
-        
         try:
             self.num.set(int(self.num.get())+1)
 
@@ -99,11 +122,72 @@ class PickClick:#second 'main' window
                 self.ReDraw(self.num.get()+'n')#draws points if so
             #self.canv.tag_raise(self.obj)
         except:
-            length = len(self.fDic)
-            self.num.set(length)
+            self.num.set(self.length)
 
+    def Nxt10(self):
+        '''Advances 10 frames'''
+        try:
+            self.num.set(int(self.num.get())+10)
 
-    def Prev(self):
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+        except:
+            self.num.set(self.length)
+            
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+
+    def Nxt100(self):
+        '''Advances 100 frames'''
+        try:
+            self.num.set(int(self.num.get())+100)
+
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+        except:
+            self.num.set(self.length)
+            
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+
+    def Last(self):
+        '''Advances to last frame'''
+        self.num.set(self.length)
+
+        imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+        self.photo = PhotoImage(file = imageFile)
+        self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+        self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+        self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+        boo = self.Check(self.num.get()+'n')#checks if image has any points
+        if boo:
+            self.ReDraw(self.num.get()+'n')#draws points if so
+            
+    def Prev(self,event=''):
         '''Previous picture in directory'''
         #self.canv.delete(self.obj)
         try:
@@ -119,6 +203,84 @@ class PickClick:#second 'main' window
             #self.canv.tag_raise(self.obj)
         except:
             self.num.set(1)
+
+    def Prev10(self):
+        '''Go 10 frames back'''
+        try:
+            self.num.set(int(self.num.get())-10)
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+        except:
+            self.num.set(1)
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+
+    def Prev100(self):
+        '''Go 100 frames back'''
+        try:
+            self.num.set(int(self.num.get())-100)
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+        except:
+            self.num.set(1)
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = PhotoImage(file = imageFile)
+            self.canv.config(width = self.photo.width(),height = self.photo.height())
+            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+            boo = self.Check(self.num.get()+'n')#checks if image has any points
+            if boo:
+                self.ReDraw(self.num.get()+'n')#draws points if so
+
+##    def Play(self,event=''):
+##        '''Animates video sequence'''
+##        while True:
+##            #try:
+##            self.num.set(int(self.num.get())+1)
+##
+##            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+##            self.photo = PhotoImage(file = imageFile)
+##            self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+##            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+##            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+##            boo = self.Check(self.num.get()+'n')#checks if image has any points
+##            if boo:
+##                self.ReDraw(self.num.get()+'n')#draws points if so
+##            time.sleep(.80)
+####            except:
+####                self.num.set(self.length)
+####                break
+
+    def First(self):
+        '''Go to last frame'''
+        self.num.set(1)
+
+        imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+        self.photo = PhotoImage(file = imageFile)
+        self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+        self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+        self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+        boo = self.Check(self.num.get()+'n')#checks if image has any points
+        if boo:
+            self.ReDraw(self.num.get()+'n')#draws points if so
 
     def Click(self,event):#event is neccessary argument
         '''Creates circles on click and records tag of picture as well as circle coords in file'''
@@ -230,12 +392,26 @@ class ChooseDir: #first window allowing user to choose directory
         self.frame.grid()
 
         self.directory = StringVar()
+##        self.imgDir = StringVar()
+##        self.vidDir = StringVar()
+        
 	self.directory.set(os.curdir)
         self.dirInput = Entry(self.frame,textvariable=self.directory,width=40)
         self.dirInput.grid()
 
         self.okButton = Button(self.frame,text='OK',command=self.ShowLab)
-        self.okButton.grid()   
+        self.okButton.grid()
+        
+##        self.vidBox = Entry(self.frame,textvariable=self.vidDir,width=40)
+##        self.vidBox.grid()
+##        self.vidLab = Label(self.frame,text='')
+##        self.vidLab.grid()
+##
+##        self.dirBox = Entry(self.frame,textvariable=self.imgDir,width=40)
+##        self.dirBox.grid()
+##        self.dirLab = Label(self.frame,text=''
+
+
 
     def ShowLab(self):
         '''Shows label if okay button is pressed'''
