@@ -24,7 +24,10 @@ class PickClick:#second 'main' window
 
             
         for image2 in self.fList: #puts files in order so they can be iterated through one at a time
-            if 'png' in image2 or '.PNG' in image2:
+            if '.png' in pic or '.PNG' in pic  \
+            or '.jpg'in pic or '.JPG' in pic   \
+            or '.bmp' in pic or '.BMP' in pic  \
+            or '.gif' in pic or '.GIF' in pic:
                 self.fDic[str(n)] = image2
                 n = n + 1
 
@@ -253,19 +256,27 @@ class PickClick:#second 'main' window
 
 ##    def Play(self,event=''):
 ##        '''Animates video sequence'''
-##        while True:
+##        while int(self.num.get()) < self.length:
 ##            #try:
 ##            self.num.set(int(self.num.get())+1)
 ##
 ##            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-##            self.photo = PhotoImage(file = imageFile)
+##            print '1'
+##            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
+##            print '2'
 ##            self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
+##            print '3'
 ##            self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
+##            print '4'
 ##            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
+##            print '5'
 ##            boo = self.Check(self.num.get()+'n')#checks if image has any points
+##            print '6'
 ##            if boo:
 ##                self.ReDraw(self.num.get()+'n')#draws points if so
-##            time.sleep(.80)
+##            print '7'
+##            time.sleep(5)
+##            print '8'
 ####            except:
 ####                self.num.set(self.length)
 ####                break
@@ -425,13 +436,16 @@ class ChooseDir: #first window allowing user to choose directory
         if os.path.isdir(directory):#checks if this is a valid directory
             self.picList = dircache.listdir(directory)
             for pic in self.picList:
-                if '.png' in pic or '.PNG' in pic: #checks if pictures are .gifs
+                if '.png' in pic or '.PNG' in pic  \
+                or '.jpg'in pic or '.JPG' in pic   \
+                or '.bmp' in pic or '.BMP' in pic  \
+                or '.gif' in pic or '.GIF' in pic: #checks if pictures are usable
                     boo = True
             if boo == True: #will bring up continue button if everything works
                 self.contButton = Button(text='CONTINUE',command = self.master.destroy) #brings up continue button which will close window
                 self.contButton.grid()
             else:
-                self.dirLabel = Label(self.frame,text='No png files found in the directory')
+                self.dirLabel = Label(self.frame,text='No valid image files found in the directory')
                 self.dirLabel.grid() #Prints invalid if no .gifs in file
         else:
             self.dirLabel = Label(self.frame,text=directory+' - Invalid Directory')
