@@ -3,6 +3,7 @@ import string
 import dircache
 import os
 import Image
+import ImageTk
 import time
 
 #button fxns will run as soon as button is made if callback includes ()
@@ -16,14 +17,14 @@ class PickClick:#second 'main' window
         self.fList = fList
         self.fDic = {}
         n = 1
-        for image in self.fList:#makes .gif of all .png files
-            if '.PNG' in image or '.png' in image:
-                Image.open(image).save(image[0:-4]+'.gif')
-                self.fList = dircache.listdir(directory)
+##        for image in self.fList:#makes .gif of all .png files
+##            if '.PNG' in image or '.png' in image:
+##                Image.open(image).save(image[0:-4]+'.gif')
+##                self.fList = dircache.listdir(directory)
 
             
         for image2 in self.fList: #puts files in order so they can be iterated through one at a time
-            if '.gif' in image2 or '.GIF' in image2:
+            if 'png' in image2 or '.PNG' in image2:
                 self.fDic[str(n)] = image2
                 n = n + 1
 
@@ -95,7 +96,7 @@ class PickClick:#second 'main' window
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)#span starts in top left
         
         imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        self.photo = PhotoImage(file = imageFile)
+        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
         #returns id as self.obj
         self.obj = self.canv.create_image(2,2 ,image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor neccessary or image will not fit correctly
         boo = self.Check(self.num.get()+'n')#checks if image has any points
@@ -113,7 +114,7 @@ class PickClick:#second 'main' window
             self.num.set(int(self.num.get())+1)
 
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -130,7 +131,7 @@ class PickClick:#second 'main' window
             self.num.set(int(self.num.get())+10)
 
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -141,7 +142,7 @@ class PickClick:#second 'main' window
             self.num.set(self.length)
             
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -155,7 +156,7 @@ class PickClick:#second 'main' window
             self.num.set(int(self.num.get())+100)
 
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -166,7 +167,7 @@ class PickClick:#second 'main' window
             self.num.set(self.length)
             
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -179,7 +180,7 @@ class PickClick:#second 'main' window
         self.num.set(self.length)
 
         imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        self.photo = PhotoImage(file = imageFile)
+        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
         self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
         self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
         self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -193,7 +194,7 @@ class PickClick:#second 'main' window
         try:
             self.num.set(int(self.num.get())-1)
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -209,7 +210,7 @@ class PickClick:#second 'main' window
         try:
             self.num.set(int(self.num.get())-10)
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -219,7 +220,7 @@ class PickClick:#second 'main' window
         except:
             self.num.set(1)
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -232,7 +233,7 @@ class PickClick:#second 'main' window
         try:
             self.num.set(int(self.num.get())-100)
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -242,7 +243,7 @@ class PickClick:#second 'main' window
         except:
             self.num.set(1)
             imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = PhotoImage(file = imageFile)
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor=NW)#anchor
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -274,7 +275,7 @@ class PickClick:#second 'main' window
         self.num.set(1)
 
         imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        self.photo = PhotoImage(file = imageFile)
+        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
         self.canv.config(width = self.photo.width(),height = self.photo.height())#size canvas to image
         self.obj = self.canv.create_image((0,0),image = self.photo,tags = (self.num.get()+'n'),anchor = NW)#anchor
         self.canv.tag_bind(self.obj,'<Button-1>',self.Click)#binds click to this picture
@@ -381,7 +382,7 @@ class PickClick:#second 'main' window
     def SaveImg(self):
         filename = self.directory+os.path.sep+self.fDic[self.num.get()][0:-4]
         self.canv.postscript(file=(filename+'.ps'),height=self.photo.height(),width=self.photo.width(),colormode="color")
-        Image.open(filename+'.ps').save(filename+'.png')
+##        Image.open(filename+'.ps').save(filename+'.png')
 
 class ChooseDir: #first window allowing user to choose directory
     def __init__(self,master):
