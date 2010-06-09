@@ -1,6 +1,6 @@
 import os, string, dircache, time, shutil
 from Tkinter import *
-import Image, ImageTk
+import Image, ImageTk, ImageGrab
 import cv
 
 
@@ -56,6 +56,7 @@ class PickClick:
         self.frame.bind_all('<p>', self.Play)
         self.frame.bind_all('<o>', self.Pause)
         self.frame.bind_all('<i>',self.Rewind)
+        self.frame.bind_all('<s>',self.SaveAll)
         
         #quit button
         self.quitB = Button(self.frame,text='QUIT',command = master.quit)
@@ -93,22 +94,25 @@ class PickClick:
         #clear frame of poits
         self.clearFrameB = Button(self.frame,text='CLEAR FRAME',command=self.ClearPic)
         self.clearFrameB.grid(column=6,row=1,sticky=E) 
-        #saves frame with points as postscript image, not fully functional yet
+        #saves frame with points as png
         self.saveB = Button(self.frame,text = 'SAVE IMAGE',command = self.SaveImg)
         self.saveB.grid(column=2,row=1)
+        #save all button
+        self.saveAllB = Button(self.frame,text='SAVE FROM CURRENT FRAME',command = self.SaveAll)
+        self.saveAllB.grid(column=3,row=1, columnspan=2)
         #shows directory
         self.dirLab = Label(self.frame,text=self.directory)
         self.dirLab.grid(row=4,column=1,sticky=W)
         #shows file with point coords
         self.fileLab = Label(self.frame,text = self.dirList[-1]+'.txt')
         self.fileLab.grid(row=4,column=8,sticky=E)
-
+        #rewind button
         self.rewB = Button(self.frame,text = 'REW.',command = self.Rewind)
         self.rewB.grid(row=4,column=3)
-
+        #pause button
         self.pauseB = Button(self.frame,text='PAUSE',command=self.Pause)
         self.pauseB.grid(row=4,column=4,columnspan=2)
-
+        #play button
         self.playB = Button(self.frame,text='PLAY',command=self.Play)
         self.playB.grid(row=4,column=6)
         
@@ -337,7 +341,9 @@ class PickClick:
         #allow Play while loop to run
         self.go = True
         #will run while not at max frame number, self.go controlled by Pause
-        while int(self.num.get()) < self.length and self.go == True:
+        self.playing = True
+        self.rewing = False
+        while int(self.num.get()) < self.length and self.go == True and self.playing==True and self.rewing==False:
             #delay between frames, set according to fps
             time.sleep(1.0/self.fps)
             self.num.set(int(self.num.get())+1)
@@ -359,19 +365,25 @@ class PickClick:
                 self.ReDraw(self.num.get()+'n')
             #needed to make points appear
             self.canv.update()
+            if int(self.num.get()) == self.length:
+                self.go = False
+                self.playing = False
 
     def Pause(self,event=''):
         '''Pauses video sequence'''
         #stops play/rewind while loops from running
         self.go = False
-
+        self.playing = False
+        self.rewing = False
     def Rewind(self,event=''):
         '''Animates video sequence in reverse'''
         #stop other play/pause 
         self.go = False
         #allow Rewind while loop to run
         self.go = True
-        while int(self.num.get()) > 1 and self.go == True:
+        self.rewing = True
+        self.playing = False
+        while int(self.num.get()) > 1 and self.go == True and self.playing == False and self.rewing == True: 
             #delay between frames, set according to fps
             time.sleep(1.0/self.fps)
             self.num.set(int(self.num.get())-1)
@@ -393,6 +405,9 @@ class PickClick:
                 self.ReDraw(self.num.get()+'n')
             #needed to make points appear
             self.canv.update()
+            if int(self.num.get()) == 1:
+                self.go = False
+                self.rewing = False
      
     
 
@@ -517,13 +532,71 @@ class PickClick:
 
     def SaveImg(self):
         '''Saves current frame as a png'''
-        fileName = self.directory+os.path.sep+self.fDic[self.num.get()]
-        widget.update()
-        x0 = widget.winfo_rootx()
-        y0 = widget.winfo_rooty()
-        x1 = x0 + widget.winfo_width()
-        y1 = y0 + widget.winfo_height()
+        dirName = self.directory+os.path.sep+'annotated'
+        try:
+            #make a new directory to put dotted frames in
+            os.mkdir(dirName)
+        except WindowsError:
+            pass
+        fileName = dirName+os.path.sep+self.fDic[self.num.get()]
+        self.canv.update()
+        x0 = self.canv.winfo_rootx()
+        y0 = self.canv.winfo_rooty()
+        x1 = x0 + self.canv.winfo_width()
+        y1 = y0 + self.canv.winfo_height()
+        offset1 = 0
+        offset2 = 0
+        #grabs area of the screen and makes it into PIL image object
         im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
+        im.save(fileName)
+
+    def SaveAll(self,event=''):
+        '''Saves all frames as pngs'''
+        #stop other play/pause 
+        self.go = False
+        dirName = self.directory+os.path.sep+'annotated'
+        try:
+            #make a new directory to put dotted frames in
+            os.mkdir(dirName)
+        except WindowsError:
+            pass
+        #allow saveAll while loop to run
+        self.go = True
+        #will run while not at max frame number, self.go controlled by Pause
+        while int(self.num.get()) < self.length and self.go == True:
+            self.num.set(int(self.num.get())+1)
+            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
+            #size canvas to image
+            self.canv.config(width = self.photo.width(),height = self.photo.height())
+            self.obj = self.canv.create_image((0,0),
+                                              image = self.photo,
+                                              tags = (self.num.get()+'n'),anchor = NW)
+            #binds click to this picture
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
+            #needed after sleep to stop window from crashing
+            self.canv.update()
+            #checks if image has any points
+            boo = self.Check(self.num.get()+'n')
+            if boo:
+                #draws points if so
+                self.ReDraw(self.num.get()+'n')
+            #needed to make points appear
+            self.canv.update()
+            fileName = dirName+os.path.sep+self.fDic[self.num.get()]
+            self.canv.update()
+            x0 = self.canv.winfo_rootx()
+            y0 = self.canv.winfo_rooty()
+            x1 = x0 + self.canv.winfo_width()
+            y1 = y0 + self.canv.winfo_height()
+            offset1 = 0
+            offset2 = 0
+            im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
+            im.save(fileName)
+            if int(self.num.get()) == self.length:
+                self.go = False
+            
+        
         
 
 
@@ -576,7 +649,7 @@ class ChooseDir:
         filList = vidFil.split(os.path.sep)
         if '.mpg' in filList[-1] or '.avi' in filList[-1]:
             valid = True
-        if valid == True:
+        if valid == True and os.path.isfile(vidFil):
             #prefix to be used for frame files
             name = filList[-1][:-4]
 
@@ -589,6 +662,7 @@ class ChooseDir:
             while 1:
                 try:
                     #make a new directory based on named of video file
+                    #keep trying until an unused directory is found
                     dirName = name+str(n)
                     os.mkdir(dirName)
                     break
@@ -643,8 +717,7 @@ class ChooseDir:
             else:
                 #Prints invalid if no .gifs in file
                 self.dirLabel = \
-                Label(self.frame,text='No valid image files found in the directory')
-                
+                Label(self.frame,text='No valid image files found in the directory') 
                 self.dirLabel.grid(row=5,column=2) 
         else:
             #prints invalid is directory is invalid
