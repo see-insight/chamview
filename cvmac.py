@@ -47,6 +47,7 @@ class PickClick:
 
         self.num = StringVar()
         self.num.set(1)
+        self.dotType = StringVar()
         
         self.frame = Frame(master)
         master.title('ChamView')
@@ -60,7 +61,16 @@ class PickClick:
         self.frame.bind_all('<o>', self.Pause)
         self.frame.bind_all('<i>',self.Rewind)
         self.frame.bind_all('<s>',self.SaveAll)
-        print 'ok'
+
+        self.frame.bind_all('1', self.ChangeLF)
+        self.frame.bind_all('2', self.ChangeRF)
+        self.frame.bind_all('3', self.ChangeLB)
+        self.frame.bind_all('4', self.ChangeRB)
+        self.frame.bind_all('5', self.ChangeGS)
+        self.frame.bind_all('6', self.ChangeGE)
+        self.frame.bind_all('7', self.ChangeSV)
+        self.frame.bind_all('8', self.ChangeCm)
+
         #quit button
         self.quitB = Button(self.frame,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
@@ -94,12 +104,12 @@ class PickClick:
         #clear all of points
         self.clearB = Button(self.frame,text='CLEAR ALL',command = self.Clear)
         self.clearB.grid(column=7,row=1,sticky=E) 
-        #clear frame of poits
+        #clear frame of points
         self.clearFrameB = Button(self.frame,text='CLEAR FRAME',command=self.ClearPic)
         self.clearFrameB.grid(column=6,row=1,sticky=E) 
-        #saves frame with points as png
-        self.saveB = Button(self.frame,text = 'SAVE IMAGE',command = self.SaveImg)
-        self.saveB.grid(column=2,row=1)
+        #shows what kind of label/point is currently selected
+        self.dotLab = Label(self.frame,textvariable=self.dotType)
+        self.dotLab.grid(column=2,row=1)
         #save all button
         self.saveAllB = Button(self.frame,text='SAVE FROM CURRENT FRAME',command = self.SaveAll)
         self.saveAllB.grid(column=3,row=1, columnspan=2)
@@ -121,12 +131,9 @@ class PickClick:
         
         self.canv = Canvas(self.frame)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)
-        print 'ok2'
         imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        print 'ok2.5'
         #makes file into tkinter object so it can be drawn on canvas
         self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-        print 'ok3'
         #returns id as self.obj
         self.obj = self.canv.create_image(0,0,
                                           image = self.photo,
@@ -158,6 +165,32 @@ class PickClick:
         self.frame.rowconfigure(3, weight=3)
         self.frame.rowconfigure(4, weight=1)
         self.frame.rowconfigure(5, weight=1)
+
+    def ChangeLF(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('LF')
+    def ChangeRF(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('RF')
+    def ChangeLB(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('LB')
+    def ChangeRB(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('RB') 
+    def ChangeGS(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('GS')
+    def ChangeGE(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('GE')
+    def ChangeSV(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('S/V')
+    def ChangeCm(self,event):
+        '''Changes the type of point'''
+        self.dotType.set('Cm')
+        
         
     #event arg neccessary because this has been bound to keyboard
     def Nxt(self,event=''):
@@ -397,6 +430,7 @@ class PickClick:
         self.go = False
         self.playing = False
         self.rewing = False
+        
     def Rewind(self,event=''):
         '''Animates video sequence in reverse'''
         #stop other play/pause 
@@ -436,16 +470,68 @@ class PickClick:
     def Click(self,event):
         '''Draw circle on click and record tag/circle coords in file'''
         fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')
-        #coords are two opposite corners of circle
-        circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                      fill = 'yellow',activefill = 'red')
-        #tags item so it can be used(deleted) later
-        self.canv.itemconfigure(circId,tags=(str(circId)+'c'))
-        #binds item to unclick
-        self.canv.tag_bind(str(circId)+'c','<Button-1>',self.UnClick)
-        #writes coordinates of circle, tag/id of circle to file
-        stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                +':'+str(event.y+3)+':'+str(circId)+'c')
+        
+        label = self.dotType.get()
+        if label == 'LF':
+            #coords are two opposite corners of circle
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'yellow')
+            #tags item so it can be used(deleted) later
+            self.canv.itemconfigure(circId,tags=(str(circId)+'LF'))
+            #binds item to unclick
+            self.canv.tag_bind(str(circId)+'LF','<Button-1>',self.UnClick)
+            #writes coordinates of circle, tag/id of circle to file
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'LF')
+        if label == 'RF':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'orange')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'RF'))
+            self.canv.tag_bind(str(circId)+'RF','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'RF')
+        if label == 'LB':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'blue')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'LB'))
+            self.canv.tag_bind(str(circId)+'LB','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'LB')
+        if label == 'RB':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'turquoise')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'RB'))
+            self.canv.tag_bind(str(circId)+'RB','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'RB')
+        if label == 'GS':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'plum')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'GS'))
+            self.canv.tag_bind(str(circId)+'GS','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'GS')
+        if label =='GE':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'purple')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'GE'))
+            self.canv.tag_bind(str(circId)+'GE','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'GE')
+        if label == 'S/V':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'red')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'S/V'))
+            self.canv.tag_bind(str(circId)+'S/V','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'S/V')
+        if label == 'Cm':
+            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                          fill = 'lime green')
+            self.canv.itemconfigure(circId,tags=(str(circId)+'Cm'))
+            self.canv.tag_bind(str(circId)+'Cm','<Button-1>',self.UnClick)
+            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                    +':'+str(event.y+3)+':'+str(circId)+'Cm')
         
         fo.write(stri+'\n')
         fo.close()
@@ -525,12 +611,48 @@ class PickClick:
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
-                circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                               fill = 'yellow',activefill = 'red')
-                #tags item with id of original circle so it can be used(deleted) later
-                self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                #binds item to unclick
-                self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'LF' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'yellow')
+                    #tags item with id of original circle so it can be used(deleted) later
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    #binds item to unclick
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'RF' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'orange')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'LB' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'blue')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'RB' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'turquoise')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'GS' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'plum')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'GE' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'purple')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'S/V' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'red')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                if 'Cm' in lineLst[-1]:
+                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = 'lime green')
+                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
         fo.close()
 
     def Check(self,tag):
@@ -669,7 +791,7 @@ class ChooseDir:
         vidFil = self.vidDir.get()
         vidFil = self.vidDir.get().strip()
         filList = vidFil.split(os.path.sep)
-        if '.mpg' in filList[-1] or '.avi' in filList[-1] or '.mp4' in filList[-1] or '.mov' in filList[-1]:
+        if '.mpg' in filList[-1] or '.avi' in filList[-1] or '.MP4' in filList[-1] or '.MOV' in filList[-1] or '.mov' in filList[-1]:
             valid = True
         if valid == True and os.path.isfile(vidFil):
             #prefix to be used for frame files
@@ -688,7 +810,7 @@ class ChooseDir:
                     dirName = name+str(n)
                     os.mkdir(dirName)
                     break
-                except WindowsError:
+                except:
                     n = n + 1
                     continue
             while True:
