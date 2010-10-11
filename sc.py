@@ -150,7 +150,11 @@ for key in stepDic:
 #prints results in terminal, will fix to CSL for excel graph later        
 print 
 print "Step Length:"
-print fixedStepDic
+fStepList = []
+for key in sorted(fixedStepDic.iterkeys(),reverse=False):
+    fStepList.insert(0,(key,fixedStepDic[key]))
+for item in fStepList:
+    print item
 print
 print 'One centimeter is equal to:', cent, 'pixels'
 print 'Gap is:', gapCm, 'cm'
