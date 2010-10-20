@@ -169,7 +169,7 @@ print
 print "Results written to ", (fileName[:-4]+"DATA.txt")
 print
 
-
+fo2.close()
         
 
 
