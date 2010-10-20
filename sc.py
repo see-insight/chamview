@@ -1,7 +1,7 @@
 #this works when the chameleon is walking from right to left, could be changed
 #to work left to right as well
 
-
+import os
 import math
 fileName = raw_input('File Name:')
 
@@ -147,20 +147,29 @@ for key in stepDic:
 
 
 
-#prints results in terminal, will fix to CSL for excel graph later        
+#prints results in terminal and file, can fix to CSL for excel graph later
+fo2 = open(fileName[:-4]+"DATA.txt",'w')
 print 
 print "Step Length:"
+fo2.write("Step Length:"+"\n")
 fStepList = []
 for key in sorted(fixedStepDic.iterkeys(),reverse=False):
     fStepList.insert(0,(key,fixedStepDic[key]))
 for item in fStepList:
     print item
+    fo2.write(str(item)+"\n")
 print
 print 'One centimeter is equal to:', cent, 'pixels'
+fo2.write("\n"+'One centimeter is equal to:'+str(cent)+'pixels'+"\n")
 print 'Gap is:', gapCm, 'cm'
+fo2.write('Gap is:'+str(gapCm)+'cm'+'\n')
 print 'Snout/Vent length is:', snVeCm, 'cm'
-print
+fo2.write('Snout/Vent length is:'+str(snVeCm)+'cm'+'\n')
+print 
+print "Results written to ", (fileName[:-4]+"DATA.txt")
 print
 
 
         
+
+
