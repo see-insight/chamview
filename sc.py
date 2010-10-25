@@ -98,6 +98,7 @@ for key in sorted(LeftDic.iterkeys(),reverse=True):
 ##print LeftList
 ##print "Right"
 ##print RightList
+##print
 
 #find zero step
 SumList = [RFList,LFList]
@@ -113,7 +114,9 @@ for lis in SumList:
                 zeroStep = xcor
                 zeroFrame = int(item[0][:-1]) #saves frame of zero step as integer
 
-                
+##print
+##print "Zero Frame: ", zeroFrame
+
 #finds step length             
 x = 1
 n = len(RightList)
@@ -123,15 +126,23 @@ if n == len(LeftList): #lists must be same length for now, can change later
         step1= abs(LeftList[x][1][0]-RightList[x-1][1][0])#fix to distance formula with y
         step2 = abs(RightList[x][1][0]-LeftList[x-1][1][0])
         step = (step1+step2)/2.0 #avg of back step and front step
-        step = step/snVeCm #step relative to snout/vent length
+        step = step/snVe #step relative to snout/vent length
         step = round(step,2)
         if (RightList[x][1][0] == zeroStep) or (LeftList[x][1][0] == zeroStep):
+##            print "Right List: ", RightList[x][1][0]
+##            print "Left List: ", LeftList[x][1][0]
             zeroStep = step
+##            print "Zero Step: ", zeroStep
         stepDic[x] = step
         x += 1
 else:
     print "Error, step lists not same length"
-
+    
+##print
+##print stepDic
+##print "Zero: ", zeroStep
+##print
+    
 #renumbers dictionary keys based on the zero step
 fixedStepDic = {}
 for key in stepDic: #finds key of zero step
@@ -150,8 +161,8 @@ for key in stepDic:
 #prints results in terminal and file, can fix to CSL for excel graph later
 fo2 = open(fileName[:-4]+"DATA.txt",'w')
 print 
-print "Step Length:"
-fo2.write("Step Length:"+"\n")
+print "Step Length Relative to Snout/Vent:"
+fo2.write("Step Length Relative to Snout/Vent:"+"\n")
 fStepList = []
 for key in sorted(fixedStepDic.iterkeys(),reverse=False):
     fStepList.insert(0,(key,fixedStepDic[key]))
