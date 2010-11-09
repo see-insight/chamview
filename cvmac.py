@@ -75,7 +75,7 @@ class PickClick:
         self.quitB = Button(self.frame,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
         #previous button
-        self.prevB = Button(self.frame, text = 'PREV',command = self.Prev) 
+        self.prevB = Button(self.frame, text = 'PREV [A]',command = self.Prev) 
         self.prevB.grid(column=4,row=5)
         
         self.prev10B = Button(self.frame, text = 'PREV10',command = self.Prev10)
@@ -87,7 +87,7 @@ class PickClick:
         self.firstB = Button(self.frame, text = 'FIRST',command = self.First)
         self.firstB.grid(column=1,row=5)
         #next button
-        self.nextB = Button(self.frame,text='NEXT',command = self.Nxt)
+        self.nextB = Button(self.frame,text='NEXT [D]',command = self.Nxt)
         self.nextB.grid(column=5,row=5)
         
         self.next10B = Button(self.frame, text = 'NEXT10',command = self.Nxt10)
@@ -120,13 +120,13 @@ class PickClick:
         self.fileLab = Label(self.frame,text = self.dirList[-1]+'.txt')
         self.fileLab.grid(row=4,column=8,sticky=E)
         #rewind button
-        self.rewB = Button(self.frame,text = 'REW.',command = self.Rewind)
+        self.rewB = Button(self.frame,text = 'REW. [I]',command = self.Rewind)
         self.rewB.grid(row=4,column=3)
         #pause button
-        self.pauseB = Button(self.frame,text='PAUSE',command=self.Pause)
+        self.pauseB = Button(self.frame,text='PAUSE [O]',command=self.Pause)
         self.pauseB.grid(row=4,column=4,columnspan=2)
         #play button
-        self.playB = Button(self.frame,text='PLAY',command=self.Play)
+        self.playB = Button(self.frame,text='PLAY [P]',command=self.Play)
         self.playB.grid(row=4,column=6)
         
         self.canv = Canvas(self.frame)
@@ -191,7 +191,11 @@ class PickClick:
         '''Changes the type of point'''
         self.dotType.set('Cm')
         
-        
+    def Comment(self)
+        '''Adds a comment to the frame in question'''
+    
+
+
     #event arg neccessary because this has been bound to keyboard
     def Nxt(self,event=''):
         '''Advances picture in directory'''
@@ -695,51 +699,53 @@ class PickClick:
         im.save(fileName)
 
     def SaveAll(self,event=''):
+        pass
+        #This is currently not working, messes with text file somehow.  Figure out later.
         '''Saves all frames as pngs'''
-        #stop other play/pause 
-        self.go = False
-        dirName = self.directory+os.path.sep+'annotated'
-        try:
-            #make a new directory to put dotted frames in
-            os.mkdir(dirName)
-        except WindowsError:
-            pass
-        #allow saveAll while loop to run
-        self.go = True
-        #will run while not at max frame number, self.go controlled by Pause
-        while int(self.num.get()) < self.length and self.go == True:
-            self.num.set(int(self.num.get())+1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            #size canvas to image
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            #binds click to this picture
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #needed after sleep to stop window from crashing
-            self.canv.update()
-            #checks if image has any points
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                #draws points if so
-                self.ReDraw(self.num.get()+'n')
-            #needed to make points appear
-            self.canv.update()
-            fileName = dirName+os.path.sep+self.fDic[self.num.get()]
-            self.canv.update()
-            x0 = self.canv.winfo_rootx()
-            y0 = self.canv.winfo_rooty()
-            x1 = x0 + self.canv.winfo_width()
-            y1 = y0 + self.canv.winfo_height()
-            offset1 = 0
-            offset2 = 0
-            im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
-            im.save(fileName)
-            if int(self.num.get()) == self.length:
-                self.go = False
-            
+##        #stop other play/pause 
+##        self.go = False
+##        dirName = self.directory+os.path.sep+'annotated'
+##        try:
+##            #make a new directory to put dotted frames in
+##            os.mkdir(dirName)
+##        except WindowsError:
+##            pass
+##        #allow saveAll while loop to run
+##        self.go = True
+##        #will run while not at max frame number, self.go controlled by Pause
+##        while int(self.num.get()) < self.length and self.go == True:
+##            self.num.set(int(self.num.get())+1)
+##            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
+##            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
+##            #size canvas to image
+##            self.canv.config(width = self.photo.width(),height = self.photo.height())
+##            self.obj = self.canv.create_image((0,0),
+##                                              image = self.photo,
+##                                              tags = (self.num.get()+'n'),anchor = NW)
+##            #binds click to this picture
+##            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
+##            #needed after sleep to stop window from crashing
+##            self.canv.update()
+##            #checks if image has any points
+##            boo = self.Check(self.num.get()+'n')
+##            if boo:
+##                #draws points if so
+##                self.ReDraw(self.num.get()+'n')
+##            #needed to make points appear
+##            self.canv.update()
+##            fileName = dirName+os.path.sep+self.fDic[self.num.get()]
+##            self.canv.update()
+##            x0 = self.canv.winfo_rootx()
+##            y0 = self.canv.winfo_rooty()
+##            x1 = x0 + self.canv.winfo_width()
+##            y1 = y0 + self.canv.winfo_height()
+##            offset1 = 0
+##            offset2 = 0
+##            im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
+##            im.save(fileName)
+##            if int(self.num.get()) == self.length:
+##                self.go = False
+##            
         
         
 
@@ -754,7 +760,7 @@ class ChooseDir:
         self.frame.grid(rowspan=6,columnspan=2)
 
         self.directory = StringVar()
-        self.directory.set(os.curdir)
+        self.directory.set('')
         
         self.vidDir = StringVar()
         self.frameNum = StringVar()

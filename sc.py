@@ -125,7 +125,8 @@ if n == len(LeftList): #lists must be same length for now, can change later
     while (x < n):
         step1= abs(LeftList[x][1][0]-RightList[x-1][1][0])#fix to distance formula with y
         step2 = abs(RightList[x][1][0]-LeftList[x-1][1][0])
-        step = (step1+step2)/2.0 #avg of back step and front step
+##    step = (step1+step2)/2.0 this was when i was averagin front and back step length
+        step = step1#avg of back step and front step
         step = step/snVe #step relative to snout/vent length
         step = round(step,2)
         if (RightList[x][1][0] == zeroStep) or (LeftList[x][1][0] == zeroStep):
@@ -161,8 +162,8 @@ for key in stepDic:
 #prints results in terminal and file, can fix to CSL for excel graph later
 fo2 = open(fileName[:-4]+"DATA.txt",'w')
 print 
-print "Step Length Relative to Snout/Vent:"
-fo2.write("Step Length Relative to Snout/Vent:"+"\n")
+print "Front Step Length Relative to Snout/Vent:"
+fo2.write("Front Step Length Relative to Snout/Vent:"+"\n")
 fStepList = []
 for key in sorted(fixedStepDic.iterkeys(),reverse=False):
     fStepList.insert(0,(key,fixedStepDic[key]))
