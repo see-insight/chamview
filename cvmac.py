@@ -48,88 +48,92 @@ class PickClick:
         self.num = StringVar()
         self.num.set(1)
         self.dotType = StringVar()
+        self.comment = StringVar()
+        self.comment.set("comment")
         
         self.frame = Frame(master)
         master.title('ChamView')
         self.frame.grid(columnspan=8,rowspan=5)
         #binds shortcut keys
-        self.frame.bind_all('<a>', self.Prev)
-        self.frame.bind_all('<A>', self.Prev)
-        self.frame.bind_all('<d>', self.Nxt)
-        self.frame.bind_all('<d>', self.Nxt)
-        self.frame.bind_all('<p>', self.Play)
-        self.frame.bind_all('<o>', self.Pause)
-        self.frame.bind_all('<i>',self.Rewind)
-        self.frame.bind_all('<s>',self.SaveAll)
+        master.bind_all('<a>', self.Prev)
+        master.bind_all('<A>', self.Prev)
+        master.bind_all('<d>', self.Nxt)
+        master.bind_all('<d>', self.Nxt)
+        master.bind_all('<p>', self.Play)
+        master.bind_all('<o>', self.Pause)
+        master.bind_all('<i>',self.Rewind)
+        master.bind_all('<s>',self.SaveAll)
 
-        self.frame.bind_all('1', self.ChangeLF)
-        self.frame.bind_all('2', self.ChangeRF)
-        self.frame.bind_all('3', self.ChangeLB)
-        self.frame.bind_all('4', self.ChangeRB)
-        self.frame.bind_all('5', self.ChangeGS)
-        self.frame.bind_all('6', self.ChangeGE)
-        self.frame.bind_all('7', self.ChangeSV)
-        self.frame.bind_all('8', self.ChangeCm)
+        master.bind_all('1', self.ChangeLF)
+        master.bind_all('2', self.ChangeRF)
+        master.bind_all('3', self.ChangeLB)
+        master.bind_all('4', self.ChangeRB)
+        master.bind_all('5', self.ChangeGS)
+        master.bind_all('6', self.ChangeGE)
+        master.bind_all('7', self.ChangeSV)
+        master.bind_all('8', self.ChangeCm)
 
         #quit button
-        self.quitB = Button(self.frame,text='QUIT',command = master.quit)
+        self.quitB = Button(master,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
         #previous button
-        self.prevB = Button(self.frame, text = 'PREV [A]',command = self.Prev) 
+        self.prevB = Button(master, text = 'PREV [A]',command = self.Prev) 
         self.prevB.grid(column=4,row=5)
         
-        self.prev10B = Button(self.frame, text = 'PREV10',command = self.Prev10)
+        self.prev10B = Button(master, text = 'PREV10',command = self.Prev10)
         self.prev10B.grid(column=3,row=5)
         
-        self.prev100B = Button(self.frame, text = 'PREV100',command = self.Prev100)
+        self.prev100B = Button(master, text = 'PREV100',command = self.Prev100)
         self.prev100B.grid(column=2,row=5)
         #first button
-        self.firstB = Button(self.frame, text = 'FIRST',command = self.First)
+        self.firstB = Button(master, text = 'FIRST',command = self.First)
         self.firstB.grid(column=1,row=5)
         #next button
-        self.nextB = Button(self.frame,text='NEXT [D]',command = self.Nxt)
+        self.nextB = Button(master,text='NEXT [D]',command = self.Nxt)
         self.nextB.grid(column=5,row=5)
         
-        self.next10B = Button(self.frame, text = 'NEXT10',command = self.Nxt10)
+        self.next10B = Button(master, text = 'NEXT10',command = self.Nxt10)
         self.next10B.grid(column=6,row=5)
         
-        self.next100B = Button(self.frame, text = 'NEXT100',command = self.Nxt100)
+        self.next100B = Button(master, text = 'NEXT100',command = self.Nxt100)
         self.next100B.grid(column=7,row=5)
         #last button
-        self.lastB = Button(self.frame,text='LAST',command = self.Last)
+        self.lastB = Button(master,text='LAST',command = self.Last)
         self.lastB.grid(row=5,column=8)
         #frame label
-        self.numLab = Label(self.frame,textvariable = self.num)
+        self.numLab = Label(master,textvariable = self.num)
         self.numLab.grid(column=1,row=1,sticky=W)
         #clear all of points
-        self.clearB = Button(self.frame,text='CLEAR ALL',command = self.Clear)
+        self.clearB = Button(master,text='CLEAR ALL',command = self.Clear)
         self.clearB.grid(column=7,row=1,sticky=E) 
         #clear frame of points
-        self.clearFrameB = Button(self.frame,text='CLEAR FRAME',command=self.ClearPic)
+        self.clearFrameB = Button(master,text='CLEAR FRAME',command=self.ClearPic)
         self.clearFrameB.grid(column=6,row=1,sticky=E) 
         #shows what kind of label/point is currently selected
-        self.dotLab = Label(self.frame,textvariable=self.dotType)
+        self.dotLab = Label(master,textvariable=self.dotType)
         self.dotLab.grid(column=2,row=1)
-        #save all button
-        self.saveAllB = Button(self.frame,text='SAVE FROM CURRENT FRAME',command = self.SaveAll)
-        self.saveAllB.grid(column=3,row=1, columnspan=2)
+        #comment box
+        self.commentInput = Entry(master, bd=5, textvariable=self.comment, width=40)
+        self.commentInput.grid(column=3,row=1, columnspan=2)
+        #bind return key for comment box
+        self.commentInput.bind("<KeyPress-Return>",self.Comment)
         #shows directory
-        self.dirLab = Label(self.frame,text=self.directory)
+        self.dirLab = Label(master,text=self.directory)
         self.dirLab.grid(row=4,column=1,sticky=W)
         #shows file with point coords
-        self.fileLab = Label(self.frame,text = self.dirList[-1]+'.txt')
+        self.fileLab = Label(master,text = self.dirList[-1]+'.txt')
         self.fileLab.grid(row=4,column=8,sticky=E)
         #rewind button
-        self.rewB = Button(self.frame,text = 'REW. [I]',command = self.Rewind)
+        self.rewB = Button(master,text = 'REW. [I]',command = self.Rewind)
         self.rewB.grid(row=4,column=3)
         #pause button
-        self.pauseB = Button(self.frame,text='PAUSE [O]',command=self.Pause)
+        self.pauseB = Button(master,text='PAUSE [O]',command=self.Pause)
         self.pauseB.grid(row=4,column=4,columnspan=2)
         #play button
-        self.playB = Button(self.frame,text='PLAY [P]',command=self.Play)
+        self.playB = Button(master,text='PLAY [P]',command=self.Play)
         self.playB.grid(row=4,column=6)
         
-        self.canv = Canvas(self.frame)
+        self.canv = Canvas(master)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)
         imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
         #makes file into tkinter object so it can be drawn on canvas
@@ -150,21 +154,21 @@ class PickClick:
         fo.close()
 
         #allow window to resize properly
-        master.columnconfigure(0,weight=1)
-        master.rowconfigure(0,weight=1)
-        self.frame.columnconfigure(1, weight=1)
-        self.frame.columnconfigure(2, weight=1)
-        self.frame.columnconfigure(3, weight=1)
-        self.frame.columnconfigure(4, weight=1)
-        self.frame.columnconfigure(5, weight=1)
-        self.frame.columnconfigure(6, weight=1)
-        self.frame.columnconfigure(7, weight=1)
-        self.frame.columnconfigure(8, weight=1)
-        self.frame.rowconfigure(1, weight=1)
-        self.frame.rowconfigure(2, weight=3)
-        self.frame.rowconfigure(3, weight=3)
-        self.frame.rowconfigure(4, weight=1)
-        self.frame.rowconfigure(5, weight=1)
+        #master.columnconfigure(0,weight=1)
+        #master.rowconfigure(0,weight=1)
+        master.columnconfigure(1, weight=1)
+        master.columnconfigure(2, weight=1)
+        master.columnconfigure(3, weight=1)
+        master.columnconfigure(4, weight=1)
+        master.columnconfigure(5, weight=1)
+        master.columnconfigure(6, weight=1)
+        master.columnconfigure(7, weight=1)
+        master.columnconfigure(8, weight=1)
+        master.rowconfigure(1, weight=1)
+        master.rowconfigure(2, weight=3)
+        master.rowconfigure(3, weight=3)
+        master.rowconfigure(4, weight=1)
+        master.rowconfigure(5, weight=1)
 
     def ChangeLF(self,event):
         '''Changes the type of point'''
@@ -191,10 +195,10 @@ class PickClick:
         '''Changes the type of point'''
         self.dotType.set('Cm')
         
-    def Comment(self)
+    def Comment(self,event):
         '''Adds a comment to the frame in question'''
-    
-
+        comment = self.comment.get()
+        print comment
 
     #event arg neccessary because this has been bound to keyboard
     def Nxt(self,event=''):
