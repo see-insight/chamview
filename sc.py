@@ -3,7 +3,10 @@
 
 import os
 import math
+import string
 fileName = raw_input('File Name:')
+fileName = fileName.strip()
+
 
 fo = open(fileName,'r')
 
@@ -16,44 +19,49 @@ LBDic = {}
 RBDic = {}
 LeftDic = {}
 RightDic = {}
+CommentDic = {}
 for line in fo:
     linLst = line.split(':')
     #calibration steps
-    if 'Cm' in line:
-        if cm == 0:
-            cmx1 = float(linLst[1])+3.0
-            cmy1 = float(linLst[2])+3.0
-            cm = cm + 1
-        elif cm == 1:
-            cmx2 = float(linLst[1])+3.0
-            cmy2 = float(linLst[2])+3.0
-    if 'GS' in line:
-        gx1 = float(linLst[1])+3.0
-        gy1 = float(linLst[2])+3.0
-    if 'GE' in line:
-        gx2 = float(linLst[1])+3.0
-        gy2 = float(linLst[2])+3.0
-    if 'S/V' in line:
-        if sv == 0:
-            svx1 = float(linLst[1])+3.0
-            svy1 = float(linLst[2])+3.0
-            sv = sv + 1
-        elif sv == 1:
-            svx2 = float(linLst[1])+3.0
-            svy2 = float(linLst[2])+3.0
+    if linLst[0] != "COM":
+        if 'Cm' in line:
+            if cm == 0:
+                cmx1 = float(linLst[1])+3.0
+                cmy1 = float(linLst[2])+3.0
+                cm = cm + 1
+            elif cm == 1:
+                cmx2 = float(linLst[1])+3.0
+                cmy2 = float(linLst[2])+3.0
+        if 'GS' in line:
+            gx1 = float(linLst[1])+3.0
+            gy1 = float(linLst[2])+3.0
+        if 'GE' in line:
+            gx2 = float(linLst[1])+3.0
+            gy2 = float(linLst[2])+3.0
+        if 'S/V' in line:
+            if sv == 0:
+                svx1 = float(linLst[1])+3.0
+                svy1 = float(linLst[2])+3.0
+                sv = sv + 1
+            elif sv == 1:
+                svx2 = float(linLst[1])+3.0
+                svy2 = float(linLst[2])+3.0
 ## makes dictionaries of x,y coords for feet, keys are frame numbers
-    if 'RF' in line:
-        RFDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-        RightDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-    if 'LF' in line:
-        LFDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-        LeftDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-    if 'RB' in line:
-        RBDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-        RightDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-    if 'LB' in line:
-        LBDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
-        LeftDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+        if 'RF' in line:
+            RFDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+            RightDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+        if 'LF' in line:
+            LFDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+            LeftDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+        if 'RB' in line:
+            RBDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+            RightDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+        if 'LB' in line:
+            LBDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+            LeftDic[linLst[0]] = (int(linLst[1])+3,int(linLst[2])+3)
+    else:
+        #make dictionary of comments
+        CommentDic[linLst[1]] = linLst[2][:-1]
         
 fo.close()
 
@@ -87,18 +95,6 @@ for key in sorted(RightDic.iterkeys(),reverse=True):
 LeftList = []
 for key in sorted(LeftDic.iterkeys(),reverse=True):
     LeftList.insert(0,(key,LeftDic[key]))
-           
-##print RFList
-##print LFList
-##print RBList
-##print LBList
-##print gx2
-
-##print "Left"
-##print LeftList
-##print "Right"
-##print RightList
-##print
 
 #find zero step
 SumList = [RFList,LFList]
@@ -114,9 +110,6 @@ for lis in SumList:
                 zeroStep = xcor
                 zeroFrame = int(item[0][:-1]) #saves frame of zero step as integer
 
-##print
-##print "Zero Frame: ", zeroFrame
-
 #finds step length             
 x = 1
 n = len(RightList)
@@ -125,24 +118,15 @@ if n == len(LeftList): #lists must be same length for now, can change later
     while (x < n):
         step1= abs(LeftList[x][1][0]-RightList[x-1][1][0])#fix to distance formula with y
         step2 = abs(RightList[x][1][0]-LeftList[x-1][1][0])
-##    step = (step1+step2)/2.0 this was when i was averagin front and back step length
         step = step1#avg of back step and front step
         step = step/snVe #step relative to snout/vent length
         step = round(step,2)
         if (RightList[x][1][0] == zeroStep) or (LeftList[x][1][0] == zeroStep):
-##            print "Right List: ", RightList[x][1][0]
-##            print "Left List: ", LeftList[x][1][0]
             zeroStep = step
-##            print "Zero Step: ", zeroStep
         stepDic[x] = step
         x += 1
 else:
     print "Error, step lists not same length"
-    
-##print
-##print stepDic
-##print "Zero: ", zeroStep
-##print
     
 #renumbers dictionary keys based on the zero step
 fixedStepDic = {}
@@ -161,6 +145,7 @@ for key in stepDic:
 
 #prints results in terminal and file, can fix to CSL for excel graph later
 fo2 = open(fileName[:-4]+"DATA.txt",'w')
+fo3 = open(fileName[:-4]+"COMMENTS.txt","w")
 print 
 print "Front Step Length Relative to Snout/Vent:"
 fo2.write("Front Step Length Relative to Snout/Vent:"+"\n")
@@ -177,8 +162,14 @@ print 'Gap is:', gapCm, 'cm'
 fo2.write('Gap is:'+str(gapCm)+'cm'+'\n')
 print 'Snout/Vent length is:', snVeCm, 'cm'
 fo2.write('Snout/Vent length is:'+str(snVeCm)+'cm'+'\n')
+print
+print 'Comments:'
+for key in CommentDic:
+    print '---',CommentDic[key]," on frame ", key
+    fo3.write('---'+CommentDic[key]+" on frame "+key+"\n")
 print 
 print "Results written to ", (fileName[:-4]+"DATA.txt")
+print "Comments written to ",(fileName[:-4]+"COMMENTS.txt")
 print
 
 fo2.close()
