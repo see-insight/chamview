@@ -1,0 +1,28 @@
+﻿Open CV
+	Before doing anything, install Xcode:
+	http://developer.apple.com/technologies/tools/xcode.html
+	And Macports:
+	http://www.macports.org/install.php
+	Update Macports:
+	sudo port selfupdate
+	In order for the python bindings to successfully install, a portfile must be modified.
+	Navigate to the portfile's directory:
+	cd /opt/local/var/macports/sources/rsync.macports.org/release/ports/graphics/opencv
+	Edit it with something, I used pico:
+	sudo pico portfile
+	Delete entirely the line that reads:
+	configure.args                  --without-python
+	and replace it with
+	configure.compiler              gcc-4.2
+	Navigate back to your home directory and install python and opencv using Macports:
+	(having other versions of python on your system may negatively affect your results)
+	cd ~
+	sudo port install python26
+	sudo port install python_select
+	sudo python_select python26
+	sudo port install opencv
+	Once all of this is done, load up the python, and type this as the first few lines of any script you 	plan on using opencv in:
+	import sys
+	sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')
+	import cv
+

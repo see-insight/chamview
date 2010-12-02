@@ -1,0 +1,38 @@
+﻿Fred and Colby:
+	- Ability to cut and paste into the address fields.
+		-Directory for chamview
+		-Command line
+		-Drag and drop onto script
+	- Documentation on how to reuse the image directory so that they do not have to convert the 	movie file every time.
+	- Increase in the number of points used to calibrate the image in order to reduce error. (For 	example using five points on the dowel instead of two in order to calculate the pixel to 	centimeter conversion).
+		-Significant barreling?
+			Pixels/cm in the first text file:  21, 24, 25, 23, 23
+			Pixels/cm in the second text file: 22, 22, 23, 22, 22
+	- A button (or something similar) that will clean up the image directory to help save disk space.
+		-Delete image files, but keep directory and text files
+		-Use same directory if frames are made again
+	- Output a final text file instead of printing the distance results to the screen
+	-Calculate step distance using only front feet
+	-Calculate step length for back feet
+	-Fix bug with “Save all frames”
+	(In progress)
+	-Annotate certain frames/steps/events
+	-Eye points (three separate for now, possibly circle and point in future)
+	-Convert data file to something usable
+
+
+Tim:
+	-Save points with dots
+	-Save movie with dots
+	-Add user-defined point types
+	-Add hotkeys to UI
+	-Better final text formatting if needed
+	-Rules
+	-Trailing space removal from sc file
+	-Fix clicking with no point selected
+	-refactoring is desperately needed
+		-fix frame issues
+
+Dirk:
+	-Get running on hpc
+	-text file 
