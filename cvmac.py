@@ -4,8 +4,10 @@ import Image, ImageTk
 #import sys
 #sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')i
 ##import ImageGrab
+import sys
+#sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')
 import cv
-import highgui
+#import highgui
 
 ##Notes:
 ##button fxns will run as soon as button is made if callback includes ()
@@ -198,7 +200,11 @@ class PickClick:
     def Comment(self,event):
         '''Adds a comment to the frame in question'''
         comment = self.comment.get()
-        print comment
+        comment = comment.strip()
+        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')
+        stri = "COM:"+self.num.get()+":"+comment 
+        fo.write(stri+"\n")
+        fo.close()
 
     #event arg neccessary because this has been bound to keyboard
     def Nxt(self,event=''):
@@ -807,8 +813,8 @@ class ChooseDir:
             #prefix to be used for frame files
             name = filList[-1][:-4]
 
-            capture = highgui.cvCreateFileCapture(vidFil)
-            fps = highgui.cvGetCaptureProperty(capture,highgui.CV_CAP_PROP_FPS)
+            capture = cv.CreateFileCapture(vidFil)
+            fps = cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_FPS)
 
             #first two digits of num are fps
             num = int(str(int(fps))+'000000001')
@@ -824,7 +830,7 @@ class ChooseDir:
                     n = n + 1
                     continue
             while True:
-                frame = highgui.cvQueryFrame(capture)
+                frame = cv.QueryFrame(capture)
                 #end loop if no more frames
                 if frame == None:
                     self.frameNum.set('Complete')
@@ -832,7 +838,7 @@ class ChooseDir:
                     break
 
                 #save image with num as part of filename and moves it to directory
-                highgui.cvSaveImage(dirName + str(num)+'.png',frame)
+                cv.SaveImage(dirName + str(num)+'.png',frame)
                 shutil.move(dirName + str(num)+'.png',dirName)
                 num = num + 1
                 self.frameNum.set(num - int(str(int(fps))+'000000001'))
