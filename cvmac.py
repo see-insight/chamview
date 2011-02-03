@@ -1,6 +1,8 @@
 import os, string, dircache, time, shutil
 from Tkinter import *
 import Image, ImageTk
+#import sys
+#sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')i
 ##import ImageGrab
 import sys
 #sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')
