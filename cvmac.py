@@ -1,13 +1,9 @@
 import os, string, dircache, time, shutil
 from Tkinter import *
 import Image, ImageTk
-#import sys
-#sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')i
-##import ImageGrab
 import sys
-#sys.path.append('/opt/local/lib/python2.6/site-packages/opencv')
 import cv
-#import highgui
+import Point
 
 ##Notes:
 ##button fxns will run as soon as button is made if callback includes ()
@@ -64,17 +60,12 @@ class PickClick:
         master.bind_all('<p>', self.Play)
         master.bind_all('<o>', self.Pause)
         master.bind_all('<i>',self.Rewind)
-        master.bind_all('<s>',self.SaveAll)
 
-        master.bind_all('1', self.ChangeLF)
-        master.bind_all('2', self.ChangeRF)
-        master.bind_all('3', self.ChangeLB)
-        master.bind_all('4', self.ChangeRB)
-        master.bind_all('5', self.ChangeGS)
-        master.bind_all('6', self.ChangeGE)
-        master.bind_all('7', self.ChangeSV)
-        master.bind_all('8', self.ChangeCm)
-
+        c = 0
+        while (c < pointCount): #goes through list and makes key bindings for points
+            master.bind_all(pointList[c].bind,self.ChangePoint)
+            c = c + 1
+        
         #quit button
         self.quitB = Button(master,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
@@ -172,30 +163,14 @@ class PickClick:
         master.rowconfigure(4, weight=1)
         master.rowconfigure(5, weight=1)
 
-    def ChangeLF(self,event):
+    def ChangePoint(self,event):
         '''Changes the type of point'''
-        self.dotType.set('LF')
-    def ChangeRF(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('RF')
-    def ChangeLB(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('LB')
-    def ChangeRB(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('RB') 
-    def ChangeGS(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('GS')
-    def ChangeGE(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('GE')
-    def ChangeSV(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('S/V')
-    def ChangeCm(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('Cm')
+        c = 0
+        while (c < pointCount):
+            if pointList[c].bind == event.char:
+                self.dotType.set(pointList[c].label)
+                break
+            c = c+1
         
     def Comment(self,event):
         '''Adds a comment to the frame in question'''
@@ -483,73 +458,30 @@ class PickClick:
 
     def Click(self,event):
         '''Draw circle on click and record tag/circle coords in file'''
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')
-        
+        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')  
         label = self.dotType.get()
-        if label == 'LF':
-            #coords are two opposite corners of circle
+        try:
+            c = 0
+            while (c < pointCount):
+                if pointList[c].label == label:
+                    break
+                c = c+1
+
+             #coords are two opposite corners of circle
             circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'yellow')
+                                          fill = pointList[c].color)
             #tags item so it can be used(deleted) later
-            self.canv.itemconfigure(circId,tags=(str(circId)+'LF'))
+            self.canv.itemconfigure(circId,tags=(str(circId)+pointList[c].label))
             #binds item to unclick
-            self.canv.tag_bind(str(circId)+'LF','<Button-1>',self.UnClick)
+            self.canv.tag_bind(str(circId)+pointList[c].label,'<Button-1>',self.UnClick)
             #writes coordinates of circle, tag/id of circle to file
             stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'LF')
-        if label == 'RF':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'orange')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'RF'))
-            self.canv.tag_bind(str(circId)+'RF','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'RF')
-        if label == 'LB':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'blue')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'LB'))
-            self.canv.tag_bind(str(circId)+'LB','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'LB')
-        if label == 'RB':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'turquoise')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'RB'))
-            self.canv.tag_bind(str(circId)+'RB','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'RB')
-        if label == 'GS':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'plum')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'GS'))
-            self.canv.tag_bind(str(circId)+'GS','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'GS')
-        if label =='GE':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'purple')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'GE'))
-            self.canv.tag_bind(str(circId)+'GE','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'GE')
-        if label == 'S/V':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'red')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'S/V'))
-            self.canv.tag_bind(str(circId)+'S/V','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'S/V')
-        if label == 'Cm':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'lime green')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'Cm'))
-            self.canv.tag_bind(str(circId)+'Cm','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'Cm')
-        
-        fo.write(stri+'\n')
+                    +':'+str(event.y+3)+':'+str(circId)+pointList[c].label)
+            fo.write(stri+'\n')
+        except IndexError:
+            print "Invalid or no point type"
+            
         fo.close()
-
 
     def UnClick(self,event):
         '''Deletes point circles when they are clicked'''
@@ -625,48 +557,60 @@ class PickClick:
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
-                if 'LF' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'yellow')
-                    #tags item with id of original circle so it can be used(deleted) later
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    #binds item to unclick
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'RF' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'orange')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'LB' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'blue')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'RB' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'turquoise')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'GS' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'plum')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'GE' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'purple')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'S/V' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'red')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'Cm' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'lime green')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                c = 0
+                while (c < pointCount):
+                    if pointList[c].label in lineLst[-1]:
+                        circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                   fill = pointList[c].color)
+                        #tags item with id of original circle so it can be used(deleted) later
+                        self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                        #binds item to unclick
+                        self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick) 
+                    c = c+1
+
+               
+##                if 'LF' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'yellow')
+##                    #tags item with id of original circle so it can be used(deleted) later
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    #binds item to unclick
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'RF' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'orange')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'LB' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'blue')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'RB' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'turquoise')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'GS' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'plum')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'GE' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'purple')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'S/V' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'red')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+##                if 'Cm' in lineLst[-1]:
+##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+##                                                   fill = 'lime green')
+##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
         fo.close()
 
     def Check(self,tag):
@@ -884,7 +828,33 @@ class ChooseDir:
             self.dirLabel = Label(self.frame,text=directory+' - Invalid Directory')
             self.dirLabel.grid(row=5,column=2)
         
+#reads point file and determines point types
+try:
+    pointFile =  sys.argv[1] #grabs name of file from line argument
+except IndexError:
+    print "Default cham points used" #this happens if no argument/file is supplied
+    pointFile = "champts.txt"
+    
+pfo = open(pointFile)
+pointList = []
+n = 0
+for line in pfo:
+    if n !=0:
+        linLst = line.split()
+        lgth = len(linLst)
+        if (lgth == 4):
+            color = linLst[2] + ' ' + linLst[3]#for two-word colors
+            pointList.append(Point.Point(linLst[0],linLst[1],color)) #key bind, color, label
+        else:
+            pointList.append(Point.Point(linLst[0],linLst[1],linLst[2])) #key bind, color, label
+    else: #first line states number of points
+        pointCount = int(line)
+    n = n + 1
+    
+pfo.close()
 
+for x in pointList:
+    print x.bind, x.label, x.color
 
 root = Tk()
 #first window, choose directory for CV or make frames from video
