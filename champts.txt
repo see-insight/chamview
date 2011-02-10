@@ -1,0 +1,9 @@
+8
+1 LF yellow
+2 RF orange
+3 LB blue
+4 RB turquoise
+5 GS plum
+6 GE purple
+7 S/V red
+8 Cm lime green
