@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 import os, string, dircache, time, shutil
 from Tkinter import *
 import Image, ImageTk
