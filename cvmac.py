@@ -567,50 +567,6 @@ class PickClick:
                         #binds item to unclick
                         self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick) 
                     c = c+1
-
-               
-##                if 'LF' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'yellow')
-##                    #tags item with id of original circle so it can be used(deleted) later
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    #binds item to unclick
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'RF' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'orange')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'LB' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'blue')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'RB' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'turquoise')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'GS' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'plum')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'GE' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'purple')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'S/V' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'red')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-##                if 'Cm' in lineLst[-1]:
-##                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-##                                                   fill = 'lime green')
-##                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-##                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
         fo.close()
 
     def Check(self,tag):
