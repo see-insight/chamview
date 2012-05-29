@@ -9,25 +9,33 @@ import sys
 import pyglet   #Solely for extracting video frames
 from PIL import Image
 
-##Notes:
-##button fxns will run as soon as button is made if callback includes ()
-##span starts in top left
-##anchor neccessary or image will not fit correctly
-##event is neccessary argument for event-bound items
+
+'''
+Notes:
+-button functions will run as soon as button is created if callback includes ()
+-GUI span starts in top left
+-An anchor is necessary or the image will not fit in the window correctly
+-An event is a necessary argument for event-bound items
+'''
 
 
-#second 'main' window
-class PickClick:
+#--- The second window, user clicks on points ---------------------------------#
+class Window2:
 
+
+    '''Called upon creation'''
     def __init__(self, master, directory,fList,fps):
 
-        self.directory = directory
-        self.dirList = self.directory.split(os.path.sep)
-
-        self.fList = fList
+        self.completePath = directory        #Full path to image files
+        self.partialPath = self.completePath.split(os.path.sep)[-1] #Path from this script
+        self.fList = fList                  #List of valid and invalid image files
+        
+        self.textfileName = self.completePath+os.path.sep+self.partialPath+'.txt'   #The text file to write to
+        self.imageDirectory = self.completePath                                     #Directory holding images
+        
+        #Create a Dictionary to hold valid images
         self.fDic = {}
         n = 1
-        #puts files in order so they can be iterated through one at a time    
         for image in self.fList: 
             if '.png' in image or '.PNG' in image  \
             or '.jpg'in image or '.JPG' in image   \
@@ -35,25 +43,24 @@ class PickClick:
             or '.gif' in image or '.GIF' in image:
                 self.fDic[str(n)] = image
                 n = n + 1
-                
-
-        #gets fps from first window
-        self.fps = fps
         
-        self.length = len(self.fDic)
-        #open file for reading/writing coords, name based on given image directory
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')
-
-        self.num = StringVar()
-        self.num.set(1)
-        self.dotType = StringVar()
-        self.comment = StringVar()
+        #Open a file for reading/writing point coordinates
+        fo = open(self.textfileName,'a')
+        
+        self.fps = fps                      #Frames per second
+        self.currentFrame = StringVar()     #Currently displayed frame
+        self.currentFrame.set(1)
+        self.totalFrames = len(self.fDic)   #Total number of frames
+        self.dotType = StringVar()          #Type of dot to be plotted
+        self.comment = StringVar()          #Newest comment to be stored
         self.comment.set("comment")
         
+        #Set up the application window
         self.frame = Frame(master)
         master.title('ChamView')
         self.frame.grid(columnspan=8,rowspan=5)
-        #binds shortcut keys
+        
+        #Bind shortcut keys to functions
         master.bind_all('<a>', self.Prev)
         master.bind_all('<A>', self.Prev)
         master.bind_all('<d>', self.Nxt)
@@ -63,19 +70,19 @@ class PickClick:
         master.bind_all('<i>',self.Rewind)
         master.bind_all('<s>',self.SaveAll)
 
-        master.bind_all('1', self.ChangeLF)
-        master.bind_all('2', self.ChangeRF)
-        master.bind_all('3', self.ChangeLB)
-        master.bind_all('4', self.ChangeRB)
-        master.bind_all('5', self.ChangeGS)
-        master.bind_all('6', self.ChangeGE)
-        master.bind_all('7', self.ChangeSV)
-        master.bind_all('8', self.ChangeCm)
+        master.bind_all('1', self.changeDot)
+        master.bind_all('2', self.changeDot)
+        master.bind_all('3', self.changeDot)
+        master.bind_all('4', self.changeDot)
+        master.bind_all('5', self.changeDot)
+        master.bind_all('6', self.changeDot)
+        master.bind_all('7', self.changeDot)
+        master.bind_all('8', self.changeDot)
 
-        #quit button
+        #Quit button
         self.quitB = Button(master,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
-        #previous button
+        #Previous button
         self.prevB = Button(master, text = 'PREV [A]',command = self.Prev) 
         self.prevB.grid(column=4,row=5)
         
@@ -84,10 +91,10 @@ class PickClick:
         
         self.prev100B = Button(master, text = 'PREV100',command = self.Prev100)
         self.prev100B.grid(column=2,row=5)
-        #first button
+        #First button
         self.firstB = Button(master, text = 'FIRST',command = self.First)
         self.firstB.grid(column=1,row=5)
-        #next button
+        #Next button
         self.nextB = Button(master,text='NEXT [D]',command = self.Nxt)
         self.nextB.grid(column=5,row=5)
         
@@ -96,65 +103,67 @@ class PickClick:
         
         self.next100B = Button(master, text = 'NEXT100',command = self.Nxt100)
         self.next100B.grid(column=7,row=5)
-        #last button
+        #Last button
         self.lastB = Button(master,text='LAST',command = self.Last)
         self.lastB.grid(row=5,column=8)
-        #frame label
-        self.numLab = Label(master,textvariable = self.num)
+        #Frame label
+        self.numLab = Label(master,textvariable = self.currentFrame)
         self.numLab.grid(column=1,row=1,sticky=W)
-        #clear all of points
+        #Clear all of points
         self.clearB = Button(master,text='CLEAR ALL',command = self.Clear)
         self.clearB.grid(column=7,row=1,sticky=E) 
-        #clear frame of points
+        #Clear frame of points
         self.clearFrameB = Button(master,text='CLEAR FRAME',command=self.ClearPic)
         self.clearFrameB.grid(column=6,row=1,sticky=E) 
-        #shows what kind of label/point is currently selected
+        #Shows what kind of label/point is currently selected
         self.dotLab = Label(master,textvariable=self.dotType)
         self.dotLab.grid(column=2,row=1)
-        #comment box
+        #Comment box
         self.commentInput = Entry(master, bd=5, textvariable=self.comment, width=40)
         self.commentInput.grid(column=3,row=1, columnspan=2)
-        #bind return key for comment box
-        self.commentInput.bind("<KeyPress-Return>",self.Comment)
-        #shows directory
-        self.dirLab = Label(master,text=self.directory)
+        #Bind return key for comment box
+        self.commentInput.bind("<KeyPress-Return>",self.comment)
+        #Shows directory
+        self.dirLab = Label(master,text=self.imageDirectory)
         self.dirLab.grid(row=4,column=1,sticky=W)
-        #shows file with point coords
-        self.fileLab = Label(master,text = self.dirList[-1]+'.txt')
+        #Shows file with point coords
+        self.fileLab = Label(master,text = self.partialPath+'.txt')
         self.fileLab.grid(row=4,column=8,sticky=E)
-        #rewind button
+        #Rewind button
         self.rewB = Button(master,text = 'REW. [I]',command = self.Rewind)
         self.rewB.grid(row=4,column=3)
-        #pause button
+        #Pause button
         self.pauseB = Button(master,text='PAUSE [O]',command=self.Pause)
         self.pauseB.grid(row=4,column=4,columnspan=2)
-        #play button
+        #Play button
         self.playB = Button(master,text='PLAY [P]',command=self.Play)
         self.playB.grid(row=4,column=6)
         
         self.canv = Canvas(master)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)
-        imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        #makes file into tkinter object so it can be drawn on canvas
+        
+        #Makes image file into Tkinter object so it can be drawn on canvas
+        imageFile = self.imageDirectory+os.path.sep+self.fDic[self.currentFrame.get()]
         self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-        #returns id as self.obj
+        
+        #Returns id as self.obj
         self.obj = self.canv.create_image(0,0,
                                           image = self.photo,
-                                          tags = (self.num.get()+'n'),anchor=NW)
-        #checks if image has any points
-        boo = self.Check(self.num.get()+'n')
-        if boo:
-            #draws points if so
-            self.ReDraw(self.num.get()+'n')
-            #binds click to create circle
+                                          tags = (self.currentFrame.get()+'n'),anchor=NW)
+                                          
+        #Checks if image has any points, and draws them if so
+        if self.Check(self.currentFrame.get()+'n'):
+            self.ReDraw(self.currentFrame.get()+'n')
+        
+        #binds click to create circle
         self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
+        
         #size canvas to image
         self.canv.config(width = self.photo.width(),height = self.photo.height())
         fo.close()
 
         #allow window to resize properly
         #master.columnconfigure(0,weight=1)
-        #master.rowconfigure(0,weight=1)
         master.columnconfigure(1, weight=1)
         master.columnconfigure(2, weight=1)
         master.columnconfigure(3, weight=1)
@@ -163,245 +172,106 @@ class PickClick:
         master.columnconfigure(6, weight=1)
         master.columnconfigure(7, weight=1)
         master.columnconfigure(8, weight=1)
+        #master.rowconfigure(0,weight=1)
         master.rowconfigure(1, weight=1)
         master.rowconfigure(2, weight=3)
         master.rowconfigure(3, weight=3)
         master.rowconfigure(4, weight=1)
         master.rowconfigure(5, weight=1)
 
-    def ChangeLF(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('LF')
-    def ChangeRF(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('RF')
-    def ChangeLB(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('LB')
-    def ChangeRB(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('RB') 
-    def ChangeGS(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('GS')
-    def ChangeGE(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('GE')
-    def ChangeSV(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('S/V')
-    def ChangeCm(self,event):
-        '''Changes the type of point'''
-        self.dotType.set('Cm')
-        
-    def Comment(self,event):
-        '''Adds a comment to the frame in question'''
+
+    '''Changes the type of point to be plotted based on the hit key'''
+    def changeDot(self,event):
+        if event.keysym == '1': self.dotType.set('LF')
+        if event.keysym == '2': self.dotType.set('RF')
+        if event.keysym == '3': self.dotType.set('LB')
+        if event.keysym == '4': self.dotType.set('RB')
+        if event.keysym == '5': self.dotType.set('GS')
+        if event.keysym == '6': self.dotType.set('GE')
+        if event.keysym == '7': self.dotType.set('S/V')
+        if event.keysym == '8': self.dotType.set('Cm')
+    
+    
+    '''Writes the current comment to file'''
+    def comment(self,event=''):
         comment = self.comment.get()
         comment = comment.strip()
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')
-        stri = "COM:"+self.num.get()+":"+comment 
+        fo = open(self.textfileName,'a')
+        stri = "COM:"+self.currentFrame.get()+":"+comment 
         fo.write(stri+"\n")
         fo.close()
 
-    #event arg neccessary because this has been bound to keyboard
-    def Nxt(self,event=''):
-        '''Advances picture in directory'''
+
+    '''Attempts to set the current image to a given frame'''
+    def setFrame(self,count):
         try:
-            self.num.set(int(self.num.get())+1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            #convert image file to Tkinter image object via PIL
+            #change the frame count and try to load the corresponding image
+            self.currentFrame.set(count)
+            imageFile = self.imageDirectory+os.path.sep+self.fDic[self.currentFrame.get()]
             self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            #size canvas to image
+            #Fit the canvas to the image
             self.canv.config(width = self.photo.width(),height = self.photo.height())
             self.obj = self.canv.create_image((0,0),
                                               image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            #binds click to this picture
+                                              tags = (self.currentFrame.get()+'n'),anchor = NW)
+            #Bind the left mouse button to the canvas
             self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #checks if image has any points
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                #draws points if so
-                self.ReDraw(self.num.get()+'n')
+            #If the frame has points already, draw them
+            if self.Check(self.currentFrame.get()+'n'):
+                self.ReDraw(self.currentFrame.get()+'n')
         except:
-            #sets frame to last if nxt encounters error
-            self.num.set(self.length)
+            #Did we go before the first image or after the last image?
+            if int(self.currentFrame.get()) < 1:
+                self.currentFrame.set(1)
+            else:
+                self.currentFrame.set(self.totalFrames)
+            #Fit the canvas to the image
+            imageFile = self.imageDirectory+os.path.sep+self.fDic[self.currentFrame.get()]
+            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
+            self.canv.config(width = self.photo.width(),height = self.photo.height())
+            self.obj = self.canv.create_image((0,0),
+                                              image = self.photo,
+                                              tags = (self.currentFrame.get()+'n'),anchor = NW)
+            #Bind the left mouse button to the canvas
+            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
+            #If the frame has points already, draw them
+            if self.Check(self.currentFrame.get()+'n'):
+                self.ReDraw(self.currentFrame.get()+'n')
+
+
+    '''Attempts to change the current frame by a given count'''
+    def advanceFrame(self,count):
+        self.setFrame(int(self.currentFrame.get())+count)
+    
+    
+    '''The buttons and shortcuts to advance frames'''
+    def Nxt(self,event=''):
+        self.advanceFrame(1)
 
     def Nxt10(self):
-        '''Advances 10 frames'''
-        try:
-            #only thing different from Nxt is +10 instead of +1
-            self.num.set(int(self.num.get())+10)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
-        except:
-            self.num.set(self.length)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
+        self.advanceFrame(10)
 
     def Nxt100(self):
-        '''Advances 100 frames'''
-        try:
-            #only difference from Nxt is +100
-            self.num.set(int(self.num.get())+100)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
-        except:
-            self.num.set(self.length)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
+        self.advanceFrame(100)
 
     def Last(self):
-        '''Advances to last frame'''
-        self.num.set(self.length)
-        imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        #convert image file to Tkinter image object via PIL
-        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-        #size canvas to image
-        self.canv.config(width = self.photo.width(),height = self.photo.height())
-        self.obj = self.canv.create_image((0,0),
-                                          image = self.photo,
-                                          tags = (self.num.get()+'n'),anchor = NW)
-        #binds click to this picture
-        self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-        #checks if image has any points
-        boo = self.Check(self.num.get()+'n')
-        if boo:
-            #draws points if so
-            self.ReDraw(self.num.get()+'n')
+        self.setFrame(self.totalFrames)
             
     def Prev(self,event=''):
-        '''Previous picture in directory'''
-        try:
-            self.num.set(int(self.num.get())-1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            #convert image file to Tkinter image object via PIL
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            #size canvas to image
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            #binds click to this picture
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #checks if image has any points
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                #draws points if so
-                self.ReDraw(self.num.get()+'n')
-        except:
-            #sets frame to one if prev encounters error
-            self.num.set(1)
+        self.advanceFrame(-1)
 
     def Prev10(self):
-        '''Go 10 frames back'''
-        try:
-            #only difference from prev is -10 instead of -1
-            self.num.set(int(self.num.get())-10)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor=NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
-        except:
-            self.num.set(1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor=NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
+        self.advanceFrame(-10)
 
     def Prev100(self):
-        '''Go 100 frames back'''
-        try:
-            #-100 instead of -1
-            self.num.set(int(self.num.get())-100)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor=NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
-        except:
-            self.num.set(1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor=NW)
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                self.ReDraw(self.num.get()+'n')
+        self.advanceFrame(-100)
 
     def First(self):
-        '''Go to last frame'''
-        self.num.set(1)
-        imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-        #convert image file to Tkinter image object via PIL
-        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-        #size canvas to image
-        self.canv.config(width = self.photo.width(),height = self.photo.height())
-        self.obj = self.canv.create_image((0,0),
-                                          image = self.photo,
-                                          tags = (self.num.get()+'n'),anchor = NW)
-        #binds click to this picture
-        self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-        #checks if image has any points
-        boo = self.Check(self.num.get()+'n')
-        if boo:
-            #draws points if so
-            self.ReDraw(self.num.get()+'n')
+        self.setFrame(1)
 
+    
+    '''Animates the video sequence'''
     def Play(self,event=''):
-        '''Animates video sequence'''
         #stop other play/pause 
         self.go = False
         #allow Play while loop to run
@@ -409,153 +279,83 @@ class PickClick:
         #will run while not at max frame number, self.go controlled by Pause
         self.playing = True
         self.rewing = False
-        while int(self.num.get()) < self.length and self.go == True and self.playing==True and self.rewing==False:
+        while int(self.currentFrame.get()) < self.totalFrames and self.go == True and \
+                            self.playing==True and self.rewing==False:
             #delay between frames, set according to fps
             time.sleep(1.0/self.fps)
-            self.num.set(int(self.num.get())+1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            #size canvas to image
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            #binds click to this picture
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #needed after sleep to stop window from crashing
             self.canv.update()
-            #checks if image has any points
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                #draws points if so
-                self.ReDraw(self.num.get()+'n')
-            #needed to make points appear
-            self.canv.update()
-            if int(self.num.get()) == self.length:
-                self.go = False
-                self.playing = False
+            self.advanceFrame(1)
+        self.go = False
+        self.playing = False
 
+
+    '''Pauses the video sequence'''
     def Pause(self,event=''):
-        '''Pauses video sequence'''
         #stops play/rewind while loops from running
         self.go = False
         self.playing = False
         self.rewing = False
         
+    
+    '''Animates the video sequence in reverse'''
     def Rewind(self,event=''):
-        '''Animates video sequence in reverse'''
         #stop other play/pause 
         self.go = False
         #allow Rewind while loop to run
         self.go = True
         self.rewing = True
         self.playing = False
-        while int(self.num.get()) > 1 and self.go == True and self.playing == False and self.rewing == True: 
-            #delay between frames, set according to fps
+        while int(self.currentFrame.get()) > 1 and self.go == True and \
+                self.playing == False and self.rewing == True: 
             time.sleep(1.0/self.fps)
-            self.num.set(int(self.num.get())-1)
-            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            #size canvas to image
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.num.get()+'n'),anchor = NW)
-            #binds click to this picture
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #needed after sleep to stop window from crashing
             self.canv.update()
-            #checks if image has any points
-            boo = self.Check(self.num.get()+'n')
-            if boo:
-                #draws points if so
-                self.ReDraw(self.num.get()+'n')
-            #needed to make points appear
-            self.canv.update()
-            if int(self.num.get()) == 1:
-                self.go = False
-                self.rewing = False
-     
-    
+            self.advanceFrame(-1)
+        self.go = False
+        self.rewing = False
 
+
+    '''Draw circle on click and record tag/circle coordinates in file'''
     def Click(self,event):
-        '''Draw circle on click and record tag/circle coords in file'''
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','a')
-        
         label = self.dotType.get()
-        if label == 'LF':
-            #coords are two opposite corners of circle
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'yellow')
-            #tags item so it can be used(deleted) later
-            self.canv.itemconfigure(circId,tags=(str(circId)+'LF'))
-            #binds item to unclick
-            self.canv.tag_bind(str(circId)+'LF','<Button-1>',self.UnClick)
-            #writes coordinates of circle, tag/id of circle to file
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'LF')
-        if label == 'RF':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'orange')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'RF'))
-            self.canv.tag_bind(str(circId)+'RF','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'RF')
-        if label == 'LB':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'blue')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'LB'))
-            self.canv.tag_bind(str(circId)+'LB','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'LB')
-        if label == 'RB':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'turquoise')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'RB'))
-            self.canv.tag_bind(str(circId)+'RB','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'RB')
-        if label == 'GS':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'plum')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'GS'))
-            self.canv.tag_bind(str(circId)+'GS','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'GS')
-        if label =='GE':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'purple')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'GE'))
-            self.canv.tag_bind(str(circId)+'GE','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'GE')
-        if label == 'S/V':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'red')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'S/V'))
-            self.canv.tag_bind(str(circId)+'S/V','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'S/V')
-        if label == 'Cm':
-            circId =self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
-                                          fill = 'lime green')
-            self.canv.itemconfigure(circId,tags=(str(circId)+'Cm'))
-            self.canv.tag_bind(str(circId)+'Cm','<Button-1>',self.UnClick)
-            stri = (self.num.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
-                    +':'+str(event.y+3)+':'+str(circId)+'Cm')
         
+        #Get the cicle color
+        circFill = ''
+        if label == 'LF': circFill = 'yellow'
+        if label == 'RF': circFill = 'orange'
+        if label == 'LB': circFill = 'blue'
+        if label == 'RB': circFill = 'turquoise'
+        if label == 'GS': circFill = 'plum'
+        if label == 'GE': circFill = 'purple'
+        if label == 'S/V': circFill = 'red'
+        if label == 'Cm': circFill = 'lime green'
+        if len(label) == 0: return
+        
+        #Coordinates are two opposite corners of circle
+        circId = self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
+                                        fill = circFill)
+                                        
+        #Tag item so it can be used (deleted) later
+        self.canv.itemconfigure(circId,tags=(str(circId)+label))
+        
+        #Bind item to unclick
+        self.canv.tag_bind(str(circId)+label,'<Button-1>',self.UnClick)
+        
+        #Write coordinates of circle, tag/id of circle to file
+        fo = open(self.textfileName,'a')
+        stri = (self.currentFrame.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
+                +':'+str(event.y+3)+':'+str(circId)+label)
         fo.write(stri+'\n')
         fo.close()
 
 
+    '''Deletes point circles when they are clicked'''
     def UnClick(self,event):
-        '''Deletes point circles when they are clicked'''
         x,y = self.canv.canvasx(event.x),self.canv.canvasy(event.y)
         closeItem = self.canv.find_closest(x,y)[0]
         #gets tag of the closest item
         tags = self.canv.gettags(closeItem)
         #original file
-        fin = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','r')
+        fin = open(self.textfileName,'r')
         #temporary file
         fout = open('temp.txt','w')
         
@@ -572,7 +372,7 @@ class PickClick:
         fin.close()
         fout.close()
         #orig,wiped clean
-        fin2 = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','w')
+        fin2 = open(self.textfileName,'w')
         #temp
         fout2 = open('temp.txt','r')
 
@@ -582,18 +382,19 @@ class PickClick:
         
         fin2.close()
         fout2.close()
-            
+    
+    
+    '''Removes all points from the current frame'''
     def ClearPic(self):
-        '''Clears current frame of points'''
         #original file
-        fin = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','r')
+        fin = open(self.textfileName,'r')
         #temporary file
         fout = open('temp.txt','w')
         
         for line in fin:
             lineLst = line.split(':')
-            if lineLst[0] == (self.num.get()+'n'):
-                self.canv.tag_raise((self.num.get()+'n'))
+            if lineLst[0] == (self.currentFrame.get()+'n'):
+                self.canv.tag_raise((self.currentFrame.get()+'n'))
             else:
                 #if item not deleted, line is written to temp file
                 fout.write(line)
@@ -601,7 +402,7 @@ class PickClick:
         fin.close()
         fout.close()
         #orig,wiped clean
-        fin2 = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','w')
+        fin2 = open(self.textfileName,'w')
         #temp
         fout2 = open('temp.txt','r')
 
@@ -613,63 +414,37 @@ class PickClick:
         fout2.close()
         
         
-
+    '''Redraws circles on the current frame'''
     def ReDraw(self,tag):
-        '''Redraws circles on frame'''
         boo = False
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','r')
+        fo = open(self.imageDirectory+os.path.sep+self.partialPath+'.txt','r')
         #redraws circles based on coordinates in file
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
-                if 'LF' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'yellow')
-                    #tags item with id of original circle so it can be used(deleted) later
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    #binds item to unclick
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'RF' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'orange')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'LB' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'blue')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'RB' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'turquoise')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'GS' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'plum')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'GE' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'purple')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'S/V' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'red')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
-                if 'Cm' in lineLst[-1]:
-                    circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
-                                                   fill = 'lime green')
-                    self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                    self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                #Get the circle color
+                circFill = ''
+                if 'LF'in lineLst[-1]: circFill = 'yellow'
+                if 'RF'in lineLst[-1]: circFill = 'orange'
+                if 'LB'in lineLst[-1]: circFill = 'blue'
+                if 'RB'in lineLst[-1]: circFill = 'turquoise'
+                if 'GS'in lineLst[-1]: circFill = 'plum'
+                if 'GE'in lineLst[-1]: circFill = 'purple'
+                if 'S/V'in lineLst[-1]: circFill = 'red'
+                if 'Cm'in lineLst[-1]: circFill = 'lime green'
+                if len(circFill) == 0:continue
+                #tag item with ID of original circle so it can be used (deleted) later
+                circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
+                                                fill = circFill)
+                self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
+                self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
         fo.close()
 
+
+    '''Checks if current frame has any points in the file'''
     def Check(self,tag):
-        '''Checks if current picture has any points clicked'''
         boo = False
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','r')
+        fo = open(self.textfileName,'r')
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
@@ -677,23 +452,22 @@ class PickClick:
         return boo
         fo.close()
 
+
+    '''Clears the file of all points'''
     def Clear(self):
-        '''Clears file of all points'''
         #clears current frame so user isn't confused
-        self.canv.tag_raise((self.num.get()+'n'))
+        self.canv.tag_raise((self.currentFrame.get()+'n'))
         #wipes file of all coords
-        fo = open(self.directory+os.path.sep+self.dirList[-1]+'.txt','w')
+        fo = open(self.textfileName,'w')
         fo.close()
 
-    def SaveImg(self):
-        '''Saves current frame as a png'''
-        dirName = self.directory+os.path.sep+'annotated'
-        try:
-            #make a new directory to put dotted frames in
-            os.mkdir(dirName)
-        except WindowsError:
-            pass
-        fileName = dirName+os.path.sep+self.fDic[self.num.get()]
+
+    '''Saves the current frame as a png'''
+    def SaveImg(self,event=''):
+        dirName = self.imageDirectory+os.path.sep+'annotated'
+        #make a new directory to put dotted frames in
+        if not os.path.exists(dirName): os.mkdir(dirName)
+        fileName = dirName+os.path.sep+self.fDic[self.currentFrame.get()]
         self.canv.update()
         x0 = self.canv.winfo_rootx()
         y0 = self.canv.winfo_rooty()
@@ -705,56 +479,31 @@ class PickClick:
         im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
         im.save(fileName)
 
+
+    '''Saves all frames as pngs'''
+    #This is currently not working, messes with text file somehow
     def SaveAll(self,event=''):
         pass
-        #This is currently not working, messes with text file somehow.  Figure out later.
-        '''Saves all frames as pngs'''
-##        #stop other play/pause 
-##        self.go = False
-##        dirName = self.directory+os.path.sep+'annotated'
-##        try:
-##            #make a new directory to put dotted frames in
-##            os.mkdir(dirName)
-##        except WindowsError:
-##            pass
-##        #allow saveAll while loop to run
-##        self.go = True
-##        #will run while not at max frame number, self.go controlled by Pause
-##        while int(self.num.get()) < self.length and self.go == True:
-##            self.num.set(int(self.num.get())+1)
-##            imageFile = self.directory+os.path.sep+self.fDic[self.num.get()]
-##            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-##            #size canvas to image
-##            self.canv.config(width = self.photo.width(),height = self.photo.height())
-##            self.obj = self.canv.create_image((0,0),
-##                                              image = self.photo,
-##                                              tags = (self.num.get()+'n'),anchor = NW)
-##            #binds click to this picture
-##            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-##            #needed after sleep to stop window from crashing
-##            self.canv.update()
-##            #checks if image has any points
-##            boo = self.Check(self.num.get()+'n')
-##            if boo:
-##                #draws points if so
-##                self.ReDraw(self.num.get()+'n')
-##            #needed to make points appear
-##            self.canv.update()
-##            fileName = dirName+os.path.sep+self.fDic[self.num.get()]
-##            self.canv.update()
-##            x0 = self.canv.winfo_rootx()
-##            y0 = self.canv.winfo_rooty()
-##            x1 = x0 + self.canv.winfo_width()
-##            y1 = y0 + self.canv.winfo_height()
-##            offset1 = 0
-##            offset2 = 0
-##            im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
-##            im.save(fileName)
-##            if int(self.num.get()) == self.length:
-##                self.go = False
-##            
-        
-        
+#        #stop other play/pause 
+#        self.go = False
+#        dirName = self.imageDirectory+os.path.sep+'annotated'
+#        #make a new directory to put dotted frames in
+#        if not os.path.exists(dirName): os.mkdir(dirName)
+#        #allow saveAll while loop to run
+#        self.go = True
+#        #will run while not at max frame number, self.go controlled by Pause
+#        while int(self.currentFrame.get()) < self.totalFrames and self.go == True:
+#            fileName = dirName+os.path.sep+self.fDic[self.currentFrame.get()]
+#            self.canv.update()
+#            x0 = self.canv.winfo_rootx()
+#            y0 = self.canv.winfo_rooty()
+#            x1 = x0 + self.canv.winfo_width()
+#            y1 = y0 + self.canv.winfo_height()
+#            offset1 = 0
+#            offset2 = 0
+#            im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
+#            im.save(fileName)
+#        self.go = False
 
 
 #--- The first window, user prompted for directory ----------------------------#
@@ -949,6 +698,7 @@ class Window1:
             tkMessageBox.showerror('ChamView', 'Error: FPS must be at least 1')
         else:
             self.master.destroy()
+
 
 #--- The code that runs upon execution ----------------------------------------#
 
