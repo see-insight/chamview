@@ -1,0 +1,9 @@
+How to install the AVbin package to extract and save video frames
+
+To work with video files, Pyglet, which is installed with Enthought Python,
+requires AVbin to be installed. Avbin is 2.5 MB and can be downloaded from
+
+http://avbin.github.com/AVbin/Download.html
+
+Installation is very quick and simple. On Windows, the .dll file included in the download
+needs to be copied to c:\Windows\System32. On Mac and Linux, it's a one-click installer.
