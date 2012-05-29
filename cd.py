@@ -1,7 +1,6 @@
 import os, string, dircache, time, shutil
 from Tkinter import *
 import Image, ImageTk, ImageGrab
-import cv
 
 
 ##Notes:
@@ -627,64 +626,6 @@ class ChooseDir:
 
         self.okButton = Button(self.frame,text='OK',command=self.ShowLab)
         self.okButton.grid(row=6,column=1)
-        
-        self.vidBox = Entry(self.frame,textvariable=self.vidDir,width=40)
-        self.vidBox.grid(row=2,column=1)
-        
-        self.vidLab = Label(self.frame,text='Convert avi to frames')
-        self.vidLab.grid(row=1,column=1)
-        
-        self.vidOK = Button(self.frame,text='OK',command=self.MakeFrames)
-        self.vidOK.grid(row=3,column=1)
-
-        self.vidLab2 = Label(self.frame,textvariable=self.frameNum)
-        self.vidLab2.grid(row=2,column=2)
-
-    def MakeFrames(self):
-        '''Converts video file into frames'''
-        valid = False
-        #name of video file
-        vidFil = self.vidDir.get()
-        vidFil = self.vidDir.get().strip()
-        filList = vidFil.split(os.path.sep)
-        if '.mpg' in filList[-1] or '.avi' in filList[-1]:
-            valid = True
-        if valid == True and os.path.isfile(vidFil):
-            #prefix to be used for frame files
-            name = filList[-1][:-4]
-
-            capture = cv.CaptureFromFile(vidFil)
-            fps = cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_FPS)
-
-            #first two digits of num are fps
-            num = int(str(int(fps))+'000000001')
-            n = 0
-            while 1:
-                try:
-                    #make a new directory based on named of video file
-                    #keep trying until an unused directory is found
-                    dirName = name+str(n)
-                    os.mkdir(dirName)
-                    break
-                except WindowsError:
-                    n = n + 1
-                    continue
-            while True:
-                frame = cv.QueryFrame(capture)
-                #end loop if no more frames
-                if frame == None:
-                    self.frameNum.set('Complete')
-                    self.directory.set(dirName)
-                    break
-
-                #save image with num as part of filename and moves it to directory
-                cv.SaveImage(dirName + str(num)+'.png',frame)
-                shutil.move(dirName + str(num)+'.png',dirName)
-                num = num + 1
-                self.frameNum.set(num - int(str(int(fps))+'000000001'))
-                self.frame.update()
-        else:
-            self.frameNum.set('Invalid file')    
 
     def ShowLab(self):
         '''Shows label if okay button is pressed'''
