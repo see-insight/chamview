@@ -1,9 +1,13 @@
 import os, string, dircache, time, shutil
 from Tkinter import *
+import tkFileDialog
+import tkMessageBox
+import tkSimpleDialog
+import ttk
 import Image, ImageTk
-##import ImageGrab
 import sys
-#import highgui
+import pyglet   #Solely for extracting video frames
+from PIL import Image
 
 ##Notes:
 ##button fxns will run as soon as button is made if callback includes ()
@@ -15,7 +19,7 @@ import sys
 #second 'main' window
 class PickClick:
 
-    def __init__(self, master, directory,fList):
+    def __init__(self, master, directory,fList,fps):
 
         self.directory = directory
         self.dirList = self.directory.split(os.path.sep)
@@ -33,11 +37,8 @@ class PickClick:
                 n = n + 1
                 
 
-        #gets fps from first filename in fDic
-        dirName = self.directory.split(os.path.sep)[-1]
-        length = len(dirName)
-        #self.fps = float(self.fDic['1'][length:-13])
-        #print self.fps
+        #gets fps from first window
+        self.fps = fps
         
         self.length = len(self.fDic)
         #open file for reading/writing coords, name based on given image directory
@@ -756,89 +757,219 @@ class PickClick:
         
 
 
-#first window, choose directory for CV
-class ChooseDir:
+#--- The first window, user prompted for directory ----------------------------#
+class Window1:
+
+
+    '''Called upon creation'''
     def __init__(self,master):
-
-        self.master = master
-        self.frame = Frame(master)
-        master.title('Choose Directory')
-        self.frame.grid(rowspan=6,columnspan=2)
-
+        self.picList = None
+        
+        #Variable to hold the chosen video, directory, and video FPS
+        self.video = StringVar()
+        self.video.set('')
         self.directory = StringVar()
-        self.directory.set('')
+        self.directory.set(os.getcwd())
+        self.fps = IntVar()
+        self.fps.set(30)
         
-        self.vidDir = StringVar()
-        self.frameNum = StringVar()
-        self.frameNum.set('-----')
-	
-        self.dirInput = Entry(self.frame,textvariable=self.directory,width=40)
-        self.dirInput.grid(row=5,column=1)
+        #Create the window
+        self.master = master
+        self.master.geometry('410x150+200+200')
+        self.frame = Frame(master)
+        self.master.title('ChamView')
+        self.frame.grid(rowspan=5,columnspan=3)
+
+        #Label for the video to convert
+        self.vidLabel1 = Label(self.frame,text='Convert video:')
+        self.vidLabel1.grid(row=1,column=1)
+        self.vidLabel2 = Entry(self.frame,textvariable=self.video)
+        self.vidLabel2.grid(row=1,column=2)
+
+        #Label for current directory
+        self.dirLabel1 = Label(self.frame,text='Load images from:')
+        self.dirLabel1.grid(row=4,column=1)
+        self.dirLabel2 = Entry(self.frame,textvariable=self.directory)
+        self.dirLabel2.grid(row=4,column=2)
         
-        self.dirLab = Label(self.frame,text='View/annotate frames')
-        self.dirLab.grid(row=4,column=1)
+        #Label for FPS
+        self.fpsLabel1 = Label(self.frame,text='Video FPS:')
+        self.fpsLabel1.grid(row=5,column=1)
+        self.fpsLabel2 = Entry(self.frame,textvariable=self.fps)
+        self.fpsLabel2.grid(row=5,column=2)
+        
+        #A dummy label to act as a spacer
+        self.dummyLabel = Label(self.frame)
+        self.dummyLabel.grid(row=3,column=1)
+        
+        #Browse and Proceed buttons for video and frames
+        self.buttonChooseVid = Button(self.frame,text = 'Browse',command=self.chooseVideo)
+        self.buttonChooseVid.grid(row=1,column=3)
+        self.buttonLoadVid = Button(self.frame,text = 'Extract Frames',command=self.extract)
+        self.buttonLoadVid.grid(row=2,column=3)
+        self.buttonChooseDir = Button(self.frame,text = 'Browse',command=self.chooseDir)
+        self.buttonChooseDir.grid(row=4,column=3)
+        self.buttonLoadDir = Button(self.frame,text = 'Select Points',command=self.proceed)
+        self.buttonLoadDir.grid(row=5,column=3)
+    
 
-        self.dirLabel = Label(self.frame,text='-----')
-        self.dirLabel.grid(row=5,column=2) 
-
-        self.okButton = Button(self.frame,text='OK',command=self.ShowLab)
-        self.okButton.grid(row=6,column=1)
-
-    def ShowLab(self):
-        '''Shows label if okay button is pressed'''
-        boo = False
-        try:
-            #get rid of label if it already exists
-            self.dirLabel.destroy()
-        except:
-            pass
+    '''Opens a window to allow the user to select a video'''
+    def chooseVideo(self):
+        myFile = tkFileDialog.askopenfilename(parent = root,initialdir=os.getcwd(),title='Open video')
+        if len(myFile) > 0: self.video.set(myFile)
+    
+    
+    '''Opens a window to allow the user to select a directory'''
+    def chooseDir(self):
+        myDir = tkFileDialog.askdirectory(parent = root,
+            initialdir=self.directory.get(),title='Navigate to image files')
+        if len(myDir) > 0: self.directory.set(myDir)
+    
+    
+    '''Determines whether or not the current directory is valid'''
+    #Returns "bad dir" if the directory doesn't exist
+    #Returns "no img" if no valid images were found in the directory
+    #Otherwise, returns "good"
+    def checkDir(self):
         directory = self.directory.get().strip()
-        #check if this is a valid directory
-        if os.path.isdir(directory):
-            self.picList = dircache.listdir(directory)
-            #checks if pictures are usable
-            for pic in self.picList:
-                if '.png' in pic or '.PNG' in pic  \
-                or '.jpg'in pic or '.JPG' in pic   \
-                or '.bmp' in pic or '.BMP' in pic  \
-                or '.gif' in pic or '.GIF' in pic:
-                    boo = True
-            if boo == True:
-                #valid label
-                self.dirLabel = Label(self.frame,text='Valid images found in directory')
-                self.dirLabel.grid(row=5,column=2)
-                #get ok button out of the way
-                self.okButton.destroy()
-                #brings up continue button which will close window
-                self.contButton = Button(text='CONTINUE',command = self.master.destroy)
-                self.contButton.grid(row=6,column=1)
-            else:
-                #Prints invalid if no .gifs in file
-                self.dirLabel = \
-                Label(self.frame,text='No valid image files found in the directory') 
-                self.dirLabel.grid(row=5,column=2) 
+        goodDirectory = False
+        #Does the directory exist?
+        if not os.path.isdir(directory): return "bad dir"
+        #Check if there's a valid picture file
+        self.picList = dircache.listdir(directory)
+        for pic in self.picList:
+            if '.png' in pic or '.PNG' in pic  \
+            or '.jpg'in pic or '.JPG' in pic   \
+            or '.bmp' in pic or '.BMP' in pic  \
+            or '.gif' in pic or '.GIF' in pic:
+                goodDirectory = True
+        if goodDirectory == True: return "good"
+        return "no img"
+       
+    
+    '''Determines whether the inputted FPS is valid, returns True or False'''
+    def checkFPS(self):
+        if self.fps.get() > 0:
+            return True
         else:
-            #prints invalid is directory is invalid
-            self.dirLabel = Label(self.frame,text=directory+' - Invalid Directory')
-            self.dirLabel.grid(row=5,column=2)
+            return False
+    
+    
+    '''Extracts frames from a video file and saves them'''
+    def extract(self):
+        source = self.video.get()
+        start = 0
+        end = 0
+        time = 0
+        vframe = None
+        #Load in the video source file
+        try:
+            sourceVid = pyglet.media.load(source)
+        except pyglet.media.MediaException:
+            #The file format isn't supported
+            tkMessageBox.showerror('ChamView', 'Error: video format not supported')
+            return
+        except IOError:
+            #Error reading in the file
+            tkMessageBox.showerror('ChamView', 'Error: file not found')
+            return
+        except:
+            #Some other error
+            tkMessageBox.showerror('ChamView','Error: Pyglet failure')
+            return
         
+        #Is the file a video?
+        if sourceVid.video_format == None:
+            tkMessageBox.showerror('ChamView', 'Error: invalid video file')
+            return
+        
+        #Get the start and end time to extract
+        start = tkSimpleDialog.askfloat('ChamView','Extraction start time (seconds)',
+                                    initialvalue=0.0,minvalue=0,maxvalue=sourceVid.duration)
+        end = tkSimpleDialog.askfloat('ChamView','Extraction end time (seconds)',
+                                    initialvalue=sourceVid.duration,minvalue=start,maxvalue=sourceVid.duration)
+        
+        #Create the directory
+        destination = os.getcwd() + os.path.sep + os.path.basename(source).split('.')[0]
+        try:
+            os.mkdir(destination)
+        except OSError:
+            #Directory already exists. Try apending a number on the back
+            i = 1
+            while os.path.isdir(destination+'('+str(i)+')'):
+                i = i + 1
+            destination = destination+'('+str(i)+')'
+            os.mkdir(destination)
+        tkMessageBox.showinfo('ChamView',"Frames will be saved in\n'"+destination+"'")
+        
+        try:
+            #If needed, skip ahead to the start time
+            if start > 0:
+                #label.config(text='Seeking to first frame')
+                notify = start / 10.0
+                while time < start:
+                    vframe = sourceVid.get_next_video_frame()
+                    time = sourceVid.get_next_video_timestamp()
+                    if time > notify:
+                        progress += int(notify*10.0/start)*10
+                        notify = notify + (start / 10.0)
+            else:
+                vframe = sourceVid.get_next_video_frame()
+            
+            #Save the video's frames until we run out of them or reach the end time
+            #label.config(text='Saving frames')
+            progress = 0
+            frameCount = 1
+            notify = (end-start) / 10.0
+            while vframe != None and time <= end:
+                if time-start > notify:
+                    progress += int(notify*10.0/(end-start))*10
+                    notify = notify + ((end-start) / 10.0)
+                imageData = vframe.get_image_data()
+                pixels = imageData.get_data(imageData.format,imageData.pitch *-1)
+                imageData.set_data(imageData.format,imageData.pitch,pixels)
+                imageData.save(destination+os.path.sep+"frame"+str(frameCount)+".png")
+                time = sourceVid.get_next_video_timestamp()
+                vframe = sourceVid.get_next_video_frame()
+                frameCount += 1
+            tkMessageBox.showinfo('ChamView',"     Success      ")
+        except:
+            tkMessageBox.showerror('ChamView','Error: Pyglet failure')
+            #Rid of the failed, empty directory that we created
+            os.rmdir(destination)
+        
+               
+    '''Called when the Select Points button is clicked'''
+    def proceed(self):
+        if self.checkDir() == "bad dir":
+            tkMessageBox.showerror('ChamView', 'Error: directory not found')
+        elif self.checkDir() == "no img":
+            tkMessageBox.showerror('ChamView', 'Error: no valid images found')
+        elif self.checkFPS() == False:
+            tkMessageBox.showerror('ChamView', 'Error: FPS must be at least 1')
+        else:
+            self.master.destroy()
 
+#--- The code that runs upon execution ----------------------------------------#
 
+#Open the first window to choose directory
 root = Tk()
-#first window, choose directory for CV
-app = ChooseDir(root)
+app1 = Window1(root)
 root.mainloop()
 
+#Did the user close out of the window early?
+try:
+    iterator = iter(app1.picList)
+except TypeError:
+    sys.exit()
 
-#name of directory as string
-directory = app.directory.get().strip()
-#list of files in directory including non-usable files
-fList = app.picList 
-        
-        
-                
-#second window, ChamView                    
+#Get info from the first window
+directory = app1.directory.get().strip()
+fList = app1.picList
+fps = app1.fps.get()
+
+#Open the second window, which is ChamView                  
 root2 = Tk()
-app2 = PickClick(root2,directory,fList)
+app2 = Window2(root2,directory,fList,fps)
 root2.mainloop()
 
