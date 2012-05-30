@@ -1,0 +1,198 @@
+from numpy import *
+from PIL import Image
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from pylab import ginput
+
+def picker (imgL, imgR):
+
+    print 'Pick a similar point on both images'
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121)
+    imgL = imgL.transpose(Image.FLIP_TOP_BOTTOM)
+    ax1.imshow(imgL)
+    ax2 = fig.add_subplot(122)
+    imgR = imgR.transpose(Image.FLIP_TOP_BOTTOM)
+    ax2.imshow(imgR)
+    LOffset = ginput(1)
+    print 'Clicked',LOffset
+    ROffset = ginput(1)
+    print 'Clicked',ROffset
+    
+    offset = [0,0]
+    offset[0] = int(LOffset[0][0]-ROffset[0][0])
+    offset[1] = int(LOffset[0][1]-ROffset[0][1])
+    return offset
+
+def WA(im1, im2, t):
+    t = int32([int(i) for i in t])
+
+    x1 = im1[:,0,0].size
+    x2 = im2[:,0,0].size
+    y1 = im1[0,:,0].size
+    y2 = im2[0,:,0].size
+    
+    xb = array([1, 1+t[0], x1, x2+t[0]])
+    yb = array([1, 1+t[1], y1, y2+t[1]])
+
+    xmin = min(xb)
+    xmax = max(xb)
+    ymin = min(yb)
+    ymax = max(yb)
+
+    im = uint8(zeros((xmax-xmin, ymax-ymin, 3)))
+
+    r1 = 1
+    r2 = t[0]-1
+    c1 = 1
+    c2 = t[1]-1
+    bound = array([r2, x2, c2, y2])
+
+    if (1+t[0] < 1):
+        r1 = -t[0]-1
+        r2 = 1
+        bound[0] = r1
+        bound[1] = x2
+        print 'swapping r'
+
+    if (1+t[1] < 1):
+        c1 = -t[1]-1
+        c2 = 1
+        bound[2] = c1
+        bound[3] = y2
+        print 'swapping c'
+
+    x = arange(1,(bound[3]-bound[2]+2))
+    y = arange(1,(bound[1]-bound[0]+2))
+    [a,b] = meshgrid(x,y)
+    #concatenate((a,b),1) = meshgrid(x,y)
+
+    if (1+t[0] < 1):
+        b = b.max()-b
+
+    if (1+t[1] < 1):
+        a = a.max()-a
+    
+    m1 = minimum(a,b)
+    m2 = minimum(a.max()-a, b.max()-b)
+    tot = m1 + m2
+
+    A = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
+    B = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
+    #A = zeros((bound[3]-bound[2]+1, bound[1]-bound[0]+1, 3))
+    #B = zeros((bound[3]-bound[2]+1, bound[1]-bound[0]+1, 3))
+    A[:,:,0] = double(m1)/double(tot)
+    A[:,:,1] = double(m1)/double(tot)
+    A[:,:,2] = double(m1)/double(tot)
+    B[:,:,0] = double(m2)/double(tot)
+    B[:,:,1] = double(m2)/double(tot)
+    B[:,:,2] = double(m2)/double(tot)
+
+    im[r1:r1+x1, c1:c1+y1, :] = im1
+    #return im[r1:r1+x1, c1:c1+y1, :]
+    IA = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
+    return IA
+
+def moviestitch(im1, im2, t):
+    IA = WA(im1,im2,t)
+    t = int32([int(i) for i in t])
+
+    x1 = im1[:,0,0].size
+    x2 = im2[:,0,0].size
+    y1 = im1[0,:,0].size
+    y2 = im2[0,:,0].size
+    
+    xb = array([1, 1+t[0], x1, x2+t[0]])
+    yb = array([1, 1+t[1], y1, y2+t[1]])
+
+    xmin = min(xb)
+    xmax = max(xb)
+    ymin = min(yb)
+    ymax = max(yb)
+
+    im = uint8(zeros((xmax-xmin, ymax-ymin, 3)))
+
+    r1 = 1
+    r2 = t[0]-1
+    c1 = 1
+    c2 = t[1]-1
+    bound = array([r2, x2, c2, y2])
+
+    if (1+t[0] < 1):
+        r1 = -t[0]-1
+        r2 = 1
+        bound[0] = r1
+        bound[1] = x2
+        print 'swapping r'
+
+    if (1+t[1] < 1):
+        c1 = -t[1]-1
+        c2 = 1
+        bound[2] = c1
+        bound[3] = y2
+        print 'swapping c'
+
+    x = arange(1,(bound[3]-bound[2]+2))
+    y = arange(1,(bound[1]-bound[0]+2))
+    [a,b] = meshgrid(x,y)
+    #concatenate((a,b),1) = meshgrid(x,y)
+
+    if (1+t[0] < 1):
+        b = b.max()-b
+
+    if (1+t[1] < 1):
+        a = a.max()-a
+    
+    m1 = minimum(a,b)
+    m2 = minimum(a.max()-a, b.max()-b)
+    tot = m1 + m2
+
+    A = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
+    B = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
+    #A = zeros((bound[3]-bound[2]+1, bound[1]-bound[0]+1, 3))
+    #B = zeros((bound[3]-bound[2]+1, bound[1]-bound[0]+1, 3))
+    A[:,:,0] = double(m1)/double(tot)
+    A[:,:,1] = double(m1)/double(tot)
+    A[:,:,2] = double(m1)/double(tot)
+    B[:,:,0] = double(m2)/double(tot)
+    B[:,:,1] = double(m2)/double(tot)
+    B[:,:,2] = double(m2)/double(tot)
+
+    im[r1:r1+x1, c1:c1+y1, :] = im1
+    #return im[r1:r1+x1, c1:c1+y1, :]
+    #IA = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
+    #print IA
+    #return im
+    #print IA.size
+    
+    im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :] = 0
+    
+    im[r2:r2+x2, c2:c2+y2, :] = im2
+    #return im[r2:r2+x2, c2:c2+y2, :]
+    #return im
+    IB = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
+    print 'IA: ', IA
+    print 'IB: ', IB
+    #print IB.size
+    
+    im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :] = uint8(double(IA)*B + double(IB)*A)
+
+    #return IA
+    return im
+
+
+#pic1 = Image.open('cham_1.jpg')
+#pic2 = Image.open('cham_2.jpg')
+
+img1 = Image.open('c:\python27\cham_1.jpg')
+img2 = Image.open('c:\python27\cham_2.jpg')
+
+i1 = mpimg.imread('c:\python27\cham_1.jpg')
+i2 = mpimg.imread('c:\python27\cham_2.jpg')
+#i1 = mpimg.imread('c:\python27\\reddit_face.jpg')
+#i2 = mpimg.imread('c:\users\public\hedgehog.jpg')
+
+#t = picker(img1, img2)
+t = [50.3,-276.3]
+
+imgplot = plt.imshow(moviestitch(i1,i2,t), origin='lower')
