@@ -8,7 +8,7 @@ import ttk
 #Saving images
 import Image, ImageTk
 from PIL import Image
-#Extarcting video frames
+#Extracting video frames
 import pyglet
 
 
@@ -38,7 +38,7 @@ class Window2:
         #Create a Dictionary to hold valid images
         self.fileDic = {}
         n = 1
-        for image in self.fileList: 
+        for image in self.fileList:
             if '.png' in image or '.PNG' in image  \
             or '.jpg'in image or '.JPG' in image   \
             or '.bmp' in image or '.BMP' in image  \
@@ -46,8 +46,9 @@ class Window2:
                 self.fileDic[str(n)] = image
                 n = n + 1
         
-        #Open a file for reading/writing point coordinates
+        #Create a file for reading/writing point coordinates
         fo = open(self.textfileName,'a')
+        fo.close()
         
         self.fps = fps                      #Frames per second
         self.currentFrame = StringVar()     #Currently displayed frame
@@ -57,29 +58,20 @@ class Window2:
         self.comment = StringVar()          #Newest comment to be stored
         self.comment.set('comment')
         
+        #Initialize the window and hotkeys
+        self.createGUI(master)
+        self.createHotkeys(master)
+        
+        #Load the first frame
+        self.setFrame(0)
+    
+    
+    '''Initializes the window and creates all the gadgets'''
+    def createGUI(self,master):
         #Set up the application window
         self.frame = Frame(master)
         master.title('ChamView')
         self.frame.grid(columnspan=8,rowspan=5)
-        
-        #Playback hotkeys
-        master.bind_all('<a>', self.Prev)
-        master.bind_all('<A>', self.Prev)
-        master.bind_all('<d>', self.Nxt)
-        master.bind_all('<d>', self.Nxt)
-        master.bind_all('<p>', self.Play)
-        master.bind_all('<o>', self.Pause)
-        master.bind_all('<i>',self.Rewind)
-        master.bind_all('<s>',self.SaveAll)
-        #Dot type hotkeys
-        master.bind_all('1', self.changeDotType)
-        master.bind_all('2', self.changeDotType)
-        master.bind_all('3', self.changeDotType)
-        master.bind_all('4', self.changeDotType)
-        master.bind_all('5', self.changeDotType)
-        master.bind_all('6', self.changeDotType)
-        master.bind_all('7', self.changeDotType)
-        master.bind_all('8', self.changeDotType)
         
         #Quit button
         self.quitB = Button(master,text='QUIT',command = master.quit)
@@ -141,26 +133,6 @@ class Window2:
         self.canv = Canvas(master)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)
         
-        #Makes current image into Tkinter object so it can be drawn on canvas
-        imageFile = self.imageDirectory+os.path.sep+self.fileDic[self.currentFrame.get()]
-        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-        
-        #Returns id as self.obj
-        self.obj = self.canv.create_image(0,0,
-                                          image = self.photo,
-                                          tags = (self.currentFrame.get()+'n'),anchor=NW)
-          
-        #Checks if image has any points, and draws them if so
-        if self.CheckCircles(self.currentFrame.get()+'n'):
-            self.DrawCircles(self.currentFrame.get()+'n')
-        
-        #binds click to create circle
-        self.canv.tag_bind(self.obj,'<Button-1>',self.makeCircle)
-        
-        #size canvas to image
-        self.canv.config(width = self.photo.width(),height = self.photo.height())
-        fo.close()
-
         #allow window to resize properly
         #master.columnconfigure(0,weight=1)
         master.columnconfigure(1, weight=1)
@@ -177,6 +149,28 @@ class Window2:
         master.rowconfigure(3, weight=3)
         master.rowconfigure(4, weight=1)
         master.rowconfigure(5, weight=1)
+    
+    
+    '''Sets the function hotkeys'''
+    def createHotkeys(self,master):
+        #Playback hotkeys
+        master.bind_all('<a>', self.Prev)
+        master.bind_all('<A>', self.Prev)
+        master.bind_all('<d>', self.Nxt)
+        master.bind_all('<d>', self.Nxt)
+        master.bind_all('<p>', self.Play)
+        master.bind_all('<o>', self.Pause)
+        master.bind_all('<i>',self.Rewind)
+        master.bind_all('<s>',self.SaveAll)
+        #Dot type hotkeys
+        master.bind_all('1', self.changeDotType)
+        master.bind_all('2', self.changeDotType)
+        master.bind_all('3', self.changeDotType)
+        master.bind_all('4', self.changeDotType)
+        master.bind_all('5', self.changeDotType)
+        master.bind_all('6', self.changeDotType)
+        master.bind_all('7', self.changeDotType)
+        master.bind_all('8', self.changeDotType)
 
 
     '''Changes the type of point to be plotted based on the key that was hit'''
