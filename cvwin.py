@@ -1,13 +1,15 @@
-import os, string, dircache, time, shutil
+import os, string, dircache, time, shutil, sys
+#GUI assets
 from Tkinter import *
 import tkFileDialog
 import tkMessageBox
 import tkSimpleDialog
 import ttk
+#Saving images
 import Image, ImageTk
-import sys
-import pyglet   #Solely for extracting video frames
 from PIL import Image
+#Extracting video frames
+import pyglet
 
 
 '''
@@ -24,71 +26,61 @@ class Window2:
 
 
     '''Called upon creation'''
-    def __init__(self, master, directory,fList,fps):
+    def __init__(self, master, directory, fps):
 
         self.completePath = directory        #Full path to image files
         self.partialPath = self.completePath.split(os.path.sep)[-1] #Path from this script
-        self.fList = fList                  #List of valid and invalid image files
+        self.fileList = dircache.listdir(directory)                  #List of valid and invalid image files
         
         self.textfileName = self.completePath+os.path.sep+self.partialPath+'.txt'   #The text file to write to
         self.imageDirectory = self.completePath                                     #Directory holding images
         
         #Create a Dictionary to hold valid images
-        self.fDic = {}
+        self.fileDic = {}
         n = 1
-        for image in self.fList: 
+        for image in self.fileList:
             if '.png' in image or '.PNG' in image  \
             or '.jpg'in image or '.JPG' in image   \
             or '.bmp' in image or '.BMP' in image  \
             or '.gif' in image or '.GIF' in image:
-                self.fDic[str(n)] = image
+                self.fileDic[str(n)] = image
                 n = n + 1
         
-        #Open a file for reading/writing point coordinates
+        #Create a file for reading/writing point coordinates
         fo = open(self.textfileName,'a')
+        fo.close()
         
         self.fps = fps                      #Frames per second
         self.currentFrame = StringVar()     #Currently displayed frame
         self.currentFrame.set(1)
-        self.totalFrames = len(self.fDic)   #Total number of frames
+        self.totalFrames = len(self.fileDic)   #Total number of frames
         self.dotType = StringVar()          #Type of dot to be plotted
         self.comment = StringVar()          #Newest comment to be stored
-        self.comment.set("comment")
+        self.comment.set('comment')
         
+        #Initialize the window and hotkeys
+        self.createGUI(master)
+        self.createHotkeys(master)
+        
+        #Load the first frame
+        self.setFrame(0)
+    
+    
+    '''Initializes the window and creates all the gadgets'''
+    def createGUI(self,master):
         #Set up the application window
         self.frame = Frame(master)
         master.title('ChamView')
         self.frame.grid(columnspan=8,rowspan=5)
         
-        #Bind shortcut keys to functions
-        master.bind_all('<a>', self.Prev)
-        master.bind_all('<A>', self.Prev)
-        master.bind_all('<d>', self.Nxt)
-        master.bind_all('<d>', self.Nxt)
-        master.bind_all('<p>', self.Play)
-        master.bind_all('<o>', self.Pause)
-        master.bind_all('<i>',self.Rewind)
-        master.bind_all('<s>',self.SaveAll)
-
-        master.bind_all('1', self.changeDot)
-        master.bind_all('2', self.changeDot)
-        master.bind_all('3', self.changeDot)
-        master.bind_all('4', self.changeDot)
-        master.bind_all('5', self.changeDot)
-        master.bind_all('6', self.changeDot)
-        master.bind_all('7', self.changeDot)
-        master.bind_all('8', self.changeDot)
-
         #Quit button
         self.quitB = Button(master,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
         #Previous button
         self.prevB = Button(master, text = 'PREV [A]',command = self.Prev) 
         self.prevB.grid(column=4,row=5)
-        
         self.prev10B = Button(master, text = 'PREV10',command = self.Prev10)
         self.prev10B.grid(column=3,row=5)
-        
         self.prev100B = Button(master, text = 'PREV100',command = self.Prev100)
         self.prev100B.grid(column=2,row=5)
         #First button
@@ -97,38 +89,19 @@ class Window2:
         #Next button
         self.nextB = Button(master,text='NEXT [D]',command = self.Nxt)
         self.nextB.grid(column=5,row=5)
-        
         self.next10B = Button(master, text = 'NEXT10',command = self.Nxt10)
         self.next10B.grid(column=6,row=5)
-        
         self.next100B = Button(master, text = 'NEXT100',command = self.Nxt100)
         self.next100B.grid(column=7,row=5)
         #Last button
         self.lastB = Button(master,text='LAST',command = self.Last)
         self.lastB.grid(row=5,column=8)
-        #Frame label
-        self.numLab = Label(master,textvariable = self.currentFrame)
-        self.numLab.grid(column=1,row=1,sticky=W)
-        #Clear all of points
-        self.clearB = Button(master,text='CLEAR ALL',command = self.Clear)
+        #Clear all of points button
+        self.clearB = Button(master,text='CLEAR ALL',command = self.ClearAll)
         self.clearB.grid(column=7,row=1,sticky=E) 
-        #Clear frame of points
-        self.clearFrameB = Button(master,text='CLEAR FRAME',command=self.ClearPic)
-        self.clearFrameB.grid(column=6,row=1,sticky=E) 
-        #Shows what kind of label/point is currently selected
-        self.dotLab = Label(master,textvariable=self.dotType)
-        self.dotLab.grid(column=2,row=1)
-        #Comment box
-        self.commentInput = Entry(master, bd=5, textvariable=self.comment, width=40)
-        self.commentInput.grid(column=3,row=1, columnspan=2)
-        #Bind return key for comment box
-        self.commentInput.bind("<KeyPress-Return>",self.comment)
-        #Shows directory
-        self.dirLab = Label(master,text=self.imageDirectory)
-        self.dirLab.grid(row=4,column=1,sticky=W)
-        #Shows file with point coords
-        self.fileLab = Label(master,text = self.partialPath+'.txt')
-        self.fileLab.grid(row=4,column=8,sticky=E)
+        #Clear frame of points button
+        self.clearFrameB = Button(master,text='CLEAR FRAME',command=self.ClearFrame)
+        self.clearFrameB.grid(column=6,row=1,sticky=E)
         #Rewind button
         self.rewB = Button(master,text = 'REW. [I]',command = self.Rewind)
         self.rewB.grid(row=4,column=3)
@@ -139,29 +112,27 @@ class Window2:
         self.playB = Button(master,text='PLAY [P]',command=self.Play)
         self.playB.grid(row=4,column=6)
         
+        #Current frame label
+        self.numLab = Label(master,textvariable = self.currentFrame)
+        self.numLab.grid(column=1,row=1,sticky=W)
+        #Shows what kind of label/point is currently selected
+        self.dotLab = Label(master,textvariable=self.dotType)
+        self.dotLab.grid(column=2,row=1)
+        #Comment box
+        self.commentInput = Entry(master, bd=5, textvariable=self.comment, width=40)
+        self.commentInput.grid(column=3,row=1, columnspan=2)
+        #Bind return key for comment box
+        self.commentInput.bind('<KeyPress-Return>',self.saveComment)
+        #Shows directory
+        self.dirLab = Label(master,text=self.imageDirectory)
+        self.dirLab.grid(row=4,column=1,sticky=W)
+        #Shows file with point coords
+        self.fileLab = Label(master,text = self.partialPath+'.txt')
+        self.fileLab.grid(row=4,column=8,sticky=E)
+        #To display the current frame image
         self.canv = Canvas(master)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)
         
-        #Makes image file into Tkinter object so it can be drawn on canvas
-        imageFile = self.imageDirectory+os.path.sep+self.fDic[self.currentFrame.get()]
-        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-        
-        #Returns id as self.obj
-        self.obj = self.canv.create_image(0,0,
-                                          image = self.photo,
-                                          tags = (self.currentFrame.get()+'n'),anchor=NW)
-                                          
-        #Checks if image has any points, and draws them if so
-        if self.Check(self.currentFrame.get()+'n'):
-            self.ReDraw(self.currentFrame.get()+'n')
-        
-        #binds click to create circle
-        self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-        
-        #size canvas to image
-        self.canv.config(width = self.photo.width(),height = self.photo.height())
-        fo.close()
-
         #allow window to resize properly
         #master.columnconfigure(0,weight=1)
         master.columnconfigure(1, weight=1)
@@ -178,10 +149,32 @@ class Window2:
         master.rowconfigure(3, weight=3)
         master.rowconfigure(4, weight=1)
         master.rowconfigure(5, weight=1)
+    
+    
+    '''Sets the function hotkeys'''
+    def createHotkeys(self,master):
+        #Playback hotkeys
+        master.bind_all('<a>', self.Prev)
+        master.bind_all('<A>', self.Prev)
+        master.bind_all('<d>', self.Nxt)
+        master.bind_all('<d>', self.Nxt)
+        master.bind_all('<p>', self.Play)
+        master.bind_all('<o>', self.Pause)
+        master.bind_all('<i>',self.Rewind)
+        master.bind_all('<s>',self.SaveAll)
+        #Dot type hotkeys
+        master.bind_all('1', self.changeDotType)
+        master.bind_all('2', self.changeDotType)
+        master.bind_all('3', self.changeDotType)
+        master.bind_all('4', self.changeDotType)
+        master.bind_all('5', self.changeDotType)
+        master.bind_all('6', self.changeDotType)
+        master.bind_all('7', self.changeDotType)
+        master.bind_all('8', self.changeDotType)
 
 
-    '''Changes the type of point to be plotted based on the hit key'''
-    def changeDot(self,event):
+    '''Changes the type of point to be plotted based on the key that was hit'''
+    def changeDotType(self,event):
         if event.keysym == '1': self.dotType.set('LF')
         if event.keysym == '2': self.dotType.set('RF')
         if event.keysym == '3': self.dotType.set('LB')
@@ -193,130 +186,109 @@ class Window2:
     
     
     '''Writes the current comment to file'''
-    def comment(self,event=''):
+    def saveComment(self,event=''):
         comment = self.comment.get()
         comment = comment.strip()
         fo = open(self.textfileName,'a')
-        stri = "COM:"+self.currentFrame.get()+":"+comment 
-        fo.write(stri+"\n")
+        stri = 'COM:'+self.currentFrame.get()+':'+comment 
+        fo.write(stri+'\n')
         fo.close()
 
 
-    '''Attempts to set the current image to a given frame'''
+    '''Changes the main display image to a specified frame'''
     def setFrame(self,count):
-        try:
-            #change the frame count and try to load the corresponding image
-            self.currentFrame.set(count)
-            imageFile = self.imageDirectory+os.path.sep+self.fDic[self.currentFrame.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            #Fit the canvas to the image
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.currentFrame.get()+'n'),anchor = NW)
-            #Bind the left mouse button to the canvas
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #If the frame has points already, draw them
-            if self.Check(self.currentFrame.get()+'n'):
-                self.ReDraw(self.currentFrame.get()+'n')
-        except:
-            #Did we go before the first image or after the last image?
-            if int(self.currentFrame.get()) < 1:
-                self.currentFrame.set(1)
-            else:
-                self.currentFrame.set(self.totalFrames)
-            #Fit the canvas to the image
-            imageFile = self.imageDirectory+os.path.sep+self.fDic[self.currentFrame.get()]
-            self.photo = ImageTk.PhotoImage(Image.open(imageFile))
-            self.canv.config(width = self.photo.width(),height = self.photo.height())
-            self.obj = self.canv.create_image((0,0),
-                                              image = self.photo,
-                                              tags = (self.currentFrame.get()+'n'),anchor = NW)
-            #Bind the left mouse button to the canvas
-            self.canv.tag_bind(self.obj,'<Button-1>',self.Click)
-            #If the frame has points already, draw them
-            if self.Check(self.currentFrame.get()+'n'):
-                self.ReDraw(self.currentFrame.get()+'n')
-
-
-    '''Attempts to change the current frame by a given count'''
+        #Did we go before the first or after the last frame?
+        self.currentFrame.set(count)
+        if int(self.currentFrame.get()) < 1:
+            self.currentFrame.set(1)
+        else:
+            self.currentFrame.set(self.totalFrames)
+        #Load the image
+        imageFile = self.imageDirectory+os.path.sep+self.fileDic[self.currentFrame.get()]
+        self.photo = ImageTk.PhotoImage(Image.open(imageFile))
+        #Fit the canvas to the image
+        self.canv.config(width = self.photo.width(),height = self.photo.height())
+        self.obj = self.canv.create_image((0,0),
+                                          image = self.photo,
+                                          tags = (self.currentFrame.get()+'n'),anchor = NW)
+        #Bind the left mouse button to the canvas
+        self.canv.tag_bind(self.obj,'<Button-1>',self.makeCircle)
+        #If the frame has points already, draw them
+        if self.CheckCircles(self.currentFrame.get()+'n'):
+            self.DrawCircles(self.currentFrame.get()+'n')
+    
+    
+    '''Change the current frame by a given number'''
     def advanceFrame(self,count):
         self.setFrame(int(self.currentFrame.get())+count)
     
     
-    '''The buttons and shortcuts to advance frames'''
-    def Nxt(self,event=''):
-        self.advanceFrame(1)
-
-    def Nxt10(self):
-        self.advanceFrame(10)
-
-    def Nxt100(self):
-        self.advanceFrame(100)
-
-    def Last(self):
-        self.setFrame(self.totalFrames)
-            
-    def Prev(self,event=''):
-        self.advanceFrame(-1)
-
-    def Prev10(self):
-        self.advanceFrame(-10)
-
-    def Prev100(self):
-        self.advanceFrame(-100)
-
-    def First(self):
-        self.setFrame(1)
-
+    '''The buttons and shortcuts to change frame'''
+    def Nxt(self,event=''):self.advanceFrame(1)
+    def Nxt10(self):self.advanceFrame(10)
+    def Nxt100(self):self.advanceFrame(100)
+    def Prev(self,event=''):self.advanceFrame(-1)
+    def Prev10(self):self.advanceFrame(-10)
+    def Prev100(self):self.advanceFrame(-100)
+    def First(self):self.setFrame(1)
+    def Last(self):self.setFrame(self.totalFrames)
     
-    '''Animates the video sequence'''
+    
+    '''Animates the video sequence normally'''
     def Play(self,event=''):
         #stop other play/pause 
         self.go = False
+        self.playing = False
+        self.rewing = False
         #allow Play while loop to run
         self.go = True
-        #will run while not at max frame number, self.go controlled by Pause
         self.playing = True
-        self.rewing = False
+        #will run while not at max frame number, self.go controlled by Pause
         while int(self.currentFrame.get()) < self.totalFrames and self.go == True and \
                             self.playing==True and self.rewing==False:
-            #delay between frames, set according to fps
+            #delay between frames according to fps
             time.sleep(1.0/self.fps)
+            #Draw the next frame
             self.canv.update()
             self.advanceFrame(1)
+        #Stop playback
         self.go = False
         self.playing = False
-
-
-    '''Pauses the video sequence'''
+    
+    
+    '''Pauses the video sequence, stops play/rewind loops from running'''
     def Pause(self,event=''):
-        #stops play/rewind while loops from running
         self.go = False
         self.playing = False
         self.rewing = False
-        
+    
     
     '''Animates the video sequence in reverse'''
     def Rewind(self,event=''):
         #stop other play/pause 
         self.go = False
+        self.playing = False
+        self.rewing = False
         #allow Rewind while loop to run
         self.go = True
         self.rewing = True
-        self.playing = False
+        #will run while not at min frame number, self.go controlled by Pause
         while int(self.currentFrame.get()) > 1 and self.go == True and \
                 self.playing == False and self.rewing == True: 
+            #delay between frames according to fps
             time.sleep(1.0/self.fps)
+            #Draw the next frame
             self.canv.update()
             self.advanceFrame(-1)
+        #Stop playback
         self.go = False
         self.rewing = False
-
-
-    '''Draw circle on click and record tag/circle coordinates in file'''
-    def Click(self,event):
+    
+    
+    '''Draw circle on click and record coordinates in file'''
+    def makeCircle(self,event):
         label = self.dotType.get()
+        if len(label) == 0: return
         
         #Get the cicle color
         circFill = ''
@@ -328,67 +300,64 @@ class Window2:
         if label == 'GE': circFill = 'purple'
         if label == 'S/V': circFill = 'red'
         if label == 'Cm': circFill = 'lime green'
-        if len(label) == 0: return
         
         #Coordinates are two opposite corners of circle
         circId = self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
                                         fill = circFill)
-                                        
+        
         #Tag item so it can be used (deleted) later
         self.canv.itemconfigure(circId,tags=(str(circId)+label))
         
         #Bind item to unclick
-        self.canv.tag_bind(str(circId)+label,'<Button-1>',self.UnClick)
+        self.canv.tag_bind(str(circId)+label,'<Button-1>',self.deleteCircle)
         
-        #Write coordinates of circle, tag/id of circle to file
+        #Write coordinates and ID of circle to file
         fo = open(self.textfileName,'a')
         stri = (self.currentFrame.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
                 +':'+str(event.y+3)+':'+str(circId)+label)
         fo.write(stri+'\n')
         fo.close()
-
-
-    '''Deletes point circles when they are clicked'''
-    def UnClick(self,event):
+    
+    
+    '''Deletes circles when they are clicked'''
+    def deleteCircle(self,event):
+        #Mouse x/y coordinates
         x,y = self.canv.canvasx(event.x),self.canv.canvasy(event.y)
-        closeItem = self.canv.find_closest(x,y)[0]
         #gets tag of the closest item
+        closeItem = self.canv.find_closest(x,y)[0]
         tags = self.canv.gettags(closeItem)
-        #original file
-        fin = open(self.textfileName,'r')
-        #temporary file
-        fout = open('temp.txt','w')
         
+        #open original file
+        fin = open(self.textfileName,'r')
+        #create temporary file to write new lines to
+        fout = open('temp.txt','w')
         for line in fin:
-            lineLst = line.split(':')
-            #prevents this from deleting the frame
             #last part of each line is circle tag(id)
+            lineLst = line.split(':')
             if lineLst[-1][0:-1] == tags[0]: 
                 self.canv.delete(tags[0])
             else:
                 #if item not deleted, line is written to temp file
                 fout.write(line)
-
         fin.close()
         fout.close()
-        #orig,wiped clean
-        fin2 = open(self.textfileName,'w')
-        #temp
-        fout2 = open('temp.txt','r')
-
-        for line2 in fout2:
-            #copies temp file to orig file
-            fin2.write(line2)
         
+        #original file is wiped clean
+        fin2 = open(self.textfileName,'w')
+        #newly created temp file to read from
+        fout2 = open('temp.txt','r')
+        #Copy lines from temp file to original file
+        for line2 in fout2:
+            fin2.write(line2)
         fin2.close()
         fout2.close()
     
     
     '''Removes all points from the current frame'''
-    def ClearPic(self):
-        #original file
+    def ClearFrame(self):
+        #open original file
         fin = open(self.textfileName,'r')
-        #temporary file
+        #create temporary file to write new lines to
         fout = open('temp.txt','w')
         
         for line in fin:
@@ -398,27 +367,25 @@ class Window2:
             else:
                 #if item not deleted, line is written to temp file
                 fout.write(line)
-
         fin.close()
         fout.close()
-        #orig,wiped clean
+        
+        #original file is wiped clean
         fin2 = open(self.textfileName,'w')
-        #temp
+        #newly created temp file to read from
         fout2 = open('temp.txt','r')
-
+        #Copy lines from temp file to original file
         for line2 in fout2:
-            #copies temp file to orig file
             fin2.write(line2)
         
         fin2.close()
         fout2.close()
         
         
-    '''Redraws circles on the current frame'''
-    def ReDraw(self,tag):
-        boo = False
+    '''Renders circles on the current frame'''
+    def DrawCircles(self,tag):
+        #Open the file and read each line
         fo = open(self.imageDirectory+os.path.sep+self.partialPath+'.txt','r')
-        #redraws circles based on coordinates in file
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
@@ -437,37 +404,38 @@ class Window2:
                 circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
                                                 fill = circFill)
                 self.canv.itemconfigure(circId,tags=lineLst[-1][0:-1])
-                self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.UnClick)
+                self.canv.tag_bind(lineLst[-1][0:-1],'<Button-1>',self.deleteCircle)
         fo.close()
 
 
     '''Checks if current frame has any points in the file'''
-    def Check(self,tag):
-        boo = False
+    def CheckCircles(self,tag):
         fo = open(self.textfileName,'r')
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
-                boo = True      
-        return boo
+                fo.close()
+                return True  
         fo.close()
-
-
+        return False
+    
+    
     '''Clears the file of all points'''
-    def Clear(self):
-        #clears current frame so user isn't confused
+    def ClearAll(self):
+        #Clear current frame so as to not confuse the user
         self.canv.tag_raise((self.currentFrame.get()+'n'))
-        #wipes file of all coords
+        #Wipes file of all points
         fo = open(self.textfileName,'w')
         fo.close()
-
-
-    '''Saves the current frame as a png'''
+    
+    
+    '''Saves the current annotated frame as a png'''
     def SaveImg(self,event=''):
-        dirName = self.imageDirectory+os.path.sep+'annotated'
         #make a new directory to put dotted frames in
+        dirName = self.imageDirectory+os.path.sep+'annotated'
         if not os.path.exists(dirName): os.mkdir(dirName)
-        fileName = dirName+os.path.sep+self.fDic[self.currentFrame.get()]
+        fileName = dirName+os.path.sep+self.fileDic[self.currentFrame.get()]
+        #Render and capture the current frame
         self.canv.update()
         x0 = self.canv.winfo_rootx()
         y0 = self.canv.winfo_rooty()
@@ -475,11 +443,11 @@ class Window2:
         y1 = y0 + self.canv.winfo_height()
         offset1 = 0
         offset2 = 0
-        #grabs area of the screen and makes it into PIL image object
+        #Grab area of the screen and save is using PIL
         im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
         im.save(fileName)
-
-
+    
+    
     '''Saves all frames as pngs'''
     #This is currently not working, messes with text file somehow
     def SaveAll(self,event=''):
@@ -493,7 +461,7 @@ class Window2:
 #        self.go = True
 #        #will run while not at max frame number, self.go controlled by Pause
 #        while int(self.currentFrame.get()) < self.totalFrames and self.go == True:
-#            fileName = dirName+os.path.sep+self.fDic[self.currentFrame.get()]
+#            fileName = dirName+os.path.sep+self.fileDic[self.currentFrame.get()]
 #            self.canv.update()
 #            x0 = self.canv.winfo_rootx()
 #            y0 = self.canv.winfo_rooty()
@@ -509,18 +477,15 @@ class Window2:
 #--- The first window, user prompted for directory ----------------------------#
 class Window1:
 
-
-    '''Called upon creation'''
+    '''Called upon creation, creates GUI'''
     def __init__(self,master):
-        self.picList = None
-        
-        #Variable to hold the chosen video, directory, and video FPS
-        self.video = StringVar()
+        self.openSecondWindow = False       #Whether to continue after this window closes
+        self.video = StringVar()            #Chosen video
         self.video.set('')
-        self.directory = StringVar()
-        self.directory.set(os.getcwd())
-        self.fps = IntVar()
+        self.fps = IntVar()                 #FPS of video
         self.fps.set(30)
+        self.directory = StringVar()        #Directory to load images from
+        self.directory.set(os.getcwd())
         
         #Create the window
         self.master = master
@@ -562,28 +527,29 @@ class Window1:
         self.buttonLoadDir.grid(row=5,column=3)
     
 
-    '''Opens a window to allow the user to select a video'''
+    '''Opens a window to allow the user to select a video to process'''
     def chooseVideo(self):
         myFile = tkFileDialog.askopenfilename(parent = root,initialdir=os.getcwd(),title='Open video')
         if len(myFile) > 0: self.video.set(myFile)
     
     
-    '''Opens a window to allow the user to select a directory'''
+    '''Opens a window to allow the user to select a directory to load image files from'''
     def chooseDir(self):
         myDir = tkFileDialog.askdirectory(parent = root,
             initialdir=self.directory.get(),title='Navigate to image files')
         if len(myDir) > 0: self.directory.set(myDir)
     
     
-    '''Determines whether or not the current directory is valid'''
-    #Returns "bad dir" if the directory doesn't exist
-    #Returns "no img" if no valid images were found in the directory
-    #Otherwise, returns "good"
+    ''' Determines whether or not the current directory is valid
+        -Returns 'bad dir' if the directory doesn't exist
+        -Returns 'no img' if no valid images were found in the directory
+        -Otherwise, returns 'good'
+    '''
     def checkDir(self):
         directory = self.directory.get().strip()
         goodDirectory = False
         #Does the directory exist?
-        if not os.path.isdir(directory): return "bad dir"
+        if not os.path.isdir(directory): return 'bad dir'
         #Check if there's a valid picture file
         self.picList = dircache.listdir(directory)
         for pic in self.picList:
@@ -592,8 +558,8 @@ class Window1:
             or '.bmp' in pic or '.BMP' in pic  \
             or '.gif' in pic or '.GIF' in pic:
                 goodDirectory = True
-        if goodDirectory == True: return "good"
-        return "no img"
+        if goodDirectory == True: return 'good'
+        return 'no img'
        
     
     '''Determines whether the inputted FPS is valid, returns True or False'''
@@ -604,14 +570,18 @@ class Window1:
             return False
     
     
-    '''Extracts frames from a video file and saves them'''
-    def extract(self):
-        source = self.video.get()
-        start = 0
-        end = 0
-        time = 0
-        vframe = None
-        #Load in the video source file
+    ''' Extracts frames from the specified video file and saves them in a
+        directory of the same name
+    '''
+    def extract(self, source):
+        extractStart = 0    #Frame extraction start and end time
+        extractEnd = 0
+        vframe = None       #The current frame
+        time = 0            #Timestamp of the current frame
+        destination = os.getcwd()+os.path.sep\
+                      +os.path.basename(source).split('.')[0]#Name of folder to save frames in
+        
+        #Load in the video file
         try:
             sourceVid = pyglet.media.load(source)
         except pyglet.media.MediaException:
@@ -623,7 +593,7 @@ class Window1:
             tkMessageBox.showerror('ChamView', 'Error: file not found')
             return
         except:
-            #Some other error
+            #Some other Pyglet error
             tkMessageBox.showerror('ChamView','Error: Pyglet failure')
             return
         
@@ -632,94 +602,82 @@ class Window1:
             tkMessageBox.showerror('ChamView', 'Error: invalid video file')
             return
         
-        #Get the start and end time to extract
-        start = tkSimpleDialog.askfloat('ChamView','Extraction start time (seconds)',
-                                    initialvalue=0.0,minvalue=0,maxvalue=sourceVid.duration)
-        end = tkSimpleDialog.askfloat('ChamView','Extraction end time (seconds)',
-                                    initialvalue=sourceVid.duration,minvalue=start,maxvalue=sourceVid.duration)
+        #Prompt for extraction start and end time
+        extractStart = tkSimpleDialog.askfloat('ChamView','Extraction start time (seconds)',
+                        initialvalue=0.0,minvalue=0,maxvalue=sourceVid.duration)
+        extractEnd = tkSimpleDialog.askfloat('ChamView','Extraction end time (seconds)',
+                    initialvalue=sourceVid.duration,minvalue=extractStart,maxvalue=sourceVid.duration)
         
-        #Create the directory
-        destination = os.getcwd() + os.path.sep + os.path.basename(source).split('.')[0]
+        #Create a directory to save frames in
         try:
             os.mkdir(destination)
         except OSError:
-            #Directory already exists. Try apending a number on the back
+            #Directory already exists. Apend a number on the back and retry
             i = 1
             while os.path.isdir(destination+'('+str(i)+')'):
                 i = i + 1
             destination = destination+'('+str(i)+')'
             os.mkdir(destination)
-        tkMessageBox.showinfo('ChamView',"Frames will be saved in\n'"+destination+"'")
+        
+        tkMessageBox.showinfo('ChamView','Frames will be saved in ['+destination+']')
         
         try:
-            #If needed, skip ahead to the start time
-            if start > 0:
-                #label.config(text='Seeking to first frame')
-                notify = start / 10.0
-                while time < start:
+            #Skip ahead to the start time. Otherwise, start at the first frame
+            if extractStart > 0:
+                while time < extractStart:
                     vframe = sourceVid.get_next_video_frame()
                     time = sourceVid.get_next_video_timestamp()
-                    if time > notify:
-                        progress += int(notify*10.0/start)*10
-                        notify = notify + (start / 10.0)
             else:
                 vframe = sourceVid.get_next_video_frame()
             
-            #Save the video's frames until we run out of them or reach the end time
-            #label.config(text='Saving frames')
-            progress = 0
+            #Save each frame until we run out of frames or reach the end time
             frameCount = 1
-            notify = (end-start) / 10.0
-            while vframe != None and time <= end:
-                if time-start > notify:
-                    progress += int(notify*10.0/(end-start))*10
-                    notify = notify + ((end-start) / 10.0)
+            while vframe != None and time <= extractEnd:
                 imageData = vframe.get_image_data()
-                pixels = imageData.get_data(imageData.format,imageData.pitch *-1)
+                pixels = imageData.get_data(imageData.format,imageData.pitch*-1)
                 imageData.set_data(imageData.format,imageData.pitch,pixels)
-                imageData.save(destination+os.path.sep+"frame"+str(frameCount)+".png")
+                imageData.save(destination+os.path.sep+'frame'+str(frameCount)+'.png')
                 time = sourceVid.get_next_video_timestamp()
                 vframe = sourceVid.get_next_video_frame()
                 frameCount += 1
-            tkMessageBox.showinfo('ChamView',"     Success      ")
+            
+            tkMessageBox.showinfo('ChamView','     Success      ')
         except:
             tkMessageBox.showerror('ChamView','Error: Pyglet failure')
-            #Rid of the failed, empty directory that we created
+            #Rid of the empty directory that we created
             os.rmdir(destination)
-        
-               
-    '''Called when the Select Points button is clicked'''
+    
+    
+    ''' Called when the 'Select Points' button is clicked. Proceeds to the next
+        window to select points or shows an error message if something's wrong.
+    '''
     def proceed(self):
-        if self.checkDir() == "bad dir":
+        if self.checkDir() == 'bad dir':
             tkMessageBox.showerror('ChamView', 'Error: directory not found')
-        elif self.checkDir() == "no img":
+        elif self.checkDir() == 'no img':
             tkMessageBox.showerror('ChamView', 'Error: no valid images found')
         elif self.checkFPS() == False:
             tkMessageBox.showerror('ChamView', 'Error: FPS must be at least 1')
         else:
+            #Mark that the second window should be opened
+            self.openSecondWindow = True
             self.master.destroy()
 
 
 #--- The code that runs upon execution ----------------------------------------#
 
-#Open the first window to choose directory
+#Open the first window to choose a directory
 root = Tk()
 app1 = Window1(root)
 root.mainloop()
 
-#Did the user close out of the window early?
-try:
-    iterator = iter(app1.picList)
-except TypeError:
-    sys.exit()
-
-#Get info from the first window
+#Get image directory and video FPS from the first window
 directory = app1.directory.get().strip()
-fList = app1.picList
 fps = app1.fps.get()
 
-#Open the second window, which is ChamView                  
-root2 = Tk()
-app2 = Window2(root2,directory,fList,fps)
-root2.mainloop()
+#Open the second window, which is ChamView, if the 'Select Points' button was clicked
+if app1.openSecondWindow:
+    root2 = Tk()
+    app2 = Window2(root2,directory,fps)
+    root2.mainloop()
 
