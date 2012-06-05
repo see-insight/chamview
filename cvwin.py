@@ -27,14 +27,17 @@ class Window2:
 
     '''Called upon creation'''
     def __init__(self, master, directory, fps):
+        #Tkinter screws up file path separators for some reason. Fix this depending on the OS
+        directory = directory.replace('/',os.path.sep)
+        directory = directory.replace('\\',os.path.sep)
 
         self.completePath = directory        #Full path to image files
         self.partialPath = self.completePath.split(os.path.sep)[-1] #Path from this script
         self.fileList = dircache.listdir(directory)                  #List of valid and invalid image files
-        
+
         self.textfileName = self.completePath+os.path.sep+self.partialPath+'.txt'   #The text file to write to
         self.imageDirectory = self.completePath                                     #Directory holding images
-        
+
         #Create a Dictionary to hold valid images
         self.fileDic = {}
         n = 1
@@ -45,11 +48,11 @@ class Window2:
             or '.gif' in image or '.GIF' in image:
                 self.fileDic[str(n)] = image
                 n = n + 1
-        
+
         #Create a file for reading/writing point coordinates
         fo = open(self.textfileName,'a')
         fo.close()
-        
+
         self.fps = fps                      #Frames per second
         self.currentFrame = StringVar()     #Currently displayed frame
         self.currentFrame.set(1)
@@ -57,27 +60,27 @@ class Window2:
         self.dotType = StringVar()          #Type of dot to be plotted
         self.comment = StringVar()          #Newest comment to be stored
         self.comment.set('comment')
-        
+
         #Initialize the window and hotkeys
         self.createGUI(master)
         self.createHotkeys(master)
-        
+
         #Load the first frame
         self.setFrame(0)
-    
-    
+
+
     '''Initializes the window and creates all the gadgets'''
     def createGUI(self,master):
         #Set up the application window
         self.frame = Frame(master)
         master.title('ChamView')
         self.frame.grid(columnspan=8,rowspan=5)
-        
+
         #Quit button
         self.quitB = Button(master,text='QUIT',command = master.quit)
         self.quitB.grid(column=8,row=1)
         #Previous button
-        self.prevB = Button(master, text = 'PREV [A]',command = self.Prev) 
+        self.prevB = Button(master, text = 'PREV [A]',command = self.Prev)
         self.prevB.grid(column=4,row=5)
         self.prev10B = Button(master, text = 'PREV10',command = self.Prev10)
         self.prev10B.grid(column=3,row=5)
@@ -98,7 +101,7 @@ class Window2:
         self.lastB.grid(row=5,column=8)
         #Clear all of points button
         self.clearB = Button(master,text='CLEAR ALL',command = self.ClearAll)
-        self.clearB.grid(column=7,row=1,sticky=E) 
+        self.clearB.grid(column=7,row=1,sticky=E)
         #Clear frame of points button
         self.clearFrameB = Button(master,text='CLEAR FRAME',command=self.ClearFrame)
         self.clearFrameB.grid(column=6,row=1,sticky=E)
@@ -111,7 +114,7 @@ class Window2:
         #Play button
         self.playB = Button(master,text='PLAY [P]',command=self.Play)
         self.playB.grid(row=4,column=6)
-        
+
         #Current frame label
         self.numLab = Label(master,textvariable = self.currentFrame)
         self.numLab.grid(column=1,row=1,sticky=W)
@@ -132,7 +135,7 @@ class Window2:
         #To display the current frame image
         self.canv = Canvas(master)
         self.canv.grid(column=1,row=2,columnspan = 8, rowspan = 2)
-        
+
         #allow window to resize properly
         #master.columnconfigure(0,weight=1)
         master.columnconfigure(1, weight=1)
@@ -149,8 +152,8 @@ class Window2:
         master.rowconfigure(3, weight=3)
         master.rowconfigure(4, weight=1)
         master.rowconfigure(5, weight=1)
-    
-    
+
+
     '''Sets the function hotkeys'''
     def createHotkeys(self,master):
         #Playback hotkeys
@@ -183,14 +186,14 @@ class Window2:
         if event.keysym == '6': self.dotType.set('GE')
         if event.keysym == '7': self.dotType.set('S/V')
         if event.keysym == '8': self.dotType.set('Cm')
-    
-    
+
+
     '''Writes the current comment to file'''
     def saveComment(self,event=''):
         comment = self.comment.get()
         comment = comment.strip()
         fo = open(self.textfileName,'a')
-        stri = 'COM:'+self.currentFrame.get()+':'+comment 
+        stri = 'COM:'+self.currentFrame.get()+':'+comment
         fo.write(stri+'\n')
         fo.close()
 
@@ -216,13 +219,13 @@ class Window2:
         #If the frame has points already, draw them
         if self.CheckCircles(self.currentFrame.get()+'n'):
             self.DrawCircles(self.currentFrame.get()+'n')
-    
-    
+
+
     '''Change the current frame by a given number'''
     def advanceFrame(self,count):
         self.setFrame(int(self.currentFrame.get())+count)
-    
-    
+
+
     '''The buttons and shortcuts to change frame'''
     def Nxt(self,event=''):self.advanceFrame(1)
     def Nxt10(self):self.advanceFrame(10)
@@ -232,11 +235,11 @@ class Window2:
     def Prev100(self):self.advanceFrame(-100)
     def First(self):self.setFrame(1)
     def Last(self):self.setFrame(self.totalFrames)
-    
-    
+
+
     '''Animates the video sequence normally'''
     def Play(self,event=''):
-        #stop other play/pause 
+        #stop other play/pause
         self.go = False
         self.playing = False
         self.rewing = False
@@ -254,18 +257,18 @@ class Window2:
         #Stop playback
         self.go = False
         self.playing = False
-    
-    
+
+
     '''Pauses the video sequence, stops play/rewind loops from running'''
     def Pause(self,event=''):
         self.go = False
         self.playing = False
         self.rewing = False
-    
-    
+
+
     '''Animates the video sequence in reverse'''
     def Rewind(self,event=''):
-        #stop other play/pause 
+        #stop other play/pause
         self.go = False
         self.playing = False
         self.rewing = False
@@ -274,7 +277,7 @@ class Window2:
         self.rewing = True
         #will run while not at min frame number, self.go controlled by Pause
         while int(self.currentFrame.get()) > 1 and self.go == True and \
-                self.playing == False and self.rewing == True: 
+                self.playing == False and self.rewing == True:
             #delay between frames according to fps
             time.sleep(1.0/self.fps)
             #Draw the next frame
@@ -283,13 +286,13 @@ class Window2:
         #Stop playback
         self.go = False
         self.rewing = False
-    
-    
+
+
     '''Draw circle on click and record coordinates in file'''
     def makeCircle(self,event):
         label = self.dotType.get()
         if len(label) == 0: return
-        
+
         #Get the cicle color
         circFill = ''
         if label == 'LF': circFill = 'yellow'
@@ -300,25 +303,25 @@ class Window2:
         if label == 'GE': circFill = 'purple'
         if label == 'S/V': circFill = 'red'
         if label == 'Cm': circFill = 'lime green'
-        
+
         #Coordinates are two opposite corners of circle
         circId = self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
                                         fill = circFill)
-        
+
         #Tag item so it can be used (deleted) later
         self.canv.itemconfigure(circId,tags=(str(circId)+label))
-        
+
         #Bind item to unclick
         self.canv.tag_bind(str(circId)+label,'<Button-1>',self.deleteCircle)
-        
+
         #Write coordinates and ID of circle to file
         fo = open(self.textfileName,'a')
         stri = (self.currentFrame.get()+'n:'+str(event.x-3)+':'+str(event.y-3)+':'+str(event.x+3)
                 +':'+str(event.y+3)+':'+str(circId)+label)
         fo.write(stri+'\n')
         fo.close()
-    
-    
+
+
     '''Deletes circles when they are clicked'''
     def deleteCircle(self,event):
         #Mouse x/y coordinates
@@ -326,7 +329,7 @@ class Window2:
         #gets tag of the closest item
         closeItem = self.canv.find_closest(x,y)[0]
         tags = self.canv.gettags(closeItem)
-        
+
         #open original file
         fin = open(self.textfileName,'r')
         #create temporary file to write new lines to
@@ -334,14 +337,14 @@ class Window2:
         for line in fin:
             #last part of each line is circle tag(id)
             lineLst = line.split(':')
-            if lineLst[-1][0:-1] == tags[0]: 
+            if lineLst[-1][0:-1] == tags[0]:
                 self.canv.delete(tags[0])
             else:
                 #if item not deleted, line is written to temp file
                 fout.write(line)
         fin.close()
         fout.close()
-        
+
         #original file is wiped clean
         fin2 = open(self.textfileName,'w')
         #newly created temp file to read from
@@ -351,15 +354,15 @@ class Window2:
             fin2.write(line2)
         fin2.close()
         fout2.close()
-    
-    
+
+
     '''Removes all points from the current frame'''
     def ClearFrame(self):
         #open original file
         fin = open(self.textfileName,'r')
         #create temporary file to write new lines to
         fout = open('temp.txt','w')
-        
+
         for line in fin:
             lineLst = line.split(':')
             if lineLst[0] == (self.currentFrame.get()+'n'):
@@ -369,7 +372,7 @@ class Window2:
                 fout.write(line)
         fin.close()
         fout.close()
-        
+
         #original file is wiped clean
         fin2 = open(self.textfileName,'w')
         #newly created temp file to read from
@@ -377,11 +380,11 @@ class Window2:
         #Copy lines from temp file to original file
         for line2 in fout2:
             fin2.write(line2)
-        
+
         fin2.close()
         fout2.close()
-        
-        
+
+
     '''Renders circles on the current frame'''
     def DrawCircles(self,tag):
         #Open the file and read each line
@@ -415,11 +418,11 @@ class Window2:
             lineLst = line.split(':')
             if lineLst[0] == tag:
                 fo.close()
-                return True  
+                return True
         fo.close()
         return False
-    
-    
+
+
     '''Clears the file of all points'''
     def ClearAll(self):
         #Clear current frame so as to not confuse the user
@@ -427,8 +430,8 @@ class Window2:
         #Wipes file of all points
         fo = open(self.textfileName,'w')
         fo.close()
-    
-    
+
+
     '''Saves the current annotated frame as a png'''
     def SaveImg(self,event=''):
         #make a new directory to put dotted frames in
@@ -446,13 +449,13 @@ class Window2:
         #Grab area of the screen and save is using PIL
         im = ImageGrab.grab((x0-offset1, y0-offset1, x1+offset2,y1+offset2))
         im.save(fileName)
-    
-    
+
+
     '''Saves all frames as pngs'''
     #This is currently not working, messes with text file somehow
     def SaveAll(self,event=''):
         pass
-#        #stop other play/pause 
+#        #stop other play/pause
 #        self.go = False
 #        dirName = self.imageDirectory+os.path.sep+'annotated'
 #        #make a new directory to put dotted frames in
@@ -486,7 +489,7 @@ class Window1:
         self.fps.set(30)
         self.directory = StringVar()        #Directory to load images from
         self.directory.set(os.getcwd())
-        
+
         #Create the window
         self.master = master
         self.master.geometry('410x150+200+200')
@@ -505,17 +508,17 @@ class Window1:
         self.dirLabel1.grid(row=4,column=1)
         self.dirLabel2 = Entry(self.frame,textvariable=self.directory)
         self.dirLabel2.grid(row=4,column=2)
-        
+
         #Label for FPS
         self.fpsLabel1 = Label(self.frame,text='Video FPS:')
         self.fpsLabel1.grid(row=5,column=1)
         self.fpsLabel2 = Entry(self.frame,textvariable=self.fps)
         self.fpsLabel2.grid(row=5,column=2)
-        
+
         #A dummy label to act as a spacer
         self.dummyLabel = Label(self.frame)
         self.dummyLabel.grid(row=3,column=1)
-        
+
         #Browse and Proceed buttons for video and frames
         self.buttonChooseVid = Button(self.frame,text = 'Browse',command=self.chooseVideo)
         self.buttonChooseVid.grid(row=1,column=3)
@@ -525,21 +528,21 @@ class Window1:
         self.buttonChooseDir.grid(row=4,column=3)
         self.buttonLoadDir = Button(self.frame,text = 'Select Points',command=self.proceed)
         self.buttonLoadDir.grid(row=5,column=3)
-    
+
 
     '''Opens a window to allow the user to select a video to process'''
     def chooseVideo(self):
         myFile = tkFileDialog.askopenfilename(parent = root,initialdir=os.getcwd(),title='Open video')
         if len(myFile) > 0: self.video.set(myFile)
-    
-    
+
+
     '''Opens a window to allow the user to select a directory to load image files from'''
     def chooseDir(self):
         myDir = tkFileDialog.askdirectory(parent = root,
-            initialdir=self.directory.get(),title='Navigate to image files')
+            initialdir=self.directory.get(),title='Select a folder')
         if len(myDir) > 0: self.directory.set(myDir)
-    
-    
+
+
     ''' Determines whether or not the current directory is valid
         -Returns 'bad dir' if the directory doesn't exist
         -Returns 'no img' if no valid images were found in the directory
@@ -560,16 +563,16 @@ class Window1:
                 goodDirectory = True
         if goodDirectory == True: return 'good'
         return 'no img'
-       
-    
+
+
     '''Determines whether the inputted FPS is valid, returns True or False'''
     def checkFPS(self):
         if self.fps.get() > 0:
             return True
         else:
             return False
-    
-    
+
+
     ''' Extracts frames from the specified video file and saves them in a
         directory of the same name
     '''
@@ -580,7 +583,7 @@ class Window1:
         time = 0            #Timestamp of the current frame
         destination = os.getcwd()+os.path.sep\
                       +os.path.basename(source).split('.')[0]#Name of folder to save frames in
-        
+
         #Load in the video file
         try:
             sourceVid = pyglet.media.load(source)
@@ -596,18 +599,18 @@ class Window1:
             #Some other Pyglet error
             tkMessageBox.showerror('ChamView','Error: Pyglet failure')
             return
-        
+
         #Is the file a video?
         if sourceVid.video_format == None:
             tkMessageBox.showerror('ChamView', 'Error: invalid video file')
             return
-        
+
         #Prompt for extraction start and end time
         extractStart = tkSimpleDialog.askfloat('ChamView','Extraction start time (seconds)',
                         initialvalue=0.0,minvalue=0,maxvalue=sourceVid.duration)
         extractEnd = tkSimpleDialog.askfloat('ChamView','Extraction end time (seconds)',
                     initialvalue=sourceVid.duration,minvalue=extractStart,maxvalue=sourceVid.duration)
-        
+
         #Create a directory to save frames in
         try:
             os.mkdir(destination)
@@ -618,9 +621,9 @@ class Window1:
                 i = i + 1
             destination = destination+'('+str(i)+')'
             os.mkdir(destination)
-        
+
         tkMessageBox.showinfo('ChamView','Frames will be saved in ['+destination+']')
-        
+
         try:
             #Skip ahead to the start time. Otherwise, start at the first frame
             if extractStart > 0:
@@ -629,7 +632,7 @@ class Window1:
                     time = sourceVid.get_next_video_timestamp()
             else:
                 vframe = sourceVid.get_next_video_frame()
-            
+
             #Save each frame until we run out of frames or reach the end time
             frameCount = 1
             while vframe != None and time <= extractEnd:
@@ -640,14 +643,14 @@ class Window1:
                 time = sourceVid.get_next_video_timestamp()
                 vframe = sourceVid.get_next_video_frame()
                 frameCount += 1
-            
+
             tkMessageBox.showinfo('ChamView','     Success      ')
         except:
             tkMessageBox.showerror('ChamView','Error: Pyglet failure')
             #Rid of the empty directory that we created
             os.rmdir(destination)
-    
-    
+
+
     ''' Called when the 'Select Points' button is clicked. Proceeds to the next
         window to select points or shows an error message if something's wrong.
     '''
