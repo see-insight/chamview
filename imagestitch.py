@@ -28,7 +28,6 @@ def WA(im1, im2, t):
     
     t = int32([round(i) for i in t])
     t = t[::-1]
-    #print t
     
 
     x1 = im1[:,0,0].size
@@ -37,9 +36,7 @@ def WA(im1, im2, t):
     y2 = im2[0,:,0].size
     
     xb = array([0, t[0], x1, x2+t[0]])
-    #print xb
     yb = array([0, t[1], y1, y2+t[1]])
-    #print yb
 
     xmin = min(xb)
     xmax = max(xb)
@@ -53,7 +50,6 @@ def WA(im1, im2, t):
     c1 = 0
     c2 = t[1]
     bound = array([r2, x2, c2, y2])
-    #print bound
 
     if (t[0] < 0):
         r1 = -t[0]
@@ -71,9 +67,6 @@ def WA(im1, im2, t):
 
     im[r1:r1+x1, c1:c1+y1, :] = im1
     IA = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
-    #print im[r1:r1+x1, 0,0].size, im[0,c1:c1+y1,0].size, im[0,0,:].size
-    #print IA[:,0,0].size
-    #print IA[0,:,0].size
     return IA
 
 def moviestitch(im1, im2, t):
@@ -124,7 +117,6 @@ def moviestitch(im1, im2, t):
     x = arange(1,(bound[3]-bound[2]+2))
     y = arange(1,(bound[1]-bound[0]+2))
     [a,b] = meshgrid(x,y)
-    #concatenate((a,b),1) = meshgrid(x,y)
 
     if (1+t[0] < 1):
         b = b.max()-b
@@ -138,8 +130,6 @@ def moviestitch(im1, im2, t):
 
     A = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
     B = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
-    #A = zeros((bound[3]-bound[2]+1, bound[1]-bound[0]+1, 3))
-    #B = zeros((bound[3]-bound[2]+1, bound[1]-bound[0]+1, 3))
     A[:,:,0] = double(m1)/double(tot)
     A[:,:,1] = double(m1)/double(tot)
     A[:,:,2] = double(m1)/double(tot)
@@ -148,40 +138,18 @@ def moviestitch(im1, im2, t):
     B[:,:,2] = double(m2)/double(tot)
 
     im[r1:r1+x1, c1:c1+y1, :] = im1
-    #return im[r1:r1+x1, c1:c1+y1, :]
-    #IA = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
-    #print IA
-    #return im
-    #print IA.size
-    
-    #im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :] = 0
     
     im[r2:r2+x2, c2:c2+y2, :] = im2
-    #return im[r2:r2+x2, c2:c2+y2, :]
-    #return im
     IB = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
-    #print 'IA: ', IA
-    #print 'IB: ',IB
-    #print IB.size
     
     im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :] = uint8(double(IA)*B + double(IB)*A)
 
-    #return IA
     return im
 
+i1 = 'img_file'
+i2 = 'img_file'
 
-#pic1 = Image.open('cham_1.jpg')
-#pic2 = Image.open('cham_2.jpg')
-
-#img1 = Image.open('c:\python27\cham_1.jpg')
-#img2 = Image.open('c:\python27\cham_2.jpg')
-
-i1 = 'c:\python27\cham_2.jpg'
-i2 = 'c:\python27\cham_2.jpg'
-#i1 = mpimg.imread('c:\python27\\reddit_face.jpg')
-#i2 = mpimg.imread('c:\users\public\hedgehog.jpg')
-
-#t = picker(img1, img2)
+#t = picker(i1, i2)
 t = [350.3,16.3]
 
 imgplot = plt.imshow(moviestitch(i1,i2,t), origin='lower')
