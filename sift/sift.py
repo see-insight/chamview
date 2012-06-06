@@ -1,4 +1,4 @@
-import os
+import os, sys
 from PIL import Image
 from pylab import *
 from scipy.ndimage import filters
@@ -10,14 +10,24 @@ Process an image and save the results in a file. Each row contains the
 coordinates, scale, and rotation angle(radians) for each interest point as the
 first four values, followed by the 128 values of the corresponding descriptor
 '''
-def process_image(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"):
+def feature_save(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"):
     #convert to a pgm file
     im = Image.open(imagename).convert('L')
     im.save('tmp.pgm')
     imagename = 'tmp.pgm'
-    #Hand it over to sift
-    cmmd = str("sift "+imagename+" --output="+resultname+" "+params)
-    os.system(cmmd)
+    #Hand it over to the OS-specific SIFT binary for processing
+    command = os.getcwd()+os.path.sep+'vlfeat'+os.path.sep
+    if sys.platform.startswith('linux'):
+        command += 'glnx86'
+    elif sys.platform == 'win32' or sys.platform == 'cygwin':
+        command += 'win32'
+    elif sys.platform == 'darwin':
+        command += 'maci'
+    else:
+        print 'sift.py error: cannot identify your platform'
+        return()
+    command += os.path.sep
+    os.system(command+'sift '+imagename+' --output='+resultname+' '+params)
     #Delete the temporary file
     os.remove(imagename)
 
@@ -26,7 +36,7 @@ def process_image(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"
 Read feature properties from a file and return a numpy array
 -Returns [x,y,scale,orientation in radians], [descriptors]
 '''
-def read_features_from_file(filename):
+def feature_load(filename):
     f = loadtxt(filename)
     return f[:,:4],f[:,4:]
 
@@ -34,16 +44,20 @@ def read_features_from_file(filename):
 '''
 Display an image with features drawn on
 -im is a numpy array of the image
--locs is a numpy array from read_features_from_file()
+-locs is a numpy array from feature_load()
 -circ: True = circles size of features drawn, False = point circles
 '''
-def plot_features(im,locs,circle=False):
+def feature_plot(im,locs,circle=False):
     #helper function to draw big circles
-    def draw_circle(c,r):
-        t = arange(0,1.01,.01)*2*pi
-        x = r*cos(t) + c[0]
-        y = r*sin(t) + c[1]
-        plot(x,y,'b',linewidth=2)
+    def draw_circle(pos,radius):
+        #Make an array of values from 0 to 2*pi
+        t = arange(0,1.01,0.01)*2*pi
+        #Make two arrays containing the x and y coordinates of points on a
+        #circle of radius 'radius' and add the keypoint's position
+        x = radius*cos(t) + pos[0]
+        y = radius*sin(t) + pos[1]
+        #Plot them all
+        plot(x,y,'red',alpha='0.75')
     imshow(im)
     if circle:
         for p in locs:
@@ -55,10 +69,10 @@ def plot_features(im,locs,circle=False):
 
 '''
 For each descriptor in the first set, select its match in the second set
--desc1 and desc2 are descriptors from read_features_from_file()
+-desc1 and desc2 are descriptors from feature_load()
 -returns a list of matching descriptor ID's
 '''
-def match(desc1,desc2):
+def match_find(desc1,desc2):
     #Only keep matches in which the ratio of distances from the nearest
     #to the second nearest neighbor is less than distRatio
     dist_ratio=0.6
@@ -85,13 +99,13 @@ def match(desc1,desc2):
 
 '''
 Two-sided symmetric version of match(). Produces fewer false matches
--desc1 and desc2 are descriptors from read_features_from_file()
+-desc1 and desc2 are descriptors from feature_load()
 -returns a list of matching descriptor ID's
 '''
-def match2(desc1,desc2):
+def match_find2(desc1,desc2):
     #Get matches both ways
-    matches_12 = match(desc1,desc2)
-    matches_21 = match(desc2,desc1)
+    matches_12 = match_find(desc1,desc2)
+    matches_21 = match_find(desc2,desc1)
     ndx_12 = matches_12.nonzero()[0]
     #remove matches that don't go both ways
     for n in ndx_12:
@@ -104,10 +118,10 @@ def match2(desc1,desc2):
 '''
 Shows a figure with lines joining the accepted matches
 -im1,im2 are images as numpy arrays
--locs1, locs2 are feature locations from read_features_from_file()
+-locs1, locs2 are feature locations from feature_load()
 -matchscores is output from match() or match2()
 '''
-def plot_matches(im1,im2,locs1,locs2,matchscores):
+def match_plot(im1,im2,locs1,locs2,matchscores):
     #Append the two images together and render it
     im3 = imtools.appendimages(im1,im2)
     imshow(im3)
@@ -121,7 +135,7 @@ def plot_matches(im1,im2,locs1,locs2,matchscores):
             x2 = locs2[m,0]
             y1 = locs1[i,1]
             y2 = locs2[m,1]
-            plot([x1,x2+width1],[y1,y2],'red',alpha='0.5')
+            plot([x1,x2+width1],[y1,y2],'red',alpha='0.75')
     axis('off')
 
 
