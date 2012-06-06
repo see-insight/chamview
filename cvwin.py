@@ -204,7 +204,7 @@ class Window2:
         self.currentFrame.set(count)
         if int(self.currentFrame.get()) < 1:
             self.currentFrame.set(1)
-        else:
+        elif int(self.currentFrame.get()) > self.totalFrames:
             self.currentFrame.set(self.totalFrames)
         #Load the image
         imageFile = self.imageDirectory+os.path.sep+self.fileDic[self.currentFrame.get()]
