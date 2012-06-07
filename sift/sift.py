@@ -1,7 +1,6 @@
 import os, sys
 from PIL import Image
 from pylab import *
-from scipy.ndimage import filters
 import imtools
 
 
@@ -30,6 +29,27 @@ def feature_save(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5")
     os.system(command+'sift '+imagename+' --output='+resultname+' '+params)
     #Delete the temporary file
     os.remove(imagename)
+
+
+'''
+Runs SIFT on every image in a folder and saves the key in a folder called 'keys'
+-output: True = outputs for every file saved, False = no output
+'''
+def feature_save_all(folder,extension,output = False):
+    #Make a 'keys' folder to save keys in
+    if folder.endswith(os.path.sep): folder = folder[:-1]
+    destination = folder+os.path.sep+'keys'+os.path.sep
+    if os.path.isdir(destination) == False: os.mkdir(destination)
+    #Iterate over a list of every desired image
+    files = imtools.get_filelist(folder,extension)
+    count = len(files)
+    for f in files:
+        #If the key doesn't already exist, compute and save it
+        fname = os.path.basename(f).split('.')[0]+'.key'
+        if os.path.isfile(destination+fname) == False:
+            feature_save(f,destination+fname)
+        count -= 1
+        if output: print 'Remaining: '+str(count)
 
 
 '''
@@ -70,7 +90,7 @@ def feature_plot(im,locs,circle=False):
 '''
 For each descriptor in the first set, select its match in the second set
 -desc1 and desc2 are descriptors from feature_load()
--returns a list of matching descriptor ID's
+-returns a desc1 length x 2 list [desc1 feature index, desc2 matching feature index or 0]
 '''
 def match_find(desc1,desc2):
     #Only keep matches in which the ratio of distances from the nearest
@@ -92,7 +112,7 @@ def match_find(desc1,desc2):
         indx = argsort(arccos(dotprods))
         #check if nearest neighbor has angle less than dist_ratio times 2nd nearest
         if arccos(dotprods)[indx[0]] < dist_ratio * arccos(dotprods)[indx[1]]:
-            #We have a match - store the ID of the second keypoint
+            #We have a match - store the index of the second keypoint
             matchscores[i] = int(indx[0])
     return matchscores
 
@@ -106,6 +126,7 @@ def match_find2(desc1,desc2):
     #Get matches both ways
     matches_12 = match_find(desc1,desc2)
     matches_21 = match_find(desc2,desc1)
+    #Get non-zero indexes of matches_12
     ndx_12 = matches_12.nonzero()[0]
     #remove matches that don't go both ways
     for n in ndx_12:
@@ -116,6 +137,31 @@ def match_find2(desc1,desc2):
 
 
 '''
+Opposite of match_find(). Returns a 1D list of indexes from desc1 that do not
+have a match in desc2
+'''
+def match_subtract(desc1,desc2):
+    matches = match_find(desc1,desc2)
+    unique = zeros((desc1.shape[0],1),'int')
+    for i,m in enumerate(matches):
+        if m == 0:
+            unique[i] = i
+    return unique
+
+
+'''
+Plots im overlayed with the locs that are non-zero in indx. indx can be computed
+by match_subtract()
+'''
+def diff_plot(im,locs,indx):
+    imshow(im)
+    for i in indx:
+        if i != 0:
+            plot(locs[i,0],locs[i,1],'ob')
+    axis('off')
+
+
+'''
 Shows a figure with lines joining the accepted matches
 -im1,im2 are images as numpy arrays
 -locs1, locs2 are feature locations from feature_load()
@@ -123,7 +169,7 @@ Shows a figure with lines joining the accepted matches
 '''
 def match_plot(im1,im2,locs1,locs2,matchscores):
     #Append the two images together and render it
-    im3 = imtools.appendimages(im1,im2)
+    im3 = imtools.img_append(im1,im2)
     imshow(im3)
     #Value to add to x-coordinate of keypoint location on second image
     width1 = im1.shape[1]

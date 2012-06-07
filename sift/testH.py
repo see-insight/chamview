@@ -4,7 +4,7 @@ from pylab import *
 import imtools
 import harris
 
-imgname = 'images/empire.jpg'
+imgname = 'ignore/test/empire.jpg'
 
 img = Image.open(imgname)
 arr = array(img.convert('L'))
