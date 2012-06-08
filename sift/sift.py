@@ -10,10 +10,11 @@ coordinates, scale, and rotation angle(radians) for each interest point as the
 first four values, followed by the 128 values of the corresponding descriptor
 '''
 def feature_save(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"):
-    #convert to a pgm file
-    im = Image.open(imagename).convert('L')
-    im.save('tmp.pgm')
-    imagename = 'tmp.pgm'
+    #convert to a pgm file if it isn't already
+    if os.path.splitext(imagename)[1] != '.pgm':
+        im = Image.open(imagename).convert('L')
+        im.save('tmp.pgm')
+        imagename = 'tmp.pgm'
     #Hand it over to the OS-specific SIFT binary for processing
     command = os.getcwd()+os.path.sep+'vlfeat'+os.path.sep
     if sys.platform.startswith('linux'):
@@ -27,8 +28,22 @@ def feature_save(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5")
         return()
     command += os.path.sep
     os.system(command+'sift '+imagename+' --output='+resultname+' '+params)
-    #Delete the temporary file
-    os.remove(imagename)
+    #Delete the temporary file we created
+    if imagename == 'tmp.pgm': os.remove(imagename)
+
+
+'''
+Process an image and save the results in a file. Similar to feature_save, but
+only analyzes a portion of the image
+-box is a 4x1 list [x,y,width,height]
+-the top-left corner of the image is the origin
+'''
+def feature_save_box(imagename,resultname,box,params="--edge-thresh 10 --peak-thresh 5"):
+    #grab a portion of the image
+    im = Image.open(imagename).convert('L')
+    grab = im.crop((box[0],box[1],box[0]+box[2],box[1]+box[3]))
+    grab.save('tmp.pgm')
+    feature_save('tmp.pgm',resultname,params)
 
 
 '''
@@ -48,8 +63,9 @@ def feature_save_all(folder,extension,output = False):
         fname = os.path.basename(f).split('.')[0]+'.key'
         if os.path.isfile(destination+fname) == False:
             feature_save(f,destination+fname)
-        count -= 1
-        if output: print 'Remaining: '+str(count)
+        if output:
+            count = count - 1
+            print 'Remaining: '+str(count)
 
 
 '''
@@ -88,15 +104,41 @@ def feature_plot(im,locs,circle=False):
 
 
 '''
+Display an image with only the specified features drawn on
+-im is a numpy array of the image
+-locs is a numpy array from feature_load()
+-indx is a numpy array containing the indexes of the keypoints to draw
+-circ: True = circles size of features drawn, False = point circles
+'''
+def feature_plot_subset(im,locs,indx,circle=False):
+    #helper function to draw big circles
+    def draw_circle(pos,radius):
+        #Make an array of values from 0 to 2*pi
+        t = arange(0,1.01,0.01)*2*pi
+        #Make two arrays containing the x and y coordinates of points on a
+        #circle of radius 'radius' and add the keypoint's position
+        x = radius*cos(t) + pos[0]
+        y = radius*sin(t) + pos[1]
+        #Plot them all
+        plot(x,y,'red',alpha='0.75')
+    imshow(im)
+    if circle:
+        for p in indx:
+            draw_circle((locs[p,0],locs[p,1]),locs[p,2])
+    else:
+        for p in indx:
+            plot(locs[p,0],locs[p,1],'ob')
+    axis('off')
+
+
+'''
 For each descriptor in the first set, select its match in the second set
 -desc1 and desc2 are descriptors from feature_load()
 -returns a desc1 length x 2 list [desc1 feature index, desc2 matching feature index or 0]
 '''
-def match_find(desc1,desc2):
+def match_find(desc1,desc2,dist_ratio=0.6):
     #Only keep matches in which the ratio of distances from the nearest
     #to the second nearest neighbor is less than distRatio
-    dist_ratio=0.6
-    #Do something
     desc1 = array([d/linalg.norm(d) for d in desc1])
     desc2 = array([d/linalg.norm(d) for d in desc2])
     desc1_size = desc1.shape
@@ -120,7 +162,7 @@ def match_find(desc1,desc2):
 '''
 Two-sided symmetric version of match(). Produces fewer false matches
 -desc1 and desc2 are descriptors from feature_load()
--returns a list of matching descriptor ID's
+-returns a desc1 length x 2 list [desc1 feature index, desc2 matching feature index or 0]
 '''
 def match_find2(desc1,desc2):
     #Get matches both ways
@@ -147,18 +189,6 @@ def match_subtract(desc1,desc2):
         if m == 0:
             unique[i] = i
     return unique
-
-
-'''
-Plots im overlayed with the locs that are non-zero in indx. indx can be computed
-by match_subtract()
-'''
-def diff_plot(im,locs,indx):
-    imshow(im)
-    for i in indx:
-        if i != 0:
-            plot(locs[i,0],locs[i,1],'ob')
-    axis('off')
 
 
 '''

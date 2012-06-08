@@ -30,6 +30,7 @@ if os.path.isfile(siftpath[f1]) == False:
     sift.feature_save(imgpath[f1],siftpath[f1])
 loc[f1],desc[f1] = sift.feature_load(siftpath[f1])
 
+
 #Evaluate second image
 print imgpath[f2]
 siftpath[f2] = imgpath[f2].split('.')[0]+'.key'
@@ -42,7 +43,7 @@ loc[f2],desc[f2] = sift.feature_load(siftpath[f2])
 
 #Find matches between the two images
 print 'Matching'
-matches = sift.match_find2(desc[f1],desc[f2])
+matches = sift.match_find(desc[f1],desc[f2])
 
 
 #Plot the matches

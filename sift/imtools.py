@@ -4,13 +4,8 @@ from pylab import *
 from scipy.ndimage import filters
 
 
-'''
-Creates a list of filenames of every image with a certain extension in a
-directory
--path is a string absolute path to the folder
--extension is a string extension, including the '.' (ie '.jgg')
--returns a list
-'''
+#args: absolute path to folder (string), file extension including the '.' (string)
+#returns: list of absolute paths to files in the folder with that extension (list of strings)
 def get_filelist(path,extension):
     files = []
     for f in os.listdir(path):
@@ -19,40 +14,26 @@ def get_filelist(path,extension):
     return files
 
 
-'''
-Resize an image
--arr is a numpy array, size an integer
--returns a numpy array
-'''
-def img_resize(arr,size):
-    img = Image.fromarray(uint8(arr))
-    return array(img.resize(size))
+#args: image to crop (numpy array), x,y,width,height of new image (ints)
+#returns: cropped image (numpy array)
+def img_crop(img,x,y,width,height):
+    return img.crop((x,y,x+width,y+height))
 
 
-'''
-Convert a PIL image to a numpy array
--img is a PIL image
--returns a numpy array
-'''
+#args: image to convert (PIL image)
+#returns: converted image (numpy array)
 def img_toArr(img):
     return array(img.convert('L'))
 
 
-'''
-Convert a numpy array to a PIL image
--arr is a numpy array
--returns a PIL image
-'''
+#args: image to convert (numpy array)
+#returns: converted image (PIL image)
 def img_fromArr(arr):
     return Image.fromarray(arr)
 
 
-'''
-Returns a new image that appends the two images side-by-side. Any difference
-in size is filled in with black
--im1, im2 are numpy arrays
--returns a numpy array
-'''
+#args: two images to make into one (numpy arrays)
+#returns: im1 appended to the left of im2 (numpy array)
 def img_append(im1,im2):
     # select the image with the fewest rows and fill in enough empty rows
     rows1 = im1.shape[0]
