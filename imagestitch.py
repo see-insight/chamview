@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from pylab import ginput
 
-def picker (imgL, imgR):
+def picker (im1, im2):
+
+    imgL = Image.open(im1)
+    imgR = Image.open(im2)
 
     print 'Pick a similar point on both images'
     fig = plt.figure()
@@ -13,101 +16,108 @@ def picker (imgL, imgR):
     ax2 = fig.add_subplot(122)
     ax2.imshow(imgR, interpolation='nearest', origin='lower')
     LOffset = ginput(1)
-    print 'Clicked',LOffset
     ROffset = ginput(1)
-    print 'Clicked',ROffset
     plt.close()
     
     offset = [0,0]
-    offset[0] = int(LOffset[0][0]-ROffset[0][0])
-    offset[1] = int(LOffset[0][1]-ROffset[0][1])
+    # Offset is set up as [row,column] and not [x,y]
+    offset[0] = LOffset[0][1]-ROffset[0][1]
+    offset[1] = LOffset[0][0]-ROffset[0][0]
+    print 'Offset: ', offset
     return offset
 
-
+# Wrapper function for evaluating the variable IA.
 def WA(im1, im2, t):
     
-    t = int32([round(i) for i in t])
+    t = int32([round(i) for i in t]) 
 
-    x1 = im1[:,0,0].size
-    x2 = im2[:,0,0].size
-    y1 = im1[0,:,0].size
-    y2 = im2[0,:,0].size
+    row1 = im1[:,0,0].size
+    row2 = im2[:,0,0].size
+    col1 = im1[0,:,0].size
+    col2 = im2[0,:,0].size
     
-    xb = array([0, t[1], x1, x2+t[1]])
-    yb = array([0, t[0], y1, y2+t[0]])
+    row_b = array([0, t[0], row1, row2+t[0]])
+    col_b = array([0, t[1], col1, col2+t[1]])
+    rmin = min(row_b)
+    rmax = max(row_b)
+    cmin = min(col_b)
+    cmax = max(col_b)
 
-    xmin = min(xb)
-    xmax = max(xb)
-    ymin = min(yb)
-    ymax = max(yb)
-
-    im = uint8(zeros((xmax-xmin, ymax-ymin, 3)))
+    im = uint8(zeros((rmax-rmin, cmax-cmin, 3)))
 
     r1 = 0
-    r2 = t[1]-1
+    r2 = t[0]
     c1 = 0
-    c2 = t[0]-1
-    bound = array([r2, x2, c2, y2])
-
-    if (1+t[1] < 1):
-        r1 = -t[1]-1
-        r2 = 0
-        bound[0] = r1
-        bound[1] = x2
+    c2 = t[1]
+    bound = array([r2, row1, c2, col1])
 
     if (1+t[0] < 1):
-        c1 = -t[0]-1
+        r1 = -t[0]
+        r2 = 0
+        bound[0] = r1
+        bound[1] = row2
+
+    if (1+t[1] < 1):
+        c1 = -t[1]
         c2 = 0
         bound[2] = c1
-        bound[3] = y2
+        bound[3] = col2
 
-    im[r1:r1+x1, c1:c1+y1, :] = im1
-    IA = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
+    im[r1:r1+row1, c1:c1+col1, :] = im1
+    # Overlap of image A
+    IA = im[bound[0]:bound[1], bound[2]:bound[3], :]
     return IA
+  
 
+def imagestitch(im1, im2, t):
 
-def moviestitch(im1, im2, t):
+    im1 = mpimg.imread(im1)
+    im2 = mpimg.imread(im2)
     
     IA = WA(im1,im2,t)
+    
     t = int32([round(i) for i in t])
 
-    x1 = im1[:,0,0].size
-    x2 = im2[:,0,0].size
-    y1 = im1[0,:,0].size
-    y2 = im2[0,:,0].size
-    
-    xb = array([0, t[1], x1, x2+t[1]])
-    yb = array([0, t[0], y1, y2+t[0]])
+    row1 = im1[:,0,0].size
+    row2 = im2[:,0,0].size
+    col1 = im1[0,:,0].size
+    col2 = im2[0,:,0].size
 
-    xmin = min(xb)
-    xmax = max(xb)
-    ymin = min(yb)
-    ymax = max(yb)
+    # Potential boundaries of the new image
+    row_b = array([0, t[0], row1, row2+t[0]])
+    col_b = array([0, t[1], col1, col2+t[1]])
 
-    im = uint8(zeros((xmax-xmin, ymax-ymin, 3)))
+    rmin = min(row_b)
+    rmax = max(row_b)
+    cmin = min(col_b)
+    cmax = max(col_b)
+
+    # Blank template the size of the new image
+    im = uint8(zeros((rmax-rmin, cmax-cmin, 3)))
 
     r1 = 0
-    r2 = t[1]-1
+    r2 = t[0]
     c1 = 0
-    c2 = t[0]-1
-    bound = array([r2, x2, c2, y2])
+    c2 = t[1]
+    bound = array([r2, row1, c2, col1])
 
-    if (1+t[1] < 1):
-        r1 = -t[1]-1
+    # Swapping statements if any value is negative
+    if (1+t[0] < 1):
+        r1 = -t[0]
         r2 = 0
         bound[0] = r1
-        bound[1] = x2
+        bound[1] = row2
         print 'swapping r'
 
-    if (1+t[0] < 1):
-        c1 = -t[0]-1
+    if (1+t[1] < 1):
+        c1 = -t[1]
         c2 = 0
         bound[2] = c1
-        bound[3] = y2
+        bound[3] = col2
         print 'swapping c'
-
-    x = arange(1,(bound[3]-bound[2]+2))
-    y = arange(1,(bound[1]-bound[0]+2))
+    
+    x = arange(1,bound[3]-bound[2]+1)
+    y = arange(1,bound[1]-bound[0]+1)
     [a,b] = meshgrid(x,y)
 
     if (1+t[0] < 1):
@@ -115,13 +125,15 @@ def moviestitch(im1, im2, t):
 
     if (1+t[1] < 1):
         a = a.max()-a
-    
+
+    # Minimum distance to the upper left and lower right edges of overlap    
     m1 = minimum(a,b)
     m2 = minimum(a.max()-a, b.max()-b)
     tot = m1 + m2
 
-    A = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
-    B = zeros((bound[1]-bound[0]+1, bound[3]-bound[2]+1, 3))
+    # Ratio of pixels in each image
+    A = zeros((tot[:,0].size,tot[0,:].size,3))
+    B = zeros((tot[:,0].size,tot[0,:].size,3))
     A[:,:,0] = double(m1)/double(tot)
     A[:,:,1] = double(m1)/double(tot)
     A[:,:,2] = double(m1)/double(tot)
@@ -129,22 +141,18 @@ def moviestitch(im1, im2, t):
     B[:,:,1] = double(m2)/double(tot)
     B[:,:,2] = double(m2)/double(tot)
 
-    im[r1:r1+x1, c1:c1+y1, :] = im1
-    im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :] = 0
-    
-    im[r2:r2+x2, c2:c2+y2, :] = im2
-    IB = im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :]
-    
-    im[bound[0]:bound[1]+1, bound[2]:bound[3]+1, :] = uint8(double(IA)*B + double(IB)*A)
+    im[r1:r1+row1, c1:c1+col1, :] = im1
+    im[bound[0]:bound[1], bound[2]:bound[3], :] = 0
+    im[r2:r2+row2, c2:c2+col2, :] = im2
+    # Overlap of image B
+    IB = im[bound[0]:bound[1], bound[2]:bound[3], :]
+    # Blending of overlapped pixels
+    im[bound[0]:bound[1], bound[2]:bound[3], :] = uint8(double(IA)*B + double(IB)*A)
 
     return im
 
-img1 = Image.open('c:\python27\cham_1.jpg')
-img2 = Image.open('c:\python27\cham_2.jpg')
+imgfile_1 = 'test_file'
+imgfile_2 = 'test_file'
 
-i1 = mpimg.imread('c:\python27\cham_1.jpg')
-i2 = mpimg.imread('c:\python27\cham_2.jpg')
-
-t = picker(img1, img2)
-
-imgplot = plt.imshow(moviestitch(i1,i2,t), origin='lower')
+t = picker(imgfile_1, imgfile_2)
+plt.imshow(imagestitch(imgfile_1,imgfile_2,t), origin='lower')
