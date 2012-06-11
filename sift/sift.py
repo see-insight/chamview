@@ -48,7 +48,7 @@ def feature_save_box(imagename,resultname,box,params="--edge-thresh 10 --peak-th
 
 '''
 Runs SIFT on every image in a folder and saves the key in a folder called 'keys'
--output: True = outputs for every file saved, False = no output
+-output: True = outputs a message for every file saved, False = no output
 '''
 def feature_save_all(folder,extension,output = False):
     #Make a 'keys' folder to save keys in
