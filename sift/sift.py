@@ -5,6 +5,37 @@ import imtools
 
 
 '''
+Wrapper combining several functions into one. Use this to get the SIFT features
+from a numpy image array.
+-im: a numpy image array
+-box: a list [x,y,width,height] of the image to crop out. If not specified, the
+ whole image is used
+-returns [x,y,scale,orientation in radians], [descriptors]
+'''
+def feature_getFromArr(im,box=None):
+    imtools.img_fromArr(im).save('tmp.pgm')
+    feature_save('tmp.pgm','tmp.key',box)
+    loc,desc = feature_load('tmp.key')
+    os.remove('tmp.key')
+    return loc,desc
+
+
+'''
+Wrapper combining several functions into one. Use this to get the SIFT features
+from an image file.
+-im: path to the image file
+-box: a list [x,y,width,height] of the image to crop out. If not specified, the
+ whole image is used
+-returns [x,y,scale,orientation in radians], [descriptors]
+'''
+def feature_getFromImg(im,box=None):
+    feature_save(im,'tmp.key',box)
+    loc,desc = feature_load('tmp.key')
+    os.remove('tmp.key')
+    return loc,desc
+
+
+'''
 Process an image and save the results in a file. Each row contains the
 coordinates, scale, and rotation angle(radians) for each interest point as the
 first four values, followed by the 128 values of the corresponding descriptor
