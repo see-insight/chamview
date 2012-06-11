@@ -64,6 +64,7 @@ class Window2:
         #Initialize the window and hotkeys
         self.createGUI(master)
         self.createHotkeys(master)
+        self.dotType.set('LF')
 
         #Load the first frame
         self.setFrame(0)
