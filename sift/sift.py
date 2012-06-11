@@ -5,11 +5,51 @@ import imtools
 
 
 '''
+Wrapper combining several functions into one. Use this to get the SIFT features
+from a numpy image array.
+-im: a numpy image array
+-box: a list [x,y,width,height] of the image to crop out. If not specified, the
+ whole image is used
+-returns [x,y,scale,orientation in radians], [descriptors]
+'''
+def feature_getFromArr(im,box=None):
+    imtools.img_fromArr(im).save('tmp.pgm')
+    feature_save('tmp.pgm','tmp.key',box)
+    loc,desc = feature_load('tmp.key')
+    os.remove('tmp.key')
+    return loc,desc
+
+
+'''
+Wrapper combining several functions into one. Use this to get the SIFT features
+from an image file.
+-im: path to the image file
+-box: a list [x,y,width,height] of the image to crop out. If not specified, the
+ whole image is used
+-returns [x,y,scale,orientation in radians], [descriptors]
+'''
+def feature_getFromImg(im,box=None):
+    feature_save(im,'tmp.key',box)
+    loc,desc = feature_load('tmp.key')
+    os.remove('tmp.key')
+    return loc,desc
+
+
+'''
 Process an image and save the results in a file. Each row contains the
 coordinates, scale, and rotation angle(radians) for each interest point as the
 first four values, followed by the 128 values of the corresponding descriptor
+-box: if specified, the image is first cropped before being fed into SIFT.
+ Box is a 4x1 list [x,y,width,height] describing the crop and the top-left
+ corner of the image is the origin
 '''
-def feature_save(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"):
+def feature_save(imagename,resultname,box=None,params="--edge-thresh 10 --peak-thresh 5"):
+    #Did the call request the image to be cropped first?
+    if box != None:
+        im = Image.open(imagename).convert('L')
+        grab = im.crop((box[0],box[1],box[0]+box[2],box[1]+box[3]))
+        grab.save('tmp.pgm')
+        imagename = 'tmp.pgm'
     #convert to a pgm file if it isn't already
     if os.path.splitext(imagename)[1] != '.pgm':
         im = Image.open(imagename).convert('L')
@@ -30,20 +70,6 @@ def feature_save(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5")
     os.system(command+'sift '+imagename+' --output='+resultname+' '+params)
     #Delete the temporary file we created
     if imagename == 'tmp.pgm': os.remove(imagename)
-
-
-'''
-Process an image and save the results in a file. Similar to feature_save, but
-only analyzes a portion of the image
--box is a 4x1 list [x,y,width,height]
--the top-left corner of the image is the origin
-'''
-def feature_save_box(imagename,resultname,box,params="--edge-thresh 10 --peak-thresh 5"):
-    #grab a portion of the image
-    im = Image.open(imagename).convert('L')
-    grab = im.crop((box[0],box[1],box[0]+box[2],box[1]+box[3]))
-    grab.save('tmp.pgm')
-    feature_save('tmp.pgm',resultname,params)
 
 
 '''
@@ -78,67 +104,30 @@ def feature_load(filename):
 
 
 '''
-Display an image with features drawn on
--im is a numpy array of the image
--locs is a numpy array from feature_load()
--circ: True = circles size of features drawn, False = point circles
-'''
-def feature_plot(im,locs,circle=False):
-    #helper function to draw big circles
-    def draw_circle(pos,radius):
-        #Make an array of values from 0 to 2*pi
-        t = arange(0,1.01,0.01)*2*pi
-        #Make two arrays containing the x and y coordinates of points on a
-        #circle of radius 'radius' and add the keypoint's position
-        x = radius*cos(t) + pos[0]
-        y = radius*sin(t) + pos[1]
-        #Plot them all
-        plot(x,y,'red',alpha='0.75')
-    imshow(im)
-    if circle:
-        for p in locs:
-            draw_circle(p[:2],p[2])
-    else:
-        plot(locs[:,0],locs[:,1],'ob')
-    axis('off')
-
-
-'''
-Display an image with only the specified features drawn on
--im is a numpy array of the image
--locs is a numpy array from feature_load()
--indx is a numpy array containing the indexes of the keypoints to draw
--circ: True = circles size of features drawn, False = point circles
-'''
-def feature_plot_subset(im,locs,indx,circle=False):
-    #helper function to draw big circles
-    def draw_circle(pos,radius):
-        #Make an array of values from 0 to 2*pi
-        t = arange(0,1.01,0.01)*2*pi
-        #Make two arrays containing the x and y coordinates of points on a
-        #circle of radius 'radius' and add the keypoint's position
-        x = radius*cos(t) + pos[0]
-        y = radius*sin(t) + pos[1]
-        #Plot them all
-        plot(x,y,'red',alpha='0.75')
-    imshow(im)
-    if circle:
-        for p in indx:
-            draw_circle((locs[p,0],locs[p,1]),locs[p,2])
-    else:
-        for p in indx:
-            plot(locs[p,0],locs[p,1],'ob')
-    axis('off')
-
-
-'''
 For each descriptor in the first set, select its match in the second set
 -desc1 and desc2 are descriptors from feature_load()
+-dist_ratio is the ratio of distances between nearest and second-nearest
+ neighbors that can result in a match
+-two_way: if true, then ensures that matches go both ways. Slower, but returns
+ fewer false matches
 -returns a desc1 length x 2 list [desc1 feature index, desc2 matching feature index or 0]
 '''
-def match_find(desc1,desc2,dist_ratio=0.6):
-    #Only keep matches in which the ratio of distances from the nearest
-    #to the second nearest neighbor is less than distRatio
+def match_find(desc1,desc2,dist_ratio=0.6,two_way=False):
+    #Did the call request a two-way match find?
+    if two_way == True:
+        #Get matches both ways
+        matches_12 = match_find(desc1,desc2)
+        matches_21 = match_find(desc2,desc1)
+        #Get non-zero indexes of matches_12
+        ndx_12 = matches_12.nonzero()[0]
+        #remove matches that don't go both ways
+        for n in ndx_12:
+            if matches_21[int(matches_12[n])] != n:
+                #Single match, but not double match
+                matches_12[n] = 0
+        #Return the result
+        return matches_12
+
     desc1 = array([d/linalg.norm(d) for d in desc1])
     desc2 = array([d/linalg.norm(d) for d in desc2])
     desc1_size = desc1.shape
@@ -160,27 +149,10 @@ def match_find(desc1,desc2,dist_ratio=0.6):
 
 
 '''
-Two-sided symmetric version of match(). Produces fewer false matches
--desc1 and desc2 are descriptors from feature_load()
--returns a desc1 length x 2 list [desc1 feature index, desc2 matching feature index or 0]
-'''
-def match_find2(desc1,desc2):
-    #Get matches both ways
-    matches_12 = match_find(desc1,desc2)
-    matches_21 = match_find(desc2,desc1)
-    #Get non-zero indexes of matches_12
-    ndx_12 = matches_12.nonzero()[0]
-    #remove matches that don't go both ways
-    for n in ndx_12:
-        if matches_21[int(matches_12[n])] != n:
-            #Single match, but not double match
-            matches_12[n] = 0
-    return matches_12
-
-
-'''
-Opposite of match_find(). Returns a 1D list of indexes from desc1 that do not
+Opposite of match_find(). Returns a list of indexes from desc1 that do not
 have a match in desc2
+-desc1 and desc2 are descriptors from feature_load()
+-returns a desc1 length x 1 list [desc1 feature with a match index or 0]
 '''
 def match_subtract(desc1,desc2):
     matches = match_find(desc1,desc2)
@@ -192,19 +164,55 @@ def match_subtract(desc1,desc2):
 
 
 '''
-Shows a figure with lines joining the accepted matches
--im1,im2 are images as numpy arrays
--locs1, locs2 are feature locations from feature_load()
--matchscores is output from match() or match2()
+Display an image with features drawn on
+-im is a numpy array of the image
+-locs is a numpy array from feature_load()
+-indx: nx1 numpy array. If passed, only features whose index is in indx are drawn
+-circ: True = circles size of features drawn, False = point circles
 '''
-def match_plot(im1,im2,locs1,locs2,matchscores):
-    #Append the two images together and render it
+def feature_plot(im,locs,indx = None,circle=False):
+    #helper function to draw big circles
+    def draw_circle(pos,radius):
+        #Make an array of values from 0 to 2*pi
+        t = arange(0,1.01,0.01)*2*pi
+        #Make two arrays containing the x and y coordinates of points on a
+        #circle of radius 'radius' and add the keypoint's position
+        x = radius*cos(t) + pos[0]
+        y = radius*sin(t) + pos[1]
+        #Plot them all
+        plot(x,y,'red',alpha='0.75')
+    imshow(im)
+    if circle:
+        if indx == None:
+            for p in locs:
+                draw_circle(p[:2],p[2])
+        else:
+            for p in indx:
+                draw_circle((locs[p,0],locs[p,1]),locs[p,2])
+    else:
+        if indx == None:
+            plot(locs[:,0],locs[:,1],'ob')
+        else:
+            for p in indx:
+                plot(locs[p,0],locs[p,1],'ob')
+    axis('off')
+
+
+'''
+Shows a figure with lines joining the accepted matches
+-im1,im2 are numpy arrays of the images
+-locs1, locs2 are feature location lists from feature_load()
+-matches is output from match() or match2()
+'''
+def match_plot(im1,im2,locs1,locs2,matches):
+    #Append the two images together and render the result
     im3 = imtools.img_append(im1,im2)
+    gray()
     imshow(im3)
     #Value to add to x-coordinate of keypoint location on second image
     width1 = im1.shape[1]
     #Go through each match
-    for i,m in enumerate(matchscores):
+    for i,m in enumerate(matches):
         #Does i have a match?
         if m != 0:
             x1 = locs1[i,0]

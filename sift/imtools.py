@@ -14,6 +14,7 @@ def get_filelist(path,extension):
     return files
 
 
+#Note that this crops with the origin in the top-left corner
 #args: image to crop (numpy array), x,y,width,height of new image (ints)
 #returns: cropped image (numpy array)
 def img_crop(img,x,y,width,height):
