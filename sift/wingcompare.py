@@ -27,7 +27,7 @@ count = len(files)
 for f in files:
     #Load in the next key and match it with the master
     locChild,descChild = sift.feature_load(f)
-    matches = sift.match_find2(descMaster,descChild)
+    matches = sift.match_find(descMaster,descChild,two_way=True)
     #Add to the master counter array
     for indx,val in enumerate(matches):
         if val != 0: matchCount[indx,0] += 1
@@ -60,7 +60,7 @@ for indx,val in enumerate(matchCount):
 plt.figure()
 plt.gray()
 plt.title('Top matches in master')
-sift.feature_plot_subset(arrMaster,locMaster,top[:,0])
+sift.feature_plot(arrMaster,locMaster,top[:,0])
 
 #Plot the feature frequencies on a histogram
 x = npy.arange(0,descMaster.shape[0],1)
@@ -83,7 +83,7 @@ for f in files:
     arrChild = imtools.img_toArr(Image.open(f))
     #Load in the key and match it with the master
     locChild,descChild = sift.feature_load(dirKey+fileChild+'.key')
-    matches = sift.match_find2(descMaster,descChild)
+    matches = sift.match_find(descMaster,descChild,two_way=True)
     #Draw the matches
     plt.figure()
     plt.gray()
