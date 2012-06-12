@@ -8,6 +8,104 @@ import imtools
 import sift
 
 
+frame = 1
+
+#Load the first image
+print 'Loading master frame '+str(frame)
+img1 = imtools.img_toArr(Image.open('ignore/cham/frame'+str(frame)+'.png'))
+enhancer = ImageEnhance.Contrast(imtools.img_fromArr(img1))
+img1 = imtools.img_toArr(enhancer.enhance(2.5))
+loc1,desc1 = sift.feature_getFromArr(img1)
+
+#Plot image+keypoints and get user input (one click)
+fig = plt.figure(1)
+plt.gray()
+sift.feature_plot(img1,loc1)
+plt.title('Click on a keypoint to track')
+plt.axis('image')
+plt.axis('off')
+pick = fig.ginput(1)
+plt.close()
+pickX = pick[0][0]
+pickY = pick[0][1]
+
+#Find keypoint closest to user's click
+featureID = -1
+featureDist = float('inf') #infinity
+for i in range(0,loc1.shape[0]):
+    dx = loc1[i,0]-pickX
+    dy = loc1[i,1]-pickY
+    if abs(dx) < 100 and abs(dy) < 100: #only look at close ones to save time
+        dist = (dx**2 + dy**2)**0.5 #square root of squares
+        if dist < featureDist:
+            featureID = i
+            featureDist = dist
+if featureID == -1:
+    print 'Error: please click closer to your desired keypoint'
+    exit()
+print 'You chose keypoint ['+str(featureID)+']'
+
+#Update latest position
+pointX = loc1[featureID,0]
+pointY = loc1[featureID,1]
+indx = [featureID]
+
+#Track the point through subsequent frames
+frame += 1
+for i in range(frame,frame+60):
+
+    #Load in the next image
+    img2 = imtools.img_toArr(Image.open('ignore/cham/frame'+str(i)+'.png'))
+    enhancer = ImageEnhance.Contrast(imtools.img_fromArr(img2))
+    img2 = imtools.img_toArr(enhancer.enhance(2.5))
+    loc2,desc2 = sift.feature_getFromArr(img2,[int(pointX-100),int(pointY-100),200,200])
+    loc2 = sift.feature_shift(loc2,pointX-100,pointY-100)
+
+    #Find the next match
+    match = sift.match_find(desc1,desc2,indx)
+
+    #Update latest point info
+    oldIndx = indx
+    foundMatch = False
+    try:
+        matchID = match[match.nonzero()[0][0]]
+        indx = [matchID[0]]
+        pointX = loc2[matchID,0][0]
+        pointY = loc2[matchID,1][0]
+        print 'Match: '+str(matchID)+' - '+str(int(pointX))+','+str(int(pointY))
+        foundMatch = True
+        img1 = img2
+        loc1 = loc2
+        desc1 = desc2
+    except:
+        print 'No match found. Will use last known match as master'
+        indx = oldIndx
+
+    #Plot the point
+    fig = plt.figure()
+    if foundMatch: sift.feature_plot(img2,loc2,indx)
+    if not foundMatch: sift.feature_plot(img2,loc2,[])
+    plt.title('Frame ['+str(i)+']')
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 #easier variable management
 f1 = 0
 f2 = 1
@@ -17,12 +115,12 @@ img = [None] * 2
 arr = [None] * 2
 loc = [None] * 2
 desc = [None] * 2
-
+"""
 
 #Demo function displaying a simple match
 def demoBasicMatch():
-    imgpath[f1] = 'ignore/chamfull/cham.png'
-    imgpath[f2] = 'ignore/chamfull/frame30.png'
+    imgpath[f1] = 'ignore/cham/cham.png'
+    imgpath[f2] = 'ignore/cham/frame30.png'
 
     #Evaluate f1
     print 'Reading F1'
@@ -66,8 +164,8 @@ def demoBasicMatch():
 
 #Demo function that tries to subtract the background from a new frame
 def demoSubtractBackground():
-    imgpath[f1] = 'ignore/chamfull/empty.png'
-    imgpath[f2] = 'ignore/chamfull/frame30.png'
+    imgpath[f1] = 'ignore/cham/empty.png'
+    imgpath[f2] = 'ignore/cham/frame30.png'
 
     #Evaluate f1
     print 'Reading F1'
@@ -111,8 +209,8 @@ def demoSubtractBackground():
 
 #Demo function that increases contrast then does basic matching
 def demoContrastMatch():
-    imgpath[f1] = 'ignore/chamfull/contrast1.png'
-    imgpath[f2] = 'ignore/chamfull/contrast2.png'
+    imgpath[f1] = 'ignore/cham/contrast1.png'
+    imgpath[f2] = 'ignore/cham/contrast2.png'
     amount = 2.5
 
     #Evaluate f1
@@ -164,7 +262,7 @@ def demoContrastMatch():
 #Demo displaying a cropped cham image run through a threshold test
 def demoThreshold():
     print 'Filtering'
-    imgpath[f1] = 'ignore/chamfull/frame30.png'
+    imgpath[f1] = 'ignore/cham/frame30.png'
     img[f1] = Image.open(imgpath[f1])
     im = img[f1].convert('RGBA')
     data = npy.array(im)  #height x width x 4 numpy array
@@ -186,8 +284,8 @@ def demoThreshold():
 
 #Crop a box out of an image and match it
 def demoBoxMatch():
-    imgpath[f1] = 'ignore/chamfull/frame30.png'
-    imgpath[f2] = 'ignore/chamfull/cham.png'
+    imgpath[f1] = 'ignore/cham/frame30.png'
+    imgpath[f2] = 'ignore/cham/cham.png'
 
     #Evaluate f1
     print 'Reading F1'

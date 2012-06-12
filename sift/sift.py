@@ -8,7 +8,9 @@ import imtools
 Wrapper combining several functions into one. Use this to get the SIFT features
 from a numpy image array.
 -im: a numpy image array
--box: a list [x,y,width,height] of the image to crop out. If not specified, the
+-box: a list [x,y,width,height] of the image to crop out and analyze. If this is
+specified, the x,y positions will be relative to the corner of the box and you
+should use feature_shift() if you want global coordinates. If not specified, the
  whole image is used
 -returns [x,y,scale,orientation in radians], [descriptors]
 '''
@@ -24,7 +26,9 @@ def feature_getFromArr(im,box=None):
 Wrapper combining several functions into one. Use this to get the SIFT features
 from an image file.
 -im: path to the image file
--box: a list [x,y,width,height] of the image to crop out. If not specified, the
+-box: a list [x,y,width,height] of the image to crop out and analyze. If this is
+specified, the x,y positions will be relative to the corner of the box and you
+should use feature_shift() if you want global coordinates. If not specified, the
  whole image is used
 -returns [x,y,scale,orientation in radians], [descriptors]
 '''
@@ -41,7 +45,8 @@ coordinates, scale, and rotation angle(radians) for each interest point as the
 first four values, followed by the 128 values of the corresponding descriptor
 -box: if specified, the image is first cropped before being fed into SIFT.
  Box is a 4x1 list [x,y,width,height] describing the crop and the top-left
- corner of the image is the origin
+ corner of the image is the origin. Note that the saved x,y coordinates will
+ be relative to the box, not the whole image.
 '''
 def feature_save(imagename,resultname,box=None,params="--edge-thresh 10 --peak-thresh 5"):
     #Did the call request the image to be cropped first?
@@ -100,19 +105,41 @@ Read feature properties from a file and return a numpy array
 '''
 def feature_load(filename):
     f = loadtxt(filename)
-    return f[:,:4],f[:,4:]
+    try:
+        return f[:,:4],f[:,4:]
+    except:
+        #Are there no lines at all?
+        if len(f) == 0:
+            return zeros((2,132),'int')
+        #Is there only one line?
+        return zeros((2,132),'int') + f
+
+
+'''
+Shifts a location array over by a certain amount. Use this after getting SIFT
+features from a cropped portion of an image and you want the x,y coordinates
+to be global, not relative to the box. In that case, dx,dy should be the top-
+left corner of the box.
+-Returns loc with x,y shifted by dx,dy
+'''
+def feature_shift(loc,dx,dy):
+    for i in range(0,loc.shape[0]):
+        loc[i,0] += dx
+        loc[i,1] += dy
+    return loc
 
 
 '''
 For each descriptor in the first set, select its match in the second set
 -desc1 and desc2 are descriptors from feature_load()
+-indx: if specified, only the indexes from desc1 that appear in indx will be matched
 -dist_ratio is the ratio of distances between nearest and second-nearest
  neighbors that can result in a match
 -two_way: if true, then ensures that matches go both ways. Slower, but returns
  fewer false matches
--returns a desc1 length x 2 list [desc1 feature index, desc2 matching feature index or 0]
+-returns a desc1 length x 1 list [desc2 matching feature index or 0]
 '''
-def match_find(desc1,desc2,dist_ratio=0.6,two_way=False):
+def match_find(desc1,desc2,indx=None,dist_ratio=0.6,two_way=False):
     #Did the call request a two-way match find?
     if two_way == True:
         #Get matches both ways
@@ -130,13 +157,13 @@ def match_find(desc1,desc2,dist_ratio=0.6,two_way=False):
 
     desc1 = array([d/linalg.norm(d) for d in desc1])
     desc2 = array([d/linalg.norm(d) for d in desc2])
-    desc1_size = desc1.shape
     #Precompute matrix transpose
     desc2t = desc2.T
     #Initialize a number-of-keypoints x 1 matrix filled with 0's for the match
     #matrix and loop through each keypoint to find its match, if any
-    matchscores = zeros((desc1_size[0],1),'int')
-    for i in range(desc1_size[0]):
+    if indx == None: indx = range(desc1.shape[0])
+    matchscores = zeros((desc1.shape[0],1),'int')
+    for i in indx:
         #vector of dot products
         dotprods = dot(desc1[i,:],desc2t) * 0.9999
         #inverse cosine and sort, return index for features in second image
@@ -152,7 +179,7 @@ def match_find(desc1,desc2,dist_ratio=0.6,two_way=False):
 Opposite of match_find(). Returns a list of indexes from desc1 that do not
 have a match in desc2
 -desc1 and desc2 are descriptors from feature_load()
--returns a desc1 length x 1 list [desc1 feature with a match index or 0]
+-returns a desc1 length x 1 list [desc1 feature index with no match or 0]
 '''
 def match_subtract(desc1,desc2):
     matches = match_find(desc1,desc2)
@@ -181,6 +208,7 @@ def feature_plot(im,locs,indx = None,circle=False):
         y = radius*sin(t) + pos[1]
         #Plot them all
         plot(x,y,'red',alpha='0.75')
+    gray()
     imshow(im)
     if circle:
         if indx == None:
@@ -191,10 +219,10 @@ def feature_plot(im,locs,indx = None,circle=False):
                 draw_circle((locs[p,0],locs[p,1]),locs[p,2])
     else:
         if indx == None:
-            plot(locs[:,0],locs[:,1],'ob')
+            plot(locs[:,0],locs[:,1],'.b')
         else:
             for p in indx:
-                plot(locs[p,0],locs[p,1],'ob')
+                plot(locs[p,0],locs[p,1],'.b')
     axis('off')
 
 
