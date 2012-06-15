@@ -4,6 +4,301 @@ from pylab import *
 import imtools
 
 
+class SiftObject:
+
+    #Instance data members
+    #keyCount:     (int) total number of keypoints associated with this object
+    #location:     (numpy nx2 array) x,y position of each keypoint relative to
+    #              the origin of the latest source image
+    #scale:        (numpy nx1 array) size of each keypoint
+    #angle:        (numpy nx1 array) angle in radians of each keypoint
+    #descriptor:   (numpy nx128 array) keypoint descriptors (used for matching)
+    #matched:      (numpy nx1 array) True/False did this keypoint match to the
+    #              source image last update
+    #isVisible:    (bool) True/False are any keypoints matched in last update?
+    #              If no, object is not visible in last update. If no, whole
+    #              frame is searched for obejct in next update rather than the
+    #              last known location
+    #boundingBox:  (Python 1x4 list) x1,y1,x2,y2 of box surrounding every
+    #              keypoint in last update, used to estimate object's position
+
+    #The minimum side length the bounding/search box can have
+    minBoxLength = 20
+    #How much larger in side length the search box is than the bounding box
+    searchBoxRatio = 1.5
+    #How much the side length of the bounding box increases when the object
+    #wasn't found in the most recent update
+    boundBoxGrowth = 2
+
+    '''
+    Initialize an empty instance. Used in object creation
+    returns: new SiftObject instance
+    '''
+    def __init__(self):
+        #Initialize it as empty
+        self.keyCount = 0
+        self.location = zeros((self.keyCount,2))
+        self.scale = zeros((self.keyCount))
+        self.angle = zeros((self.keyCount))
+        self.descriptor = zeros((self.keyCount,128))
+        self.matched = zeros((self.keyCount),'bool')
+        self.isVisible = False
+        self.boundingBox = [0,0,SiftObject.minBoxLength,SiftObject.minBoxLength]
+
+    '''
+    Print out general information about the instance
+    returns: nothing
+    '''
+    def showInfo(self):
+        print 'SiftObject diagnostics'
+        print '  keyCount:   ',self.keyCount
+        print '  matched:    ',len(self.matched.nonzero()[0])
+        print '  isVisible:  ',self.isVisible
+        print '  boundingBox: [',int(self.boundingBox[0]),',',int(self.boundingBox[1]),',',int(self.boundingBox[2]),',',int(self.boundingBox[3]),']'
+
+    '''
+    Empty the instance of all keypoint data
+    returns: nothing
+    '''
+    def empty(self):
+        #Empty out old data
+        self.keyCount = 0
+        self.location = zeros((self.keyCount,2))
+        self.scale = zeros((self.keyCount))
+        self.angle = zeros((self.keyCount))
+        self.descriptor = zeros((self.keyCount,128))
+        self.matched = zeros((self.keyCount),'bool')
+        self.isVisible = False
+        self.boundingBox = [0,0,SiftObject.minBoxLength,SiftObject.minBoxLength]
+
+    '''
+    Load in training keypoints. Any existing keypoints will be erased.
+    img: a numpy image array
+    box: a Python list [x1,y1,x2,y2]. Forms a rectangle around the object to
+    track
+    returns: nothing
+    '''
+    def train(self,img,box):
+        imgSize = img.shape
+        self.empty()
+        #Convert, crop, and save the image array
+        img = imtools.img_fromArr(img).convert('L')
+        img = img.crop((int(box[0]),int(box[1]),int(box[2]),int(box[3])))
+        img.save('tmp.pgm')
+        #Save SIFT data
+        feature_save('tmp.pgm','tmp.key')
+        #Open the just-created key file
+        try:
+            loc,desc = feature_load('tmp.key')
+            os.remove('tmp.key')
+        except:
+            print 'SiftObject: error writing or reading tmp.key'
+            os.remove('tmp.key')
+            return
+        #Read in keypoint data
+        try:
+            location = loc[:,0:2]
+        except:
+            print 'SiftObject: no keypoints found in training image'
+            return
+        scale = loc[:,2]
+        angle = loc[:,3]
+        descriptor = array(desc)
+        #Give the keypoint data over to the instance
+        self.keyCount = location.shape[0]
+        self.location = location
+        self.location[:,0] += box[0]
+        self.location[:,1] += box[1]
+        self.scale = scale
+        self.angle = angle
+        self.descriptor = descriptor
+        self.matched = ones((self.keyCount),'bool')
+        self.isVisible = True
+        self.updateBoundingBox(imgSize)
+
+    def update(self,img):
+        imgSize = img.shape
+        #Calculate the position and size of the search box surrounding and
+        #larger than the current bounding box
+        width = self.boundingBox[2] - self.boundingBox[0]
+        height = self.boundingBox[3] - self.boundingBox[1]
+        x = self.boundingBox[0] - width * (SiftObject.searchBoxRatio-1) * 0.5
+        y = self.boundingBox[1] - height * (SiftObject.searchBoxRatio-1) * 0.5
+        width *= SiftObject.searchBoxRatio
+        height *= SiftObject.searchBoxRatio
+        #Convert the update image array to a PIL image
+        img = imtools.img_fromArr(img).convert('L')
+        #Ensure the search box isn't too big or small
+        if x < 0: x = 0
+        if y < 0: y = 0
+        if x + width > img.size[1]: width = imgSize[1] - x
+        if y + height > img.size[0]: height = imgSize[0] - y
+        if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
+        if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
+        #Crop and save this area in order to search for keypoint matches in it
+        img = img.crop((int(x),int(y),int(x+width),int(y+height)))
+        print int(x),int(y),int(x+width),int(y+height)
+        img.save('tmp.pgm')
+        #Create SIFT data from the new image file
+        feature_save('tmp.pgm','tmp.key')
+        #Open the just-created key file
+        try:
+            loc,desc = feature_load('tmp.key')
+            os.remove('tmp.key')
+        except:
+            print 'SiftObject: error writing or reading tmp.key'
+            os.remove('tmp.key')
+            return
+        #Read in keypoint data
+        try:
+            location = loc[:,0:2]
+        except:
+            print 'SiftObject: no keypoints found in update image'
+            self.matched[:] = False
+            self.updateBoundingBox(imgSize)
+            return
+        descriptor = array(desc)
+        #Find matches between update image and existing keypoints
+        matches = match_find(self.descriptor,descriptor)
+        #For every exising keypoint that has a match, set its position to
+        #the position of its new match in the update image
+        for i in range(0,self.keyCount):
+            if matches[i] == 0:
+                self.matched[i] = False
+            else:
+                self.matched[i] = True
+                self.location[i,0] = location[matches[i],0] + x
+                self.location[i,1] = location[matches[i],1] + y
+        #Estimate the position of the overall object in the image
+        self.updateBoundingBox(imgSize)
+
+    '''
+    Update the bounding box to the last frame update and determine if the
+    object is visible. If not, expand the box to search a larger area for it
+    returns: nothing
+    '''
+    def updateBoundingBox(self,imgSize):
+        minX = 0;minY = 0;maxX = 0;maxY = 0
+        try:
+            #Only take into account keypoints that matched in the last update
+            minX = self.location[self.matched,0].min()
+            maxX = self.location[self.matched,0].max()
+            minY = self.location[self.matched,1].min()
+            maxY = self.location[self.matched,1].max()
+            #If the object isn't visible then the above lines will transfer
+            #program flow to the except: block due to an exception throw
+            self.isVisible = True
+            #Ensure that the box isn't too small
+            if maxX - minX < SiftObject.minBoxLength:
+                maxX = maxX + SiftObject.minBoxLength/2
+                minX = minX - SiftObject.minBoxLength/2
+            if maxY - minY < SiftObject.minBoxLength:
+                maxY = maxY + SiftObject.minBoxLength/2
+                minY = minY - SiftObject.minBoxLength/2
+            self.boundingBox = [minX,minY,maxX,maxY]
+        except:
+            #This happens if self.matched is all False, so the object isn't
+            #visible. Expand the bounding box to search a larger area for it
+            self.isVisible = False
+            width = self.boundingBox[2] - self.boundingBox[0]
+            height = self.boundingBox[3] - self.boundingBox[1]
+            x = self.boundingBox[0] - width*(SiftObject.boundBoxGrowth-1)*0.5
+            y = self.boundingBox[1] - height*(SiftObject.boundBoxGrowth-1)*0.5
+            if x < 0: x = 0
+            if y < 0: y = 0
+            width *= SiftObject.boundBoxGrowth
+            height *= SiftObject.boundBoxGrowth
+            if x + width > imgSize[1]: width = imgSize[1] - x
+            if y + height > imgSize[0]: height = imgSize[0] - y
+            if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
+            if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
+            self.boundingBox = [x,y,x+width,y+height]
+
+    def plot(self,img):
+        #Show the image
+        figure()
+        gray()
+        imshow(img)
+        #Plot matched keypoints
+        for i in range(0,self.keyCount):
+            if self.matched[i]:
+                plot(self.location[i,0],self.location[i,1],'.r')
+        #Plot the bounding box (red = visible, yellow = not visible)
+        x1 = self.boundingBox[0];y1 = self.boundingBox[1]
+        x2 = self.boundingBox[2];y2 = self.boundingBox[3]
+        color = 'r'
+        if self.isVisible == False: color = 'y'
+        plot([x1,x2],[y1,y1],color)
+        plot([x1,x2],[y2,y2],color)
+        plot([x1,x1],[y1,y2],color)
+        plot([x2,x2],[y1,y2],color)
+        axis('off')
+        show()
+
+
+
+
+
+
+
+    '''
+    Load in SIFT keypoints from a file and append new ones to existing list
+    dest: string path to the key file to be read
+    returns: nothing
+    '''
+    def appendFromFile(self,dest):
+        try:
+            loc,desc = feature_load(dest)
+        except:
+            print 'SiftObject: error reading ',dest
+            return
+        #Read in new info
+        numLines = sum(1 for line in open(dest))
+        try:
+            location = loc[:,0:2]
+        except:
+            print 'SiftObject: ',dest,' is empty'
+            return
+        scale = loc[:,2]
+        angle = loc[:,3]
+        descriptor = array(desc)
+        #Append the new data to the end of the existing keypoint data
+        self.keyCount += numLines
+        self.location = concatenate((self.location,location))
+        self.scale = concatenate((self.scale,scale))
+        self.angle = concatenate((self.angle,angle))
+        self.descriptor = concatenate((self.descriptor,descriptor))
+        #Get the bounding box
+        minX = self.location[:,0].min()
+        maxX = self.location[:,0].max()
+        minY = self.location[:,1].min()
+        maxY = self.location[:,1].max()
+        self.boundingBox = [minX,minY,maxX,maxY]
+
+    '''
+    Save the instance's data to a file in Lowe's format. Can be read in via
+    getFromFile() or feature_load()
+    dest: string path to the key file to be saved
+    returns: nothing
+    '''
+    def saveToFile(self,dest):
+        fileOut = open(dest,'w')
+        for i in range(0,self.keyCount):
+            fileOut.write(str(self.location[i,0])+' '+str(self.location[i,1])+
+            ' '+str(self.scale[i])+' '+str(self.angle[i]))
+            for j in range(0,128):
+                fileOut.write(' '+str(self.descriptor[i,j]))
+            fileOut.write('\n')
+        fileOut.close()
+
+
+
+
+
+
+
+
+
 '''
 Wrapper combining several functions into one. Use this to get the SIFT features
 from a numpy image array.
@@ -16,10 +311,7 @@ should use feature_shift() if you want global coordinates. If not specified, the
 '''
 def feature_getFromArr(im,box=None):
     imtools.img_fromArr(im).save('tmp.pgm')
-    feature_save('tmp.pgm','tmp.key',box)
-    loc,desc = feature_load('tmp.key')
-    os.remove('tmp.key')
-    return loc,desc
+    return feature_getFromImg('tmp.pgm',box)
 
 
 '''
