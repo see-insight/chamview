@@ -131,14 +131,14 @@ class SiftObject:
         #Ensure the search box isn't too big or small
         if x < 0: x = 0
         if y < 0: y = 0
-        if x + width > img.size[1]: width = imgSize[1] - x
-        if y + height > img.size[0]: height = imgSize[0] - y
+        if x + width > img.size[0]: width = imgSize[0] - x
+        if y + height > img.size[1]: height = imgSize[1] - y
         if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
         if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
         #Crop and save this area in order to search for keypoint matches in it
         img = img.crop((int(x),int(y),int(x+width),int(y+height)))
-        print int(x),int(y),int(x+width),int(y+height)
         img.save('tmp.pgm')
+        img.save('frame.png')
         #Create SIFT data from the new image file
         feature_save('tmp.pgm','tmp.key')
         #Open the just-created key file
@@ -181,10 +181,10 @@ class SiftObject:
         minX = 0;minY = 0;maxX = 0;maxY = 0
         try:
             #Only take into account keypoints that matched in the last update
-            minX = self.location[self.matched,0].min()
-            maxX = self.location[self.matched,0].max()
-            minY = self.location[self.matched,1].min()
-            maxY = self.location[self.matched,1].max()
+            minX = self.location[self.matched,0].min() - 20
+            maxX = self.location[self.matched,0].max() + 20
+            minY = self.location[self.matched,1].min() - 20
+            maxY = self.location[self.matched,1].max() + 20
             #If the object isn't visible then the above lines will transfer
             #program flow to the except: block due to an exception throw
             self.isVisible = True
@@ -208,8 +208,8 @@ class SiftObject:
             if y < 0: y = 0
             width *= SiftObject.boundBoxGrowth
             height *= SiftObject.boundBoxGrowth
-            if x + width > imgSize[1]: width = imgSize[1] - x
-            if y + height > imgSize[0]: height = imgSize[0] - y
+            if x + width > imgSize[0]: width = imgSize[0] - x
+            if y + height > imgSize[1]: height = imgSize[1] - y
             if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
             if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
             self.boundingBox = [x,y,x+width,y+height]
