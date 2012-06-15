@@ -19,7 +19,7 @@ def picker (im1, im2):
     ax2.imshow(imgR, origin='lower')
     LOffset = ginput(1)
     ROffset = ginput(1)
-    fig = plt.close()
+    fig1 = plt.close()
     
     offset = [0,0]
     # Offset is set up as [row,column] and not [x,y]
