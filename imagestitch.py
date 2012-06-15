@@ -19,7 +19,7 @@ def picker (im1, im2):
     ax2.imshow(imgR, origin='lower')
     LOffset = ginput(1)
     ROffset = ginput(1)
-    fig1 = plt.close()
+    plt.close()
     
     offset = [0,0]
     # Offset is set up as [row,column] and not [x,y]
@@ -155,10 +155,11 @@ def imagestitch(im1, im2, t):
 
     return im
 
-imgfile_1 = 'test_file'
-imgfile_2 = 'test_file'
+imgfile_1 = 'test_file1'
+imgfile_2 = 'test_file2'
 
 t = picker(imgfile_1, imgfile_2)
 fig2 = plt.imshow(imagestitch(imgfile_1,imgfile_2,t), origin='lower')
 fig2.axes.get_xaxis().set_visible(False)
 fig2.axes.get_yaxis().set_visible(False)
+plt.show()
