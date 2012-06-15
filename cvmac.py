@@ -36,8 +36,8 @@ class PickClick:
         #gets fps from first filename in fDic
         dirName = self.directory.split(os.path.sep)[-1]
         length = len(dirName)
-        self. fps = float(self.fDic['1'][length:-13])
-        print self.fps
+        #self.fps = float(self.fDic['1'][length:-13])
+        #print self.fps
         
         self.length = len(self.fDic)
         #open file for reading/writing coords, name based on given image directory

@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import os, string, dircache, time, shutil, sys
 #GUI assets
 from Tkinter import *
@@ -10,6 +12,8 @@ import Image, ImageTk
 from PIL import Image
 #Extracting video frames
 import pyglet
+#Use custom point types
+import Point
 
 
 '''
@@ -61,10 +65,14 @@ class Window2:
         self.comment = StringVar()          #Newest comment to be stored
         self.comment.set('comment')
 
+        #Go through and make key bindings for points
+        for i in range(0,pointCount):
+            master.bind_all(pointList[i].bind,self.changeDotType)
+
         #Initialize the window and hotkeys
         self.createGUI(master)
         self.createHotkeys(master)
-        self.dotType.set('LF')
+        self.dotType.set(pointList[0].label)
 
         #Load the first frame
         self.setFrame(0)
@@ -131,7 +139,7 @@ class Window2:
         self.dirLab = Label(master,text=self.imageDirectory)
         self.dirLab.grid(row=4,column=1,sticky=W)
         #Shows file with point coords
-        self.fileLab = Label(master,text = self.partialPath+'.txt')
+        self.fileLab = Label(master,text = pointFile)
         self.fileLab.grid(row=4,column=8,sticky=E)
         #To display the current frame image
         self.canv = Canvas(master)
@@ -179,14 +187,10 @@ class Window2:
 
     '''Changes the type of point to be plotted based on the key that was hit'''
     def changeDotType(self,event):
-        if event.keysym == '1': self.dotType.set('LF')
-        if event.keysym == '2': self.dotType.set('RF')
-        if event.keysym == '3': self.dotType.set('LB')
-        if event.keysym == '4': self.dotType.set('RB')
-        if event.keysym == '5': self.dotType.set('GS')
-        if event.keysym == '6': self.dotType.set('GE')
-        if event.keysym == '7': self.dotType.set('S/V')
-        if event.keysym == '8': self.dotType.set('Cm')
+        for c in range(0,pointCount):
+            if pointList[c].bind == event.char:
+                self.dotType.set(pointList[c].label)
+                break
 
 
     '''Writes the current comment to file'''
@@ -296,24 +300,21 @@ class Window2:
 
         #Get the cicle color
         circFill = ''
-        if label == 'LF': circFill = 'yellow'
-        if label == 'RF': circFill = 'orange'
-        if label == 'LB': circFill = 'blue'
-        if label == 'RB': circFill = 'turquoise'
-        if label == 'GS': circFill = 'plum'
-        if label == 'GE': circFill = 'purple'
-        if label == 'S/V': circFill = 'red'
-        if label == 'Cm': circFill = 'lime green'
+        for i in range(0,pointCount):
+            if pointList[i].label == label:
+                circFill = pointList[i].color
+                break
+        if len(circFill) == 0: return
 
         #Coordinates are two opposite corners of circle
         circId = self.canv.create_oval((event.x-3,event.y-3,event.x+3,event.y+3),
                                         fill = circFill)
 
         #Tag item so it can be used (deleted) later
-        self.canv.itemconfigure(circId,tags=(str(circId)+label))
+        self.canv.itemconfigure(circId,tags=(str(circId)+circFill))
 
         #Bind item to unclick
-        self.canv.tag_bind(str(circId)+label,'<Button-1>',self.deleteCircle)
+        self.canv.tag_bind(str(circId)+circFill,'<Button-1>',self.deleteCircle)
 
         #Write coordinates and ID of circle to file
         fo = open(self.textfileName,'a')
@@ -334,7 +335,7 @@ class Window2:
         #open original file
         fin = open(self.textfileName,'r')
         #create temporary file to write new lines to
-        fout = open('temp.txt','w')
+        fout = open('tmp.txt','w')
         for line in fin:
             #last part of each line is circle tag(id)
             lineLst = line.split(':')
@@ -349,12 +350,13 @@ class Window2:
         #original file is wiped clean
         fin2 = open(self.textfileName,'w')
         #newly created temp file to read from
-        fout2 = open('temp.txt','r')
+        fout2 = open('tmp.txt','r')
         #Copy lines from temp file to original file
         for line2 in fout2:
             fin2.write(line2)
         fin2.close()
         fout2.close()
+        os.remove('tmp.txt')
 
 
     '''Removes all points from the current frame'''
@@ -362,7 +364,7 @@ class Window2:
         #open original file
         fin = open(self.textfileName,'r')
         #create temporary file to write new lines to
-        fout = open('temp.txt','w')
+        fout = open('tmp.txt','w')
 
         for line in fin:
             lineLst = line.split(':')
@@ -377,33 +379,29 @@ class Window2:
         #original file is wiped clean
         fin2 = open(self.textfileName,'w')
         #newly created temp file to read from
-        fout2 = open('temp.txt','r')
+        fout2 = open('tmp.txt','r')
         #Copy lines from temp file to original file
         for line2 in fout2:
             fin2.write(line2)
 
         fin2.close()
         fout2.close()
+        os.remove('tmp.txt')
 
 
     '''Renders circles on the current frame'''
     def DrawCircles(self,tag):
         #Open the file and read each line
-        fo = open(self.imageDirectory+os.path.sep+self.partialPath+'.txt','r')
+        fo = open(self.textfileName,'r')
         for line in fo:
             lineLst = line.split(':')
             if lineLst[0] == tag:
-                #Get the circle color
                 circFill = ''
-                if 'LF'in lineLst[-1]: circFill = 'yellow'
-                if 'RF'in lineLst[-1]: circFill = 'orange'
-                if 'LB'in lineLst[-1]: circFill = 'blue'
-                if 'RB'in lineLst[-1]: circFill = 'turquoise'
-                if 'GS'in lineLst[-1]: circFill = 'plum'
-                if 'GE'in lineLst[-1]: circFill = 'purple'
-                if 'S/V'in lineLst[-1]: circFill = 'red'
-                if 'Cm'in lineLst[-1]: circFill = 'lime green'
-                if len(circFill) == 0:continue
+                for i in range(0,pointCount):
+                    if pointList[i].label in lineLst[-1]:
+                        circFill = pointList[i].color
+                        break
+                if len(circFill) == 0: continue
                 #tag item with ID of original circle so it can be used (deleted) later
                 circId = self.canv.create_oval((lineLst[1],lineLst[2],lineLst[3],lineLst[4]),
                                                 fill = circFill)
@@ -669,6 +667,36 @@ class Window1:
 
 
 #--- The code that runs upon execution ----------------------------------------#
+
+#read in point filename or use default
+try:
+    #grabs name of file from line argument
+    pointFile =  sys.argv[1]
+except IndexError:
+    #this happens if no argument/file is supplied
+    pointFile = "champts.txt"
+
+#read in points
+pfo = open(pointFile)
+pointList = []
+pointCount = 0
+n = 0
+for line in pfo:
+    if n !=0:
+        linLst = line.split()
+        lgth = len(linLst)
+        if (lgth == 4):
+            color = linLst[2] + ' ' + linLst[3]#for two-word colors
+            pointList.append(Point.Point(linLst[0],linLst[1],color)) #key bind, color, label
+        else:
+            pointList.append(Point.Point(linLst[0],linLst[1],linLst[2])) #key bind, color, label
+    else: #first line states number of points
+        pointCount = int(line)
+    n = n + 1
+pfo.close()
+if pointCount == 0 or len(pointList) != pointCount:
+    print "error: invalid point file"
+    exit()
 
 #Open the first window to choose a directory
 root = Tk()
