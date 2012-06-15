@@ -10,20 +10,21 @@ def picker (im1, im2):
     imgR = Image.open(im2)
 
     print 'Pick a similar point on both images'
-    fig = plt.figure()
-    ax1 = fig.add_subplot(121)
-    ax1.imshow(imgL, interpolation='nearest', origin='lower')
-    ax2 = fig.add_subplot(122)
-    ax2.imshow(imgR, interpolation='nearest', origin='lower')
+    fig1 = plt.figure()
+    ax1 = fig1.add_subplot(121)
+    ax1.set_axis_off()
+    ax1.imshow(imgL, origin='lower')
+    ax2 = fig1.add_subplot(122)
+    ax2.set_axis_off()
+    ax2.imshow(imgR, origin='lower')
     LOffset = ginput(1)
     ROffset = ginput(1)
-    plt.close()
+    fig = plt.close()
     
     offset = [0,0]
     # Offset is set up as [row,column] and not [x,y]
     offset[0] = LOffset[0][1]-ROffset[0][1]
     offset[1] = LOffset[0][0]-ROffset[0][0]
-    print 'Offset: ', offset
     return offset
 
 # Wrapper function for evaluating the variable IA.
@@ -71,8 +72,11 @@ def WA(im1, im2, t):
 
 def imagestitch(im1, im2, t):
 
-    im1 = mpimg.imread(im1)
-    im2 = mpimg.imread(im2)
+    # Solves the problem of images appearing upside-down
+    im1 = Image.open(im1)
+    im2 = Image.open(im2)
+    im1 = mpimg.pil_to_array(im1)
+    im2 = mpimg.pil_to_array(im2)
     
     IA = WA(im1,im2,t)
     
@@ -155,4 +159,6 @@ imgfile_1 = 'test_file'
 imgfile_2 = 'test_file'
 
 t = picker(imgfile_1, imgfile_2)
-plt.imshow(imagestitch(imgfile_1,imgfile_2,t), origin='lower')
+fig2 = plt.imshow(imagestitch(imgfile_1,imgfile_2,t), origin='lower')
+fig2.axes.get_xaxis().set_visible(False)
+fig2.axes.get_yaxis().set_visible(False)
