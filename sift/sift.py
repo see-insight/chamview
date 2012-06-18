@@ -25,13 +25,17 @@ class SiftObject:
     #The minimum side length the bounding/search box can have in pixels
     minBoxLength = 20
     #Percentage larger in side length the search box is than the bounding box
-    searchBoxRatio = 1.25
+    searchBoxRatio = 1.0
     #Percentage the side length of the bounding box increases when the object
     #wasn't found in the most recent update
     boundBoxGrowth = 2.0
     #How many pixels larger on any side the bounding box is than the outermost
     #keypoints
     boundBoxPad = 20
+    #SIFT parameters
+    siftParams = "--edge-thresh 10 --peak-thresh 5"
+    distRatio = 0.7
+
 
     '''
     Initialize an empty instance. Used in object creation
@@ -89,7 +93,7 @@ class SiftObject:
         img = img.crop((int(box[0]),int(box[1]),int(box[2]),int(box[3])))
         img.save('tmp.pgm')
         #Save SIFT data
-        feature_save('tmp.pgm','tmp.key')
+        feature_save('tmp.pgm','tmp.key',params=SiftObject.siftParams)
         #Open the just-created key file
         try:
             loc,desc = feature_load('tmp.key')
@@ -129,7 +133,7 @@ class SiftObject:
     def update(self,img):
         imgSize = img.shape
         #Calculate the position and size of the search box surrounding and
-        #larger than the current bounding box
+        #slightly larger than the current bounding box
         width = self.boundingBox[2] - self.boundingBox[0]
         height = self.boundingBox[3] - self.boundingBox[1]
         x = self.boundingBox[0] - width * (SiftObject.searchBoxRatio-1) * 0.5
@@ -138,7 +142,7 @@ class SiftObject:
         height *= SiftObject.searchBoxRatio
         #Convert the update image array to a PIL image
         img = imtools.img_fromArr(img).convert('L')
-        #Ensure the search box isn't too big or small
+        #Ensure the search box is within image bounds
         if x < 0: x = 0
         if y < 0: y = 0
         if x + width > imgSize[1]: width = imgSize[1] - x
@@ -149,7 +153,7 @@ class SiftObject:
         img = img.crop((int(x),int(y),int(x+width),int(y+height)))
         img.save('tmp.pgm')
         #Create SIFT data from the new image file
-        feature_save('tmp.pgm','tmp.key')
+        feature_save('tmp.pgm','tmp.key',params=SiftObject.siftParams)
         #Open the just-created key file
         try:
             loc,desc = feature_load('tmp.key')
@@ -168,16 +172,26 @@ class SiftObject:
             return
         descriptor = array(desc)
         #Find matches between update image and existing keypoints
-        matches = match_find(self.descriptor,descriptor)
+        matches = match_find(descriptor,self.descriptor,dist_ratio=SiftObject.distRatio)
+        self.matched = zeros((self.keyCount),'bool')
         #For every exising keypoint that has a match, set its position to
-        #the position of its new match in the update image
-        for i in range(0,self.keyCount):
+        #the position of its new match in the update image. For every new
+        #keypoint found within the boundng box, add it to the object for future
+        #matching
+        for i in range(0,matches.shape[0]):
             if matches[i] == 0:
-                self.matched[i] = False
+                pass
+                #self.keyCount += 1
+                #self.location = concatenate((self.location,array([[location[i,0]+x,location[i,1]+y]])))
+                #self.scale = concatenate((self.scale,array([scale[i]])))
+                #self.angle = concatenate((self.angle,array([angle[i]])))
+                #self.descriptor = concatenate((self.descriptor,array([descriptor[i]])))
+                #self.matched = concatenate((self.matched,array([True])))
             else:
-                self.matched[i] = True
-                self.location[i,0] = location[matches[i],0] + x
-                self.location[i,1] = location[matches[i],1] + y
+                self.matched[matches[i]] = True
+                self.location[matches[i],0] = location[i,0] + x
+                self.location[matches[i],1] = location[i,1] + y
+                self.descriptor[matches[i]] = descriptor[i]
         #Estimate the position of the overall object in the image
         self.updateBoundingBox(imgSize)
 
@@ -195,7 +209,7 @@ class SiftObject:
             minY = self.location[self.matched,1].min() - SiftObject.boundBoxPad
             maxY = self.location[self.matched,1].max() + SiftObject.boundBoxPad
             #If the object isn't visible then the above lines will transfer
-            #program flow to the except: block due to an exception throw
+            #program flow to the except block due to an exception throw
             self.isVisible = True
             #Ensure that the box isn't too small
             if maxX - minX < SiftObject.minBoxLength:
