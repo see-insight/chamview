@@ -22,13 +22,16 @@ class SiftObject:
     #boundingBox:  (Python 1x4 list) x1,y1,x2,y2 of box surrounding every
     #              keypoint in last update, used to estimate object's position
 
-    #The minimum side length the bounding/search box can have
+    #The minimum side length the bounding/search box can have in pixels
     minBoxLength = 20
-    #How much larger in side length the search box is than the bounding box
-    searchBoxRatio = 1.5
-    #How much the side length of the bounding box increases when the object
+    #Percentage larger in side length the search box is than the bounding box
+    searchBoxRatio = 1.25
+    #Percentage the side length of the bounding box increases when the object
     #wasn't found in the most recent update
-    boundBoxGrowth = 2
+    boundBoxGrowth = 2.0
+    #How many pixels larger on any side the bounding box is than the outermost
+    #keypoints
+    boundBoxPad = 20
 
     '''
     Initialize an empty instance. Used in object creation
@@ -116,6 +119,13 @@ class SiftObject:
         self.isVisible = True
         self.updateBoundingBox(imgSize)
 
+    '''
+    Update the positions and visibility of an object and its keypoints to the
+    latest frame. Matches existing keypoints to keypoints found in the specified
+    image and updates positions accordingly. Also updates bounding box.
+    img: a numpy image array
+    returns: nothing
+    '''
     def update(self,img):
         imgSize = img.shape
         #Calculate the position and size of the search box surrounding and
@@ -131,14 +141,13 @@ class SiftObject:
         #Ensure the search box isn't too big or small
         if x < 0: x = 0
         if y < 0: y = 0
-        if x + width > img.size[0]: width = imgSize[0] - x
-        if y + height > img.size[1]: height = imgSize[1] - y
+        if x + width > imgSize[1]: width = imgSize[1] - x
+        if y + height > imgSize[0]: height = imgSize[0] - y
         if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
         if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
         #Crop and save this area in order to search for keypoint matches in it
         img = img.crop((int(x),int(y),int(x+width),int(y+height)))
         img.save('tmp.pgm')
-        img.save('frame.png')
         #Create SIFT data from the new image file
         feature_save('tmp.pgm','tmp.key')
         #Open the just-created key file
@@ -181,10 +190,10 @@ class SiftObject:
         minX = 0;minY = 0;maxX = 0;maxY = 0
         try:
             #Only take into account keypoints that matched in the last update
-            minX = self.location[self.matched,0].min() - 20
-            maxX = self.location[self.matched,0].max() + 20
-            minY = self.location[self.matched,1].min() - 20
-            maxY = self.location[self.matched,1].max() + 20
+            minX = self.location[self.matched,0].min() - SiftObject.boundBoxPad
+            maxX = self.location[self.matched,0].max() + SiftObject.boundBoxPad
+            minY = self.location[self.matched,1].min() - SiftObject.boundBoxPad
+            maxY = self.location[self.matched,1].max() + SiftObject.boundBoxPad
             #If the object isn't visible then the above lines will transfer
             #program flow to the except: block due to an exception throw
             self.isVisible = True
@@ -206,14 +215,22 @@ class SiftObject:
             y = self.boundingBox[1] - height*(SiftObject.boundBoxGrowth-1)*0.5
             if x < 0: x = 0
             if y < 0: y = 0
+            if x > imgSize[1]-SiftObject.minBoxLength: x = imgSize[1]-SiftObject.minBoxLength
+            if y > imgSize[0]-SiftObject.minBoxLength: y = imgSize[0]-SiftObject.minBoxLength
             width *= SiftObject.boundBoxGrowth
             height *= SiftObject.boundBoxGrowth
-            if x + width > imgSize[0]: width = imgSize[0] - x
-            if y + height > imgSize[1]: height = imgSize[1] - y
+            if x + width > imgSize[1]: width = imgSize[1] - x
+            if y + height > imgSize[0]: height = imgSize[0] - y
             if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
             if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
             self.boundingBox = [x,y,x+width,y+height]
 
+    '''
+    Open a figure and show the object's bounding box as well as currently
+    visible keypoints
+    img: a numpy image array
+    returns: nothing
+    '''
     def plot(self,img):
         #Show the image
         figure()
