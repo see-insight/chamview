@@ -13,6 +13,8 @@ class SiftObject:
     #scale:        (numpy nx1 array) size of each keypoint
     #angle:        (numpy nx1 array) angle in radians of each keypoint
     #descriptor:   (numpy nx128 array) keypoint descriptors (used for matching)
+    #boxVector     (numpy nx2 array) radians, radius to original bounding box
+    #              upper left-hand corner
     #matched:      (numpy nx1 array) True/False did this keypoint match to the
     #              source image last update
     #isVisible:    (bool) True/False are any keypoints matched in last update?
@@ -21,27 +23,23 @@ class SiftObject:
     #              last known location
     #boundingBox:  (Python 1x4 list) x1,y1,x2,y2 of box surrounding every
     #              keypoint in last update, used to estimate object's position
+    #origBox:      (Python 1x2 list) width,height describing original bounding
+    #              box size
     #trust:        (numpy nx1 array) value 0.0-1.0 determined by how often a
     #              dynamically found keypoint has appeared. Once trust = 1.0,
     #              the keypoint is marked as trusted and is kept
     #trusted       (numpy nx1 array) True/False has this keypoint been matched
     #              enough times to be considered a part of the object
 
-    #The minimum side length the bounding/search box can have in pixels
-    minBoxLength = 30
     #Percentage larger in side length the search box is than the bounding box
-    searchBoxRatio = 1.0
-    #Percentage the side length of the bounding box increases when the object
-    #wasn't found in the most recent update
-    boundBoxGrowth = 2.0
-    #How many pixels larger on any side the bounding box is than the outermost
-    #keypoints
-    boundBoxPad = 20
+    searchBoxRatio = 1.5
+    #Smallest bounding box side length
+    minBoxLength = 30
     #SIFT parameters (suggested: edge 10, peak 5, ratio 0.7)
     siftParams = "--edge-thresh 10 --peak-thresh 5"
     distRatio = 0.7
     #Increase and decrease in trust when an untrusted keypoint is/is not matched
-    trustMatch = 0.1
+    trustMatch = 0.5
     trustNoMatch = 0.5
 
 
@@ -56,9 +54,11 @@ class SiftObject:
         self.scale = zeros((self.keyCount))
         self.angle = zeros((self.keyCount))
         self.descriptor = zeros((self.keyCount,128))
+        self.boxVector = zeros((self.keyCount,2))
         self.matched = zeros((self.keyCount),'bool')
         self.isVisible = False
         self.boundingBox = [0,0,SiftObject.minBoxLength,SiftObject.minBoxLength]
+        self.origBox = self.boundingBox
         self.trust = zeros((self.keyCount))
         self.trusted = zeros((self.keyCount),'bool')
 
@@ -69,11 +69,14 @@ class SiftObject:
     '''
     def showInfo(self):
         print 'SiftObject diagnostics'
-        print '  keypoints:  ',self.keyCount
-        print '  matched:    ',len(self.matched.nonzero()[0])
-        print '  trusted:    ',len(self.trusted.nonzero()[0])
         print '  visible:    ',self.isVisible
         print '  box:        [',int(self.boundingBox[0]),',',int(self.boundingBox[1]),',',int(self.boundingBox[2]),',',int(self.boundingBox[3]),']'
+        print '  keypoints:  ',self.keyCount
+        print '  trusted:    ',len(self.trusted.nonzero()[0])
+        print '  new:        ',(self.keyCount-len(self.trusted.nonzero()[0]))
+        print '  matched:    ',len(self.matched.nonzero()[0])
+        print '  trust match:',len((self.matched*self.trusted).nonzero()[0])
+        print '  new match:  ',(len(self.matched.nonzero()[0])-len((self.matched*self.trusted).nonzero()[0]))
 
 
     '''
@@ -87,10 +90,12 @@ class SiftObject:
         self.scale = zeros((self.keyCount))
         self.angle = zeros((self.keyCount))
         self.descriptor = zeros((self.keyCount,128))
+        self.boxVector = zeros((self.keyCount,2))
         self.matched = zeros((self.keyCount),'bool')
         self.trusted = []
         self.isVisible = False
         self.boundingBox = [0,0,SiftObject.minBoxLength,SiftObject.minBoxLength]
+        self.origBox = self.boundingBox
         self.trust = zeros((self.keyCount))
         self.trusted = zeros((self.keyCount),'bool')
 
@@ -121,8 +126,9 @@ class SiftObject:
     returns: nothing
     '''
     def train(self,img,box):
-        imgSize = img.shape
         self.empty()
+        if box[2]-box[0] < SiftObject.minBoxLength:box[2]=box[0]+SiftObject.minBoxLength
+        if box[3]-box[1] < SiftObject.minBoxLength:box[3]=box[1]+SiftObject.minBoxLength
         #Convert, crop, and save the image
         img = imtools.img_fromArr(img).convert('L')
         img = img.crop((int(box[0]),int(box[1]),int(box[2]),int(box[3])))
@@ -154,12 +160,17 @@ class SiftObject:
         self.scale = scale
         self.angle = angle
         self.descriptor = descriptor
+        self.boxVector = zeros((self.keyCount,2))
         self.matched = ones((self.keyCount),'bool')
         self.isVisible = True
         self.trust = ones((self.keyCount))
         self.trusted = ones((self.keyCount),'bool')
         #Initialize the bounding box around the object
-        self.updateBoundingBox(imgSize)
+        self.boundingBox = box
+        self.origBox = [box[2]-box[0],box[3]-box[1]]
+        #Relate keypoints to the initial bounding box
+        self.boxVector[:] = [-1,-1]
+        self.relateKeypoints()
 
 
     '''
@@ -171,7 +182,8 @@ class SiftObject:
     def update(self,img):
         self.updateKeypoints(img)
         self.updateTrust()
-        self.updateBoundingBox(img.shape)
+        self.updateBoundingBox()
+        self.relateKeypoints()
 
 
     '''
@@ -206,35 +218,50 @@ class SiftObject:
             print 'SiftObject: no keypoints found in update image'
             self.matched[:] = False
             self.updateTrust()
-            self.updateBoundingBox(imgSize)
             return
         scale = loc[:,2]
         angle = loc[:,3]
         descriptor = array(desc)
-        #Find matches between update image and existing keypoints
-        matches = match_find(descriptor,self.descriptor,dist_ratio=SiftObject.distRatio)
+        #Find matches between existing keypoints and update image
+        matches = match_find(self.descriptor,descriptor,dist_ratio=SiftObject.distRatio)
+        toAdd = range(0,location.shape[0])
+        self.isVisible = False
         #For every exising keypoint that has a match, set its position to
         #the position of its new match in the search box. For every new
         #keypoint found within the search box, add it to the object for future
         #matching
-        self.matched = zeros((self.keyCount),'bool')
-        for i in range(0,matches.shape[0]):
-            if matches[i] == 0 and self.isVisible and False:
-                self.keyCount += 1
-                self.location = concatenate((self.location,array([[location[i,0]+x,location[i,1]+y]])))
-                self.scale = concatenate((self.scale,array([scale[i]])))
-                self.angle = concatenate((self.angle,array([angle[i]])))
-                self.descriptor = concatenate((self.descriptor,array([descriptor[i]])))
-                self.matched = concatenate((self.matched,array([True])))
-                self.trust = concatenate((self.trust,array([0.0])))
-                self.trusted = concatenate((self.trusted,array([False])))
-            else:
-                self.matched[matches[i]] = True
-                self.location[matches[i],0] = location[i,0] + x
-                self.location[matches[i],1] = location[i,1] + y
-                self.scale[matches[i]] = scale[i]
-                self.angle[matches[i]] = angle[i]
-                #self.descriptor[matches[i]] = descriptor[i]
+        for i in range(0,self.keyCount):
+            if matches[i] != 0:
+                if self.trusted[i]: self.isVisible = True
+                self.matched[i] = True
+                #Update the position of this keypoint
+                self.location[i,0] = location[matches[i],0] + x
+                self.location[i,1] = location[matches[i],1] + y
+                self.scale[i] = scale[matches[i]]
+                self.angle[i] = angle[matches[i]]
+                #This keypoint isn't new, so we need not create it
+                toAdd[matches[i]] = 0
+            elif matches[i] == 0:
+                self.matched[i] = False
+        #For every keypoint discovered and not matched, add it to the object's
+        #list of untrusted keypoints to track. But only if the object is visible
+        #so we know that the bounding box location is good
+        if self.isVisible:
+            for i in toAdd:
+                if i != 0:
+                    #Create new keypoint
+                    self.keyCount += 1
+                    self.location = concatenate((self.location,array([[location[i,0]+x,location[i,1]+y]])))
+                    self.scale = concatenate((self.scale,array([scale[i]])))
+                    self.angle = concatenate((self.angle,array([angle[i]])))
+                    self.descriptor = concatenate((self.descriptor,array([descriptor[i]])))
+                    self.boxVector = concatenate((self.boxVector,array([[0,0]])))
+                    self.matched = concatenate((self.matched,array([True])))
+                    self.trust = concatenate((self.trust,array([0.0])))
+                    self.trusted = concatenate((self.trusted,array([False])))
+                    #Mark that this keypoint has to be related to the bounding box
+                    self.boxVector[self.keyCount-1,0] = -1
+                    self.boxVector[self.keyCount-1,1] = -1
 
 
     '''
@@ -269,47 +296,31 @@ class SiftObject:
     The bounding box is based on the position of trusted keypoints
     returns: nothing
     '''
-    def updateBoundingBox(self,imgSize):
+    def updateBoundingBox(self):
         minX = 0;minY = 0;maxX = 0;maxY = 0
-        #Are there trusted keypoints that matched the last update image?
-        if len(nonzero(self.matched*self.trusted)[0]) > 0:
-            self.isVisible = True
-            #Get the new bounding box to surround matched, trusted keypoints
-            minX = imgSize[1];minY = imgSize[0];maxX = -1;maxY = -1
+        #Were there trusted keypoints that matched the last update image?
+        if self.isVisible:
+            #Position the bounding box using a matched keypoint's relation to it
             for i in range(0,self.keyCount):
                 if self.matched[i] and self.trusted[i]:
-                    if self.location[i,0] < minX: minX = self.location[i,0]
-                    if self.location[i,0] > maxX: maxX = self.location[i,0]
-                    if self.location[i,1] < minY: minY = self.location[i,1]
-                    if self.location[i,1] > maxY: maxY = self.location[i,1]
-            if minX == -1:minX = maxX
-            if minY == -1:minY = maxY
-            #Ensure that the box isn't too small
-            if maxX - minX < SiftObject.minBoxLength:
-                maxX = maxX + SiftObject.minBoxLength/2
-                minX = minX - SiftObject.minBoxLength/2
-            if maxY - minY < SiftObject.minBoxLength:
-                maxY = maxY + SiftObject.minBoxLength/2
-                minY = minY - SiftObject.minBoxLength/2
-            self.boundingBox = [minX,minY,maxX,maxY]
-        else:
-            self.isVisible = False
-            #Expand the bounding box to search a larger area for trusted keypoints
-            width = self.boundingBox[2] - self.boundingBox[0]
-            height = self.boundingBox[3] - self.boundingBox[1]
-            x = self.boundingBox[0] - width*(SiftObject.boundBoxGrowth-1)*0.5
-            y = self.boundingBox[1] - height*(SiftObject.boundBoxGrowth-1)*0.5
-            if x < 0: x = 0
-            if y < 0: y = 0
-            if x > imgSize[1]-SiftObject.minBoxLength: x = imgSize[1]-SiftObject.minBoxLength
-            if y > imgSize[0]-SiftObject.minBoxLength: y = imgSize[0]-SiftObject.minBoxLength
-            width *= SiftObject.boundBoxGrowth
-            height *= SiftObject.boundBoxGrowth
-            if x + width > imgSize[1]: width = imgSize[1] - x
-            if y + height > imgSize[0]: height = imgSize[0] - y
-            if width < SiftObject.minBoxLength: width = SiftObject.minBoxLength
-            if height < SiftObject.minBoxLength: height = SiftObject.minBoxLength
-            self.boundingBox = [x,y,x+width,y+height]
+                    minX = self.location[i,0] + self.boxVector[i,1]*math.cos(self.boxVector[i,0])
+                    minY = self.location[i,1] + self.boxVector[i,1]*math.sin(self.boxVector[i,0])
+                    maxX = minX + self.origBox[0]
+                    maxY = minY + self.origBox[1]
+                    self.boundingBox = [minX,minY,maxX,maxY]
+                    return
+
+
+    def relateKeypoints(self):
+        if not self.isVisible: return
+        #Look for keypoints previously marked as unrelated
+        for i in range(0,self.keyCount):
+            if self.boxVector[i,0] == -1 and self.boxVector[i,1] == -1:
+                dx = self.boundingBox[0] - self.location[i,0]
+                dy = self.boundingBox[1] - self.location[i,1]
+                radius = (dx**2 + dy**2)**0.5
+                radians = math.atan2(dy,dx)
+                self.boxVector[i] = [radians,radius]
 
 
     '''
@@ -340,6 +351,7 @@ class SiftObject:
             self.scale = delete(self.scale,i,axis=0)
             self.angle = delete(self.angle,i,axis=0)
             self.descriptor = delete(self.descriptor,i,axis=0)
+            self.boxVector = delete(self.boxVector,i,axis=0)
             self.matched = delete(self.matched,i,axis=0)
             self.trust = delete(self.trust,i,axis=0)
             self.trusted = delete(self.trusted,i,axis=0)
@@ -362,8 +374,12 @@ class SiftObject:
             if self.matched[i]:
                 if self.trusted[i]:
                     plot(self.location[i,0],self.location[i,1],'.r')
+                    #x = self.location[i,0] + self.boxVector[i,1]*math.cos(self.boxVector[i,0])
+                    #y = self.location[i,1] + self.boxVector[i,1]*math.sin(self.boxVector[i,0])
+                    #plot([self.location[i,0],x],[self.location[i,1],y],'c')
                 else:
-                    plot(self.location[i,0],self.location[i,1],'.y')
+                    pass
+                    #lot(self.location[i,0],self.location[i,1],'.y')
         #Plot the bounding box
         x1 = self.boundingBox[0];y1 = self.boundingBox[1]
         x2 = self.boundingBox[2];y2 = self.boundingBox[3]
