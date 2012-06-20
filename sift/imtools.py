@@ -1,5 +1,6 @@
 import os
 from PIL import Image
+from PIL import ImageEnhance
 from pylab import *
 from scipy.ndimage import filters
 
@@ -13,6 +14,9 @@ def get_filelist(path,extension):
             files.append(os.path.join(path,f))
     return files
 
+def img_contrast(img,value):
+    enhancer = ImageEnhance.Contrast(img_fromArr(img))
+    return img_toArr(enhancer.enhance(value))
 
 #Note that this crops with the origin in the top-left corner
 #args: image to crop (numpy array), x,y,width,height of new image (ints)
