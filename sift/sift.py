@@ -17,10 +17,12 @@ class SiftObject:
     #              upper left-hand corner
     #matched:      (numpy nx1 array) True/False did this keypoint match to the
     #              source image last update
-    #isVisible:    (bool) True/False are any keypoints matched in last update?
-    #              If no, object is not visible in last update. If no, whole
-    #              frame is searched for obejct in next update rather than the
-    #              last known location
+    #isVisible:    (bool) True/False were any keypoints matched in last update?
+    #              If False, the object is briefly searched for. If False,
+    #              no new keypoints will be learned
+    #frameSearches:(int) how many times the current update frame has been
+    #              searched for the object. If SiftObject.maxSearches is
+    #              reached, then searching will end for the current frame
     #boundingBox:  (Python 1x4 list) x1,y1,x2,y2 of box surrounding every
     #              keypoint in last update, used to estimate object's position
     #origBox:      (Python 1x2 list) width,height describing original bounding
@@ -42,7 +44,7 @@ class SiftObject:
     trustMatch = 0.25
     trustNoMatch = 0.5
     #Maximum number of additional keypoint searches before giving up on a frame
-    maxSearches = 3
+    maxSearches = 4
 
 
     '''
@@ -172,7 +174,6 @@ class SiftObject:
     def update(self,img):
         self.frameSearches = 0
         self.updateKeypoints(img)
-        if self.frameSearches != 0: print 'Object search'
         while self.frameSearches != 0 and self.frameSearches < SiftObject.maxSearches:
             self.updateKeypoints(img)
         self.updateTrust()
