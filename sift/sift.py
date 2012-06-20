@@ -34,9 +34,9 @@ class SiftObject:
     #              enough times to be considered a stable part of the object
 
     #Percentage larger in side length the search box is than the bounding box
-    searchBoxRatio = 1.5
+    searchBoxRatio = 1.25
     #Smallest bounding box side length
-    minBoxLength = 50
+    minBoxLength = 20
     #SIFT parameters (suggested: edge 10, peak 5, ratio 0.7)
     siftParams = "--edge-thresh 10 --peak-thresh 5"
     distRatio = 0.7
@@ -66,6 +66,9 @@ class SiftObject:
         self.origBox = self.boundingBox
         self.trust = zeros((self.keyCount))
         self.trusted = zeros((self.keyCount),'bool')
+        self.position = zeros((3,2))
+        self.velocity = zeros((2,2))
+        self.acceleration = zeros((1,2))
 
 
     '''
@@ -75,14 +78,9 @@ class SiftObject:
     def showInfo(self):
         print 'SiftObject diagnostics'
         print '  visible:    ',self.isVisible
-        print '  box:        [',int(self.boundingBox[0]),',',int(self.boundingBox[1]),',',int(self.boundingBox[2]),',',int(self.boundingBox[3]),']'
-        print '  keypoints:  ',self.keyCount
-        print '  trusted:    ',len(self.trusted.nonzero()[0])
-        print '  new:        ',(self.keyCount-len(self.trusted.nonzero()[0]))
-        print '  matched:    ',len(self.matched.nonzero()[0])
-        print '  trust match:',len((self.matched*self.trusted).nonzero()[0])
-        print '  new match:  ',(len(self.matched.nonzero()[0])-len((self.matched*self.trusted).nonzero()[0]))
-
+        print '  position:   [',int(self.boundingBox[0]),',',int(self.boundingBox[1]),']'
+        print '  keypoints:  ',self.keyCount,' (',len(self.trusted.nonzero()[0]),' trusted)'
+        print '  matches:    ',len(self.matched.nonzero()[0]),' (',len((self.matched*self.trusted).nonzero()[0]),' trusted)'
 
     '''
     Empty the instance of all keypoint data
@@ -104,6 +102,9 @@ class SiftObject:
         self.origBox = self.boundingBox
         self.trust = zeros((self.keyCount))
         self.trusted = zeros((self.keyCount),'bool')
+        self.position = zeros((3,2))
+        self.velocity = zeros((2,2))
+        self.acceleration = zeros((1,2))
 
 
     '''
@@ -163,6 +164,8 @@ class SiftObject:
         #Relate keypoints to the initial bounding box
         self.boxVector[:] = [-1,-1]
         self.relateKeypoints()
+        #Initialize position used in backup prediction
+        self.position[:] = self.boundingBox[0:2]
 
 
     '''
@@ -179,6 +182,7 @@ class SiftObject:
         self.updateTrust()
         self.updateBoundingBox()
         self.relateKeypoints()
+        self.updatePrediction(img.shape)
 
 
     '''
@@ -416,6 +420,35 @@ class SiftObject:
             self.trusted = delete(self.trusted,i,axis=0)
 
 
+    def updatePrediction(self,imgSize):
+        if self.isVisible:
+            #Calculate from bounding box
+            self.position[2] = self.position[1]
+            self.position[1] = self.position[0]
+            self.position[0] = self.boundingBox[:2]
+            self.velocity[1] = self.velocity[0]
+            self.velocity[0] = self.position[0] - self.position[1]
+            self.acceleration = self.velocity[0] - self.velocity[1]
+        else:
+            #Extrapolate previous measurements
+            self.position[2] = self.position[1]
+            self.position[1] = self.position[0]
+            self.position[0] += self.velocity[0]
+            self.velocity[1] = self.velocity[0]
+            #self.velocity[0] += self.acceleration
+            self.velocity[0] *= 0.9
+            #Ensure box didn't go off-screen
+            if self.position[0,0] < 0:self.position[0,0] = 0
+            if self.position[0,1] < 0:self.position[0,1] = 0
+            if self.position[0,0] > imgSize[1]:self.position[0,0] = imgSize[1]
+            if self.position[0,1] > imgSize[0]:self.position[0,1] = imgSize[0]
+            #Use to move bounding box in hopes of finding object again
+            self.boundingBox[0] += self.velocity[0,0]
+            self.boundingBox[1] += self.velocity[0,1]
+            self.boundingBox[2] += self.velocity[0,0]
+            self.boundingBox[3] += self.velocity[0,1]
+
+
     '''
     Open a figure and show the object's bounding box and visible keypoints.
     Keypoints are red/yellow for trusted/untrusted, and the bounding box is
@@ -433,11 +466,7 @@ class SiftObject:
             if self.matched[i]:
                 if self.trusted[i]:
                     plot(self.location[i,0],self.location[i,1],'.r')
-                    x = self.location[i,0] + self.boxVector[i,1]*math.cos(self.boxVector[i,0])
-                    y = self.location[i,1] + self.boxVector[i,1]*math.sin(self.boxVector[i,0])
-                    plot([self.location[i,0],x],[self.location[i,1],y],'c')
                 else:
-                    #pass
                     plot(self.location[i,0],self.location[i,1],'.y')
         #Plot the bounding box
         x1 = self.boundingBox[0];y1 = self.boundingBox[1]

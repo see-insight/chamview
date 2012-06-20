@@ -26,7 +26,7 @@ obj.train(arr,[pick[0][0],pick[0][1],pick[1][0],pick[1][1]])
 obj.showInfo()
 obj.plot(arr)
 
-for i in range(1,40):
+for i in range(1,63):
     print '----- Frame ',i,' -----'
     arr = imtools.img_toArr(Image.open('ignore/cham/frame'+str(i)+'.png'))
     arr = imtools.img_contrast(arr,2.5)
