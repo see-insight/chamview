@@ -36,7 +36,7 @@ class SiftObject:
     #Percentage larger in side length the search box is than the bounding box
     searchBoxRatio = 1.25
     #Smallest bounding box side length
-    minBoxLength = 20
+    minBoxLength = 50
     #SIFT parameters (suggested: edge 10, peak 5, ratio 0.7)
     siftParams = "--edge-thresh 10 --peak-thresh 5"
     distRatio = 0.7
