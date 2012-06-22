@@ -8,7 +8,8 @@ import sift
 
 obj = sift.SiftObject()
 arr = imtools.img_toArr(Image.open('ignore/cham/frame1.png'))
-arr = imtools.img_contrast(arr,2.5)
+arr = imtools.img_contrast(arr,3)
+#arr = imtools.img_histeq(arr)
 
 fig = plt.figure()
 plt.gray()
@@ -29,7 +30,8 @@ obj.plot(arr)
 for i in range(1,63):
     print '----- Frame ',i,' -----'
     arr = imtools.img_toArr(Image.open('ignore/cham/frame'+str(i)+'.png'))
-    arr = imtools.img_contrast(arr,2.5)
+    arr = imtools.img_contrast(arr,3)
+    #arr = imtools.img_histeq(arr)
     obj.update(arr)
     obj.showInfo()
     obj.plot(arr)

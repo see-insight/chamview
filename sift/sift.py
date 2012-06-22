@@ -44,7 +44,9 @@ class SiftObject:
     trustMatch = 0.25
     trustNoMatch = 0.5
     #Maximum number of additional keypoint searches before giving up on a frame
-    maxSearches = 4
+    maxSearches = 3
+    #Should we use kinematics to predict the position of lost objects?
+    useKinematics = False
 
 
     '''
@@ -182,7 +184,7 @@ class SiftObject:
         self.updateTrust()
         self.updateBoundingBox()
         self.relateKeypoints()
-        self.updatePrediction(img.shape)
+        if SiftObject.useKinematics: self.updatePrediction(img.shape)
 
 
     '''
