@@ -51,3 +51,10 @@ def img_append(im1,im2):
     return concatenate((im1,im2), axis=1)
 
 
+def img_histeq(im,nbr_bins=256):
+   #get image histogram
+   imhist,bins = histogram(im.flatten(),nbr_bins,normed=True)
+   cdf = imhist.cumsum() #cumulative distribution function
+   cdf = 255 * cdf / cdf[-1] #normalize
+   im2 = interp(im.flatten(),bins[:-1],cdf)
+   return im2.reshape(im.shape)
