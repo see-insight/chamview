@@ -16,7 +16,7 @@ class ImageStack:
     #current_frame     0-based index of which frame is being analyzed
     #total_frames      number of valid images to use in the image directory
 
-    def __init__(self):
+    def __init__(self,directory=''):
         #Called upon instance creation
         self.point = [[0,0]]
         self.point_kind = []
@@ -26,6 +26,9 @@ class ImageStack:
         self.img_previous = None
         self.current_frame = 0
         self.total_frames = 0
+        if directory != '':
+            self.get_img_list(directory)
+            self.load_img()
 
     def get_img_list(self,directory):
         #Creates a list of every image file that can be used in the specified
@@ -38,8 +41,9 @@ class ImageStack:
         valid_extensions = ['.bmp','.jpg','.png','.gif']
         file_list = dircache.listdir(directory)
         for filename in file_list:
-            extension = lower(os.path.splitext(filename)[1])
-            if extension in valid_extensions: self.img_list.append(filename)
+            extension = os.path.splitext(filename)[1].lower()
+            if extension in valid_extensions:
+                self.img_list.append(directory+os.path.sep+filename)
         self.total_frames = len(self.img_list)
         self.point = [[0,0]*(self.point_kinds or 1)]*(self.total_frames or 1)
 
@@ -105,4 +109,26 @@ class ImageStack:
             file_out.write(str(frame)+','+kind+','+str(row)+','+str(column)+
                 '\n')
         file_out.close()
+
+    def show(self):
+        #A method for debugging. Displays the current frame
+        if self.img_current != None:
+            self.img_current.show()
+
+    def set_frame(self,frame):
+        #Sets the current frame and loads the corresponding image
+        self.current_frame = frame
+        if self.current_frame < 0:
+            self.current_frame = 0
+        if self.current_frame > self.total_frames - 1:
+            self.current_frame = self.total_frames - 1
+        self.load_img()
+
+    def advance_frame(self,frames):
+        #Advances the frame by a number and loads the correspending image
+        self.set_frame(self.current_frame + frames)
+
+    def get_frame(self):
+        #A method for debugging. Returns the current frame number
+        return self.current_frame
 
