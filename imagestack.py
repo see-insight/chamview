@@ -30,6 +30,8 @@ class ImageStack:
             self.get_img_list(directory)
             self.load_img()
 
+    #TODO add a __print__ (or similar) function
+
     def get_img_list(self,directory):
         #Creates a list of every image file that can be used in the specified
         #directory, and uses this to set self.img_list[] and self.total_frames.
