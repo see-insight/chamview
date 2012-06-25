@@ -2,14 +2,14 @@ import os
 import sys
 import imp
 import dircache
+from numpy import *
 from imagestack import ImageStack
 from plugins import base
 
 
 def main(argc,argv):
-    if argc < 3 or argc > 5:
-        print "usage: python chamview.py 'imageDirectory' chooserClass \
-                                        [pointKindFile] [pointPositionFile]"
+    if argc < 4 or argc > 6:
+        print "usage: python chamview.py imageDirectory chooserClass outputFile [pointKindFile] [pointPositionFile]"
         sys.exit()
 
     #Get the image directory from the command line and load it
@@ -27,12 +27,15 @@ def main(argc,argv):
     chooser = chooser_class[chooser_name.index(argv[2])]()
     chooser.setup()
 
+    #Get the output file name
+    outfile_name = argv[3]
+
     #Load point kinds from the file specified by the command line or the default
     if argc >= 4: imstack.get_point_kinds(argv[3])
     else: imstack.get_point_kinds()
 
     #Load point positions from the file specified by the command line, if any
-    if argc == 5: imstack.load_points(argv[4])
+    if argc == 6: imstack.load_points(argv[4])
 
     #Create an instance of every predictor in the plugins folder
     predictor_class,predictor_name = find_subclasses('plugins',base.Predictor)
@@ -40,16 +43,31 @@ def main(argc,argv):
     for subclass,name in predictor_class:
         predictor.append([subclass(),name])
 
-    #Call init() on every predictor and get an initial guess from each
+    #Initialize every predictor and optionally get a first guess
+    predict_point = zeros((len(predictor[0]),imstack.point_kinds,3))
+    for i in range(0,len(predictor[0])):
+        for j in range(0,imstack.point_kinds):
+            predict_point[i,j] = predictor[0][i].setup(imstack)
 
-    #Hand this result over to the chooser
+    #Give this result to the chooser to get the "real" first point
+    imstack.point[0] = chooser.choose(imstack,predict_point,predictor[1])
 
-    #while(True) (figure out something better than True)
-    #   for each predictor, give current imstack and get next predicted point
-    #   hand predictions over to chooser
+    #Need to figure out something better than 'while True'
+    while True:
+        #Give each predictor the current image stack and get a prediciton back
+        for i in range(0,len(predictor[0])):
+            for j in range(0,imstack.point_kinds):
+                predict_point[i,j] = predictor[0][i].predict(imstack)
+        #Give this result to the chooser to get the "real" point
+        imstack.point[0] = chooser.choose(imstack,predict_point,predictor[1])
 
-    #Save point positions to file
+    #Save points to file
+    imstack.save_points(outfile_name)
 
+    #Clear out any chooser or predictor data
+    chooser.teardown()
+    for pred in predictor[0]:
+        pred.teardown()
 
 
 def find_subclasses(path,superclass):

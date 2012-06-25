@@ -1,14 +1,15 @@
 import os
 import dircache
 from PIL import Image
+from numpy import *
 
 
 class ImageStack:
 
     #---- Instance variables ----
-    #point[[[]]]       row,column of each point kind in a given frame. Format is
-    #                  self.point[frame][point kind][r,c]
-    #point_kind[]      label associated with each point kind
+    #point             row,column of each point kind in a given frame. Format is
+    #                  a numpy array [frame,point kind,row/column]
+    #point_kind        string label associated with each point kind. numpy array
     #point_kinds       number of point kinds is use
     #img_list[]        list of paths to image files to load and use as frames
     #img_current       PIL image of current frame or None if no frames loaded
@@ -18,8 +19,8 @@ class ImageStack:
 
     def __init__(self,directory=''):
         #Called upon instance creation
-        self.point = [[0,0]]
-        self.point_kind = []
+        self.point = zeros((0,0,2))
+        self.point_kind = zeros((0),'string')
         self.point_kinds = 0
         self.img_list = []
         self.img_current = None
@@ -45,29 +46,30 @@ class ImageStack:
             if extension in valid_extensions:
                 self.img_list.append(directory+os.path.sep+filename)
         self.total_frames = len(self.img_list)
-        self.point = [[0,0]*(self.point_kinds or 1)]*(self.total_frames or 1)
+        self.point = zeros((self.total_frames,self.point_kinds,2))
 
     def get_point_kinds(self,filename=''):
         #Creates a list of valid point kinds read in from a file. Each line of
         #the file should have a point kind (i.e. Left back foot) with any
         #additional information separated by commas (which will be ignored). The
         #default point kind file will be used if no file is specified
-        self.point_kind = []
-        self.point_kinds = 0
         if filename == '': filename = 'defaultPointKinds.txt'
         if os.path.exists(filename) == False: return
+        self.point_kinds = sum(1 for line in open(filename))
+        self.point_kind = zeros((self.point_kinds),'string')
+        self.point = zeros((self.total_frames,self.point_kinds,2))
         file_in = open(filename)
+        i = 0
         for line in file_in:
             line_list = line.split(',')
             if len(line_list[0]) == 0: continue
-            self.point_kind.append(line_list[0])
+            self.point_kind[i] = line_list[0]
+            i += 1
         file_in.close()
-        self.point_kinds = len(self.point_kind)
-        self.point = [[0,0]*(self.point_kinds or 1)]*(self.total_frames or 1)
 
     def load_points(self,filename):
         #Loads previous point data in from a file. Each line should be in the
-        #format frame,point kind,row,column
+        #format frame,point label,row,column
         self.point = [[0,0]*(self.point_kinds or 1)]*(self.total_frames or 1)
         if os.path.exists(filename) == False: return
         file_in = open(filename)
@@ -83,7 +85,7 @@ class ImageStack:
             column = int(line_list[3])
             if frame > self.total_frames - 1 or frame < 0: continue
             if kind_index > self.pointKinds - 1 or kind_index == -1: continue
-            self.point[frame][kind_index] = [row,column]
+            self.point[frame,kind_index] = [row,column]
         file_in.close()
 
     def load_img(self):
@@ -104,10 +106,12 @@ class ImageStack:
         #Saves all points to a file in the format frame,point kind,row,column.
         #Note that this will overwrite any existing file without warning
         file_out = open(filename,'w')
-        for frame,kind_index,row,column in self.point:
-            kind = self.point_kind[kind_index]
-            file_out.write(str(frame)+','+kind+','+str(row)+','+str(column)+
-                '\n')
+        for frame in range(0,self.total_frames):
+            for kind_index in range(0,self.point_kinds):
+                kind = self.point_kind[kind_index]
+                file_out.write(str(frame)+','+kind+','+
+                    str(self.point[frame,kind_index,0])+','+
+                    str(self.point[frame,kind_index,1])+'\n')
         file_out.close()
 
     def show(self):
