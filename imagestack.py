@@ -126,11 +126,12 @@ class ImageStack:
 
     def set_frame(self,frame):
         #Sets the current frame and loads the corresponding image
+        #The bounds allow looping through each image to work better
         self.current_frame = frame
-        if self.current_frame < 0:
-            self.current_frame = 0
-        if self.current_frame > self.total_frames - 1:
-            self.current_frame = self.total_frames - 1
+        if self.current_frame < -1:
+            self.current_frame = -1
+        if self.current_frame > self.total_frames:
+            self.current_frame = self.total_frames
         self.load_img()
 
     def advance_frame(self,frames):

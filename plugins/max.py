@@ -26,8 +26,9 @@ class Max(Chooser):
             #Store the most confident coordinate for this point kind
             result[i,0] = row
             result[i,1] = column
-        #Advance the frame
-        if stack.current_frame == stack.total_frames-1: stack.exit = True
+        #Advance the frame (imagestack is 0-based, so if we hit total_frames
+        #that means that we're out of images)
         stack.next()
+        if stack.current_frame == stack.total_frames: stack.exit = True
         return result
 
