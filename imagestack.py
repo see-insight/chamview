@@ -9,24 +9,27 @@ class ImageStack:
     #---- Instance variables ----
     #point             row,column of each point kind in a given frame. Format is
     #                  a numpy array [frame,point kind,row/column]
-    #point_kind        string label associated with each point kind. numpy array
+    #point_kind[]      list of string labels associated with each point kind
     #point_kinds       number of point kinds is use
     #img_list[]        list of paths to image files to load and use as frames
     #img_current       PIL image of current frame or None if no frames loaded
     #img_previous      PIL image of previous frame or None if current_frame == 0
     #current_frame     0-based index of which frame is being analyzed
     #total_frames      number of valid images to use in the image directory
+    #exit              if set to True, main ChamView file will exit and save
+    #                  the current point set
 
     def __init__(self,directory=''):
         #Called upon instance creation
         self.point = zeros((0,0,2))
-        self.point_kind = zeros((0),'string')
+        self.point_kind = []
         self.point_kinds = 0
         self.img_list = []
         self.img_current = None
         self.img_previous = None
         self.current_frame = 0
         self.total_frames = 0
+        self.exit = False
         if directory != '':
             self.get_img_list(directory)
             self.load_img()
@@ -56,15 +59,15 @@ class ImageStack:
         if filename == '': filename = 'defaultPointKinds.txt'
         if os.path.exists(filename) == False: return
         self.point_kinds = sum(1 for line in open(filename))
-        self.point_kind = zeros((self.point_kinds),'string')
+        self.point_kind = []
         self.point = zeros((self.total_frames,self.point_kinds,2))
         file_in = open(filename)
-        i = 0
         for line in file_in:
             line_list = line.split(',')
             if len(line_list[0]) == 0: continue
-            self.point_kind[i] = line_list[0]
-            i += 1
+            if line_list[0].endswith('\n'):
+                line_list[0] = line_list[0][0:-1]
+            self.point_kind.append(line_list[0])
         file_in.close()
 
     def load_points(self,filename):
@@ -132,7 +135,11 @@ class ImageStack:
         #Advances the frame by a number and loads the correspending image
         self.set_frame(self.current_frame + frames)
 
-    def get_frame(self):
-        #A method for debugging. Returns the current frame number
-        return self.current_frame
+    def next(self):
+        #Advances the frame by one
+        self.advance_frame(1)
+
+    def prev(self):
+        #Backs the frame up by one
+        self.advance_frame(-1)
 

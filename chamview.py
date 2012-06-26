@@ -31,42 +31,46 @@ def main(argc,argv):
     outfile_name = argv[3]
 
     #Load point kinds from the file specified by the command line or the default
-    if argc >= 4: imstack.get_point_kinds(argv[3])
+    if argc >= 5: imstack.get_point_kinds(argv[4])
     else: imstack.get_point_kinds()
 
     #Load point positions from the file specified by the command line, if any
-    if argc == 6: imstack.load_points(argv[4])
+    if argc == 6: imstack.load_points(argv[5])
 
     #Create an instance of every predictor in the plugins folder
-    predictor_class,predictor_name = find_subclasses('plugins',base.Predictor)
-    predictor = [[]]
-    for subclass,name in predictor_class:
-        predictor.append([subclass(),name])
+    predictor,predictor_name = find_subclasses('plugins',base.Predictor)
+    for i in range(0,len(predictor)):
+        #Change class pointer to instance pointer
+        predictor[i] = predictor[i]()
 
     #Initialize every predictor and optionally get a first guess
-    predict_point = zeros((len(predictor[0]),imstack.point_kinds,3))
-    for i in range(0,len(predictor[0])):
+    predict_point = zeros((len(predictor),imstack.point_kinds,3))
+    for i in range(0,len(predictor)):
+        guess = predictor[i].setup(imstack)
         for j in range(0,imstack.point_kinds):
-            predict_point[i,j] = predictor[0][i].setup(imstack)
+            predict_point[i,j] = guess
 
     #Give this result to the chooser to get the "real" first point
-    imstack.point[0] = chooser.choose(imstack,predict_point,predictor[1])
+    imstack.point[0] = chooser.choose(imstack,predict_point,predictor_name)
 
-    #Need to figure out something better than 'while True'
-    while True:
+    #Repeat until the chooser wants to exit
+    while(imstack.exit == False):
         #Give each predictor the current image stack and get a prediciton back
-        for i in range(0,len(predictor[0])):
+        for i in range(0,len(predictor)):
             for j in range(0,imstack.point_kinds):
-                predict_point[i,j] = predictor[0][i].predict(imstack)
-        #Give this result to the chooser to get the "real" point
-        imstack.point[0] = chooser.choose(imstack,predict_point,predictor[1])
+                predict_point[i,j] = predictor[0].predict(imstack)
+        #Give this result to the chooser to get the "real" point. 'cf' is used
+        #because chooser.choose() can modify the current frame but we want to
+        #set coordinates for the curent frame
+        cf = imstack.current_frame
+        imstack.point[cf] = chooser.choose(imstack,predict_point,predictor_name)
 
     #Save points to file
     imstack.save_points(outfile_name)
 
     #Clear out any chooser or predictor data
     chooser.teardown()
-    for pred in predictor[0]:
+    for pred in predictor:
         pred.teardown()
 
 
@@ -85,9 +89,9 @@ def find_subclasses(path,superclass):
         #Look through this dictionary for things that are subclasses of
         #modulename but not modulename itself
         for key, entry in d.items():
-            if key == cls.__name__: continue
+            if key == superclass.__name__: continue
             try:
-                if issubclass(entry,cls):
+                if issubclass(entry,superclass):
                     subclasses.append(entry)
                     subclassnames.append(key)
             except TypeError:
@@ -96,7 +100,7 @@ def find_subclasses(path,superclass):
 
     for root, dirs, files in os.walk(path):
         for name in files:
-            if (name.endswith('.py') or name.endswith('.pyc')):
+            if name.endswith('.py'):
                 path = os.path.join(root,name)
                 modulename = path.rsplit('.',1)[0].replace('/','.')
                 look_for_subclass(modulename)
