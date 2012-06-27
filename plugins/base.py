@@ -17,8 +17,7 @@ class Chooser(object):
         #Determine which predicted point to use. 'predicted' is a numpy array
         #in the format [predictor, point kind, row/column/confidence].
         #'predictor_name' is a numpy array of strings that correlates with the
-        #first dimension of the 'predicted' argument. Must return a numpy array
-        #[point kind,row/column]
+        #first dimension of the 'predicted' argument
         raise NotImplementedError
 
 

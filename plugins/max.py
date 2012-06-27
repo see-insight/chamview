@@ -10,7 +10,6 @@ class Max(Chooser):
         pass
 
     def choose(self,stack,predicted,predictor_name):
-        result = zeros((stack.point_kinds,2))
         #For every point kind
         for i in range(0,stack.point_kinds):
             max_confidence = -0.1
@@ -24,11 +23,10 @@ class Max(Chooser):
                     row = predicted[j,i,0]
                     column = predicted[j,i,1]
             #Store the most confident coordinate for this point kind
-            result[i,0] = row
-            result[i,1] = column
+            stack.point[stack.current_frame,i,0] = row
+            stack.point[stack.current_frame,i,1] = column
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
         stack.next()
         if stack.current_frame == stack.total_frames: stack.exit = True
-        return result
 
