@@ -46,7 +46,7 @@ class SiftObject:
     #Maximum number of additional keypoint searches before giving up on a frame
     maxSearches = 3
     #Should we use kinematics to predict the position of lost objects?
-    useKinematics = False
+    useKinematics = True
 
 
     '''
@@ -445,10 +445,10 @@ class SiftObject:
             if self.position[0,0] > imgSize[1]:self.position[0,0] = imgSize[1]
             if self.position[0,1] > imgSize[0]:self.position[0,1] = imgSize[0]
             #Use to move bounding box in hopes of finding object again
-            self.boundingBox[0] += self.velocity[0,0]
-            self.boundingBox[1] += self.velocity[0,1]
-            self.boundingBox[2] += self.velocity[0,0]
-            self.boundingBox[3] += self.velocity[0,1]
+            self.boundingBox[0] = self.position[0,0]
+            self.boundingBox[1] = self.position[0,1]
+            self.boundingBox[2] = self.position[0,0]+self.origBox[0]
+            self.boundingBox[3] = self.position[0,1]+self.origBox[1]
 
 
     '''
