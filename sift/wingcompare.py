@@ -8,8 +8,8 @@ import sift
 
 
 fileMaster = 'wing006'
-dirImg = 'ignore/wingscale/'
-dirKey = 'ignore/wingscale/keys/'
+dirImg = 'ignore/wing/'
+dirKey = 'ignore/wing/keys/'
 numTop = 10
 
 
