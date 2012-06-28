@@ -11,7 +11,7 @@ frameStart = 1
 frameEnd = 63
 histeq = False
 contrast = True
-contrastAmount = 3.0
+contrastAmount = 2.5
 
 obj = sift.SiftObject()
 arr = imtools.img_toArr(Image.open(directory+'frame'+str(frameStart).zfill(filezeros)+'.png'))
