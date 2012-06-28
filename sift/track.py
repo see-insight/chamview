@@ -5,15 +5,16 @@ import os
 import imtools
 import sift
 
-directory = 'ignore/ball/'
-frameStart = 400
-frameEnd = 500
-histeq = True
-contrast = False
+directory = 'ignore/cham/'
+filezeros = 2
+frameStart = 1
+frameEnd = 63
+histeq = False
+contrast = True
 contrastAmount = 3.0
 
 obj = sift.SiftObject()
-arr = imtools.img_toArr(Image.open(directory+'frame'+str(frameStart).zfill(3)+'.png'))
+arr = imtools.img_toArr(Image.open(directory+'frame'+str(frameStart).zfill(filezeros)+'.png'))
 if contrast: arr = imtools.img_contrast(arr,contrastAmount)
 if histeq: arr = imtools.img_histeq(arr)
 
@@ -30,16 +31,16 @@ except:
 
 print 'Training'
 obj.train(arr,[pick[0][0],pick[0][1],pick[1][0],pick[1][1]])
-obj.showInfo()
-obj.plot(arr)
+obj.show_info()
+obj.show_plot(arr)
 
 for i in range(frameStart+1,frameEnd):
     print '----- Frame ',i,' -----'
-    arr = imtools.img_toArr(Image.open(directory+'frame'+str(i).zfill(3)+'.png'))
+    arr = imtools.img_toArr(Image.open(directory+'frame'+str(i).zfill(filezeros)+'.png'))
     if contrast: arr = imtools.img_contrast(arr,contrastAmount)
     if histeq: arr = imtools.img_histeq(arr)
     obj.update(arr)
-    obj.showInfo()
-    obj.plot(arr)
+    obj.show_info()
+    obj.show_plot(arr)
 
 exit()
