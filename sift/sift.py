@@ -261,9 +261,9 @@ class SiftObject:
         for i in toAdd:
             if i != 0:
                 #If it's outside of the bounding box, don't keep it
-                #if ((self.boundingBox[0] <= location[i,0] <= self.boundingBox[2] and
-                #    self.boundingBox[1] <= location[i,1] <= self.boundingBox[3]) ==
-                #    False): continue
+                if ((self.boundingBox[0] <= location[i,0] <= self.boundingBox[2] and
+                    self.boundingBox[1] <= location[i,1] <= self.boundingBox[3]) ==
+                    False): continue
                 #Create new keypoint
                 self.key_count += 1
                 self.key_loc = concatenate((self.key_loc,array([[location[i,0],location[i,1]]])))
