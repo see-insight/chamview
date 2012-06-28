@@ -14,6 +14,7 @@ class SiftObject:
         key_loc:     (numpy nx2 array) x,y position of each keypoint relative to
                      the origin of the latest source image
         key_scale:   (numpy nx1 array) size of each keypoint
+        key_origscale:
         key_angle:   (numpy nx1 array) angle in radians of each keypoint
         key_desc:    (numpy nx128 array) keypoint descriptors (used for matching)
         key_vector   (numpy nx2 array) radians, radius to original bounding box
@@ -26,6 +27,8 @@ class SiftObject:
         visible:     (bool) True/False were any keypoints matched in last update?
                      If False, the object is briefly searched for. If False,
                      no new keypoints will be learned
+        scale:
+        position:
         boundingBox: (1x4 list) x1,y1,x2,y2 of box surrounding every keypoint
                      in last update, used to estimate object's position
         origSize:    (1x2 list) width,height describing original bounding box
@@ -55,7 +58,7 @@ class SiftObject:
     reinforce_pos = 0.25
     reinforce_neg = 0.25
     #Smallest bounding box side length
-    minBoxLength = 50
+    minBoxLength = 10
 
 
     def __init__(self):
@@ -66,11 +69,14 @@ class SiftObject:
         self.key_count = 0
         self.key_loc = zeros((self.key_count,2))
         self.key_scale = zeros((self.key_count))
+        self.key_origscale = zeros((self.key_count))
         self.key_angle = zeros((self.key_count))
         self.key_desc = zeros((self.key_count,128))
         self.key_vector = zeros((self.key_count,2))
         self.key_match = zeros((self.key_count),'bool')
         self.visible = False
+        self.scale = 1.0
+        self.position = [0,0]
         self.frameSearches = 0
         self.boundingBox = [0,0,SiftObject.minBoxLength,SiftObject.minBoxLength]
         self.origSize = self.boundingBox
@@ -87,7 +93,8 @@ class SiftObject:
         """
         print 'SiftObject diagnostics'
         print '  visible:    ',self.visible
-        print '  position:   [',int(self.boundingBox[0]),',',int(self.boundingBox[1]),']'
+        print '  position:   [',int(self.position[0]),',',int(self.position[1]),']'
+        print '  scale:      ',self.scale
         i = 0;j = 0
         for k in range(0,self.key_count):
             if self.key_trust[k] == 1.0:
@@ -138,6 +145,7 @@ class SiftObject:
         self.key_loc[:,0] += box[0]
         self.key_loc[:,1] += box[1]
         self.key_scale = scale
+        self.key_origscale = copy(scale)
         self.key_angle = angle
         self.key_desc = descriptor
         self.key_vector = zeros((self.key_count,2))
@@ -153,6 +161,10 @@ class SiftObject:
         self.relate_keypoints()
         #Initialize position used in backup prediction
         self.predict_pos[:] = self.boundingBox[0:2]
+        #Other info
+        self.scale = 1.0
+        self.position[0] = (self.boundingBox[0]+self.boundingBox[2])/2.0
+        self.position[1] = (self.boundingBox[1]+self.boundingBox[3])/2.0
 
 
     def update(self,img):
@@ -245,7 +257,7 @@ class SiftObject:
                 self.key_match[i] = False
         #If the object is visible, gather new keypoints from the bounding box
         if self.visible and self.frameSearches == 0:
-            self.learn_keypoints(toAdd,location,scale,angle,descriptor)
+            self.add_keypoints(toAdd,location,scale,angle,descriptor)
         #Are we done or do we need to search this frame again?
         if self.visible:
             self.frameSearches = 0
@@ -253,7 +265,7 @@ class SiftObject:
             self.frameSearches += 1
 
 
-    def learn_keypoints(self,toAdd,location,scale,angle,descriptor):
+    def add_keypoints(self,toAdd,location,scale,angle,descriptor):
         #For every keypoint within the bounding box discovered and not matched,
         #add it to the object's list of untrusted keypoints to track. But only
         #if the object is visible at this moment in time so we don't get bad
@@ -268,6 +280,7 @@ class SiftObject:
                 self.key_count += 1
                 self.key_loc = concatenate((self.key_loc,array([[location[i,0],location[i,1]]])))
                 self.key_scale = concatenate((self.key_scale,array([scale[i]])))
+                self.key_origscale = concatenate((self.key_origscale,array([scale[i]])))
                 self.key_angle = concatenate((self.key_angle,array([angle[i]])))
                 self.key_desc = concatenate((self.key_desc,array([descriptor[i]])))
                 self.key_vector = concatenate((self.key_vector,array([[0,0]])))
@@ -291,12 +304,14 @@ class SiftObject:
         #Get the size and position of current bounding box
         x = self.boundingBox[0]
         y = self.boundingBox[1]
-        width = self.boundingBox[2] - self.boundingBox[0]
-        height = self.boundingBox[3] - self.boundingBox[1]
+        width = 0
+        height = 0
         #Calculate search box(es)
         bx = [];by = [];bw = [];bh = []
         count = 0
         if lost == 0:
+            width = self.boundingBox[2] - self.boundingBox[0]
+            height = self.boundingBox[3] - self.boundingBox[1]
             #Simply expand the current bounding box by a bit
             bx = [x - width*(SiftObject.search_boxratio-1)*0.5]
             by = [y - height*(SiftObject.search_boxratio-1)*0.5]
@@ -304,6 +319,8 @@ class SiftObject:
             bh = [height*SiftObject.search_boxratio]
             count = 1
         else:
+            width = self.origSize[0]
+            height = self.origSize[1]
             #If we're searching for the object, incrementally expand the search
             #area and never search area that's already been searched
             #Check that we haven't searched for too long
@@ -349,6 +366,7 @@ class SiftObject:
         #Were there trusted keypoints that matched the last update image?
         if self.visible:
             minX = 0;minY = 0;maxX = 0;maxY = 0
+            scale = 0.0
             count = 0
             #Position the bounding box using matched keypoints' relations to it
             for i in range(0,self.key_count):
@@ -356,13 +374,18 @@ class SiftObject:
                     count += 1
                     minX += self.key_loc[i,0] + self.key_vector[i,1]*math.cos(self.key_vector[i,0])
                     minY += self.key_loc[i,1] + self.key_vector[i,1]*math.sin(self.key_vector[i,0])
+                    scale += self.key_scale[i] / self.key_origscale[i]
             #Take the average
             if count > 0:
                 minX /= float(count)
                 minY /= float(count)
-                maxX = minX + self.origSize[0]
-                maxY = minY + self.origSize[1]
+                scale /= float(count)
+                maxX = minX + self.origSize[0] * scale
+                maxY = minY + self.origSize[1] * scale
                 self.boundingBox = [minX,minY,maxX,maxY]
+                self.scale = scale
+                self.position[0] = (self.boundingBox[0]+self.boundingBox[2])/2.0
+                self.position[1] = (self.boundingBox[1]+self.boundingBox[3])/2.0
 
 
     def relate_keypoints(self):
@@ -410,6 +433,7 @@ class SiftObject:
             self.key_count -= 1
             self.key_loc = delete(self.key_loc,i,axis=0)
             self.key_scale = delete(self.key_scale,i,axis=0)
+            self.key_origscale = delete(self.key_origscale,i,axis=0)
             self.key_angle = delete(self.key_angle,i,axis=0)
             self.key_desc = delete(self.key_desc,i,axis=0)
             self.key_vector = delete(self.key_vector,i,axis=0)
@@ -479,6 +503,8 @@ class SiftObject:
         plot([x1,x2],[y2,y2],color)
         plot([x1,x1],[y1,y2],color)
         plot([x2,x2],[y1,y2],color)
+        #Draw the estimated center
+        if self.visible: plot(self.position[0],self.position[1],'xb')
         axis('off')
         show()
 
