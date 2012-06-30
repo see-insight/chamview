@@ -6,20 +6,23 @@ Usage options:
     -h --help Print this help message
     -d --dir= change directory
 
-Using convention described in the following blog post:
-   http://www.artima.com/weblogs/viewpost.jsp?thread=4829
+Using convention described in the following blog posts:
+    http://www.artima.com/weblogs/viewpost.jsp?thread=4829
+    http://www.doughellmann.com/PyMOTW/getopt/
 
 Should be able to use the program in the following ways:
 
 *nix command line:
-    ./slideshow.py options
+    ./slideshow.py 
+    ./slideshow.py --help
+    ./slideshow.py --dir ./new/image/directory/ 
 
 As an argument to python:
-    python slideshow options
+    python slideshow.py --dir=./new/image/directory/
 
 Python Prompt
     >>>import slideshow
-    >>>slideshow.main(options)
+    >>>slideshow.show('./new/image/directory/')
 """
 
 import time
@@ -31,8 +34,17 @@ class Usage(Exception):
     def __init__(self,msg):
         self.msg = msg;
 
+def show(dirname='./images/'):
+    print dirname
+    imst = ImageStack(dirname)
+    while (imst.current_frame < imst.total_frames):
+        im = imst.show()
+        time.sleep(1)
+        imst.next()
+
+
 def main(argv=None):
-    dirname = './images/'
+    dirname='./images'
     if argv is None:
         argv = sys.argv
     try:
@@ -47,13 +59,7 @@ def main(argv=None):
                 sys.exit(0)
             elif opt in ('-d', '--dir'):
                dirname = arg 
-       
-        print dirname 
-        imst = ImageStack(dirname)
-        while (imst.current_frame < imst.total_frames):
-            im = imst.show()
-            time.sleep(1)
-            imst.next()
+        show(dirname) 
         
     except Usage, err:
         print >>sys.stderr, err.msg
