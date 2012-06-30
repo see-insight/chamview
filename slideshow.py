@@ -42,7 +42,6 @@ def show(dirname='./images/'):
         time.sleep(1)
         imst.next()
 
-
 def main(argv=None):
     dirname='./images'
     if argv is None:

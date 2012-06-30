@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+""" Main Chamview Testing Program
+Usage:
+     python chamview.py imageDirectory chooserClass [outputFile] [pointKindFile] [pointPositionFile]
+    
+Example:
+    python chamview.py ./images/ Max
+
+"""
 import os
 import sys
 import imp
@@ -24,7 +33,7 @@ def main(argc,argv):
     #Get the name of the chooser to use from the command line and load it
     chooser_class,chooser_name = find_subclasses('plugins',base.Chooser)
     if not (argv[2] in chooser_name):
-        print "Chooser '",argv[1],"' not found in plugins folder"
+        print "Chooser '",argv[2],"' not found in plugins folder"
         sys.exit()
     chooser = chooser_class[chooser_name.index(argv[2])]()
     chooser.setup()
@@ -111,3 +120,5 @@ def find_subclasses(path,superclass):
 if __name__ == '__main__':
     argc = len(sys.argv)
     main(argc,sys.argv)
+
+# vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
