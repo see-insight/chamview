@@ -10,8 +10,7 @@ from plugins import base
 def main(argc,argv):
     #Did the user specify the correct arguments?
     if argc < 3 or argc > 6:
-        print "usage: python chamview.py imageDirectory chooserClass \
-        [outputFile] [pointKindFile] [pointPositionFile]"
+        print "usage: python chamview.py imageDirectory chooserClass [outputFile] [pointKindFile] [pointPositionFile]"
         sys.exit()
 
     #Get the image directory from the command line and load it

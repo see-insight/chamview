@@ -75,7 +75,7 @@ class ImageStack:
     def load_points(self,filename):
         #Loads previous point data in from a file. Each line should be in the
         #format frame,point label,row,column
-        self.point = [[0,0]*(self.point_kinds or 1)]*(self.total_frames or 1)
+        self.point = zeros((self.total_frames,self.point_kinds,2))
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         for line in file_in:
@@ -89,8 +89,9 @@ class ImageStack:
             row = int(line_list[2])
             column = int(line_list[3])
             if frame > self.total_frames - 1 or frame < 0: continue
-            if kind_index > self.pointKinds - 1 or kind_index == -1: continue
-            self.point[frame,kind_index] = [row,column]
+            if kind_index > self.point_kinds - 1 or kind_index == -1: continue
+            self.point[frame,kind_index,0] = row
+            self.point[frame,kind_index,1] = column
         file_in.close()
 
     def load_img(self):
@@ -115,8 +116,8 @@ class ImageStack:
             for kind_index in range(0,self.point_kinds):
                 kind = self.point_kind[kind_index]
                 file_out.write(str(frame)+','+kind+','+
-                    str(self.point[frame,kind_index,0])+','+
-                    str(self.point[frame,kind_index,1])+'\n')
+                    str(int(self.point[frame,kind_index,0]))+','+
+                    str(int(self.point[frame,kind_index,1]))+'\n')
         file_out.close()
 
     def show(self):
