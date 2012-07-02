@@ -17,6 +17,7 @@ from plugins import base
 
 
 def main(argc,argv):
+    from plugins import basicgui
     #Did the user specify the correct arguments?
     if argc < 3 or argc > 6:
         print "usage: python chamview.py imageDirectory chooserClass [outputFile] [pointKindFile] [pointPositionFile]"
@@ -30,11 +31,12 @@ def main(argc,argv):
     imstack.load_img()
 
     #Get the name of the chooser to use from the command line and load it
-    chooser_class,chooser_name = find_subclasses('plugins',base.Chooser)
-    if not (argv[2] in chooser_name):
-        print "Chooser '",argv[2],"' not found in plugins folder"
-        sys.exit()
-    chooser = chooser_class[chooser_name.index(argv[2])]()
+    #chooser_class,chooser_name = find_subclasses('plugins',base.Chooser)
+    #if not (argv[2] in chooser_name):
+    #    print "Chooser '",argv[2],"' not found in plugins folder"
+    #    sys.exit()
+    #chooser = chooser_class[chooser_name.index(argv[2])]()
+    chooser = basicgui.BasicGui()
     chooser.setup()
 
     #Get the output file name, if any
@@ -111,7 +113,7 @@ def find_subclasses(path,superclass):
             if name.endswith('.py'):
                 path = os.path.join(root,name)
                 modulename = path.rsplit('.',1)[0].replace('/','.')
-                look_for_subclass(modulename)
+                #look_for_subclass(modulename)
 
     return subclasses,subclassnames
 
