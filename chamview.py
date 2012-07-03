@@ -2,7 +2,7 @@
 """ Main Chamview Testing Program
 Usage:
      python chamview.py imageDirectory chooserClass [outputFile] [pointKindFile] [pointPositionFile]
-    
+
 Example:
     python chamview.py ./images/ Max
 
@@ -18,6 +18,7 @@ from plugins import base
 
 def main(argc,argv):
     from plugins import basicgui
+    from plugins import guess
     #Did the user specify the correct arguments?
     if argc < 3 or argc > 6:
         print "usage: python chamview.py imageDirectory chooserClass [outputFile] [pointKindFile] [pointPositionFile]"
@@ -51,7 +52,9 @@ def main(argc,argv):
     if argc == 6: imstack.load_points(argv[5])
 
     #Create an instance of every predictor in the plugins folder
-    predictor,predictor_name = find_subclasses('plugins',base.Predictor)
+    #predictor,predictor_name = find_subclasses('plugins',base.Predictor)
+    predictor = [guess.Guess]
+    predictor_name = ['Guess']
     for i in range(0,len(predictor)):
         #predictor[i] will now hold a reference to an instance of the subclass
         predictor[i] = predictor[i]()
@@ -113,7 +116,7 @@ def find_subclasses(path,superclass):
             if name.endswith('.py'):
                 path = os.path.join(root,name)
                 modulename = path.rsplit('.',1)[0].replace('/','.')
-                #look_for_subclass(modulename)
+                look_for_subclass(modulename)
 
     return subclasses,subclassnames
 
