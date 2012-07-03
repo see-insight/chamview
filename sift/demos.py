@@ -7,12 +7,14 @@ import numpy as npy
 import imtools
 import sift
 
-
-frame = 1
+directory = 'ignore/cham/'
+filezeros = 2
+frameStart = 2
+frameEnd = 63
 
 #Load the first image
-print 'Loading master frame '+str(frame)
-img1 = imtools.img_toArr(Image.open('ignore/cham/frame'+str(frame)+'.png'))
+print 'Loading master frame '+str(frameStart)
+img1 = imtools.img_toArr(Image.open(directory+'frame'+str(frameStart).zfill(filezeros)+'.png'))
 enhancer = ImageEnhance.Contrast(imtools.img_fromArr(img1))
 img1 = imtools.img_toArr(enhancer.enhance(2.5))
 loc1,desc1 = sift.feature_getFromArr(img1)
@@ -51,11 +53,10 @@ pointY = loc1[featureID,1]
 indx = [featureID]
 
 #Track the point through subsequent frames
-frame += 1
-for i in range(frame,frame+60):
+for i in range(frameStart+1,frameEnd):
 
     #Load in the next image
-    img2 = imtools.img_toArr(Image.open('ignore/cham/frame'+str(i)+'.png'))
+    img2 = imtools.img_toArr(Image.open(directory+'frame'+str(i).zfill(filezeros)+'.png'))
     enhancer = ImageEnhance.Contrast(imtools.img_fromArr(img2))
     img2 = imtools.img_toArr(enhancer.enhance(2.5))
     loc2,desc2 = sift.feature_getFromArr(img2,[int(pointX-100),int(pointY-100),200,200])

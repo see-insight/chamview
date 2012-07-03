@@ -44,21 +44,24 @@ class SiftObject:
     """
 
 
-    #SIFT parameters (suggested: edge 10, peak 5, distratio 0.7)
+    #SIFT parameters (suggested: edge 10, peak 5, distratio 0.8)
     sift_params = "--edge-thresh 10 --peak-thresh 5"
-    sift_distratio = 0.7
+    sift_distratio = 0.75
     sift_twoway = False
     #Maximum number of additional keypoint searches before giving up on a frame
-    search_max = 3
+    search_max = 4
     #Percentage larger in side length the search box is than the bounding box
     search_boxratio = 1.25
     #Should we use kinematics to predict the position of lost objects?
-    search_kinematics = False
+    search_kinematics = True
     #Increase and decrease in trust when an untrusted keypoint is/is not matched
     reinforce_pos = 0.25
     reinforce_neg = 0.25
     #Smallest bounding box side length
-    minBoxLength = 10
+    minBoxLength = 25
+    #Rending options
+    plotUnmatched = False
+    plotMatched = True
 
 
     def __init__(self):
@@ -491,9 +494,11 @@ class SiftObject:
         for i in range(0,self.key_count):
             if self.key_match[i]:
                 if self.key_trust[i] == 1.0:
-                   plot(self.key_loc[i,0],self.key_loc[i,1],'.r')
+                    if SiftObject.plotMatched:
+                        plot(self.key_loc[i,0],self.key_loc[i,1],'.r')
                 else:
-                   plot(self.key_loc[i,0],self.key_loc[i,1],'.y')
+                    if SiftObject.plotUnmatched:
+                        plot(self.key_loc[i,0],self.key_loc[i,1],'.y')
         #Draw the bounding box
         x1 = self.boundingBox[0];y1 = self.boundingBox[1]
         x2 = self.boundingBox[2];y2 = self.boundingBox[3]

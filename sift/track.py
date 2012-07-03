@@ -25,12 +25,16 @@ plt.axis('off')
 try:
     pick = plt.ginput(2)
     plt.close()
+    x0 = pick[0][0]
+    y0 = pick[0][1]
+    x1 = pick[1][0]
+    y1 = pick[1][1]
 except:
     #This is executed if the user closed the window without choosing points
     exit()
 
 print 'Training'
-obj.train(arr,[pick[0][0],pick[0][1],pick[1][0],pick[1][1]])
+obj.train(arr,[x0,y0,x1,y1])
 obj.show_info()
 obj.show_plot(arr)
 
