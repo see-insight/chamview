@@ -17,8 +17,6 @@ from plugins import base
 
 
 def main(argc,argv):
-    from plugins import basicgui
-    from plugins import guess
     #Did the user specify the correct arguments?
     if argc < 3 or argc > 6:
         print "usage: python chamview.py imageDirectory chooserClass [outputFile] [pointKindFile] [pointPositionFile]"
@@ -32,12 +30,11 @@ def main(argc,argv):
     imstack.load_img()
 
     #Get the name of the chooser to use from the command line and load it
-    #chooser_class,chooser_name = find_subclasses('plugins',base.Chooser)
-    #if not (argv[2] in chooser_name):
-    #    print "Chooser '",argv[2],"' not found in plugins folder"
-    #    sys.exit()
-    #chooser = chooser_class[chooser_name.index(argv[2])]()
-    chooser = basicgui.BasicGui()
+    chooser_class,chooser_name = find_subclasses('plugins',base.Chooser)
+    if not (argv[2] in chooser_name):
+        print "Chooser '",argv[2],"' not found in plugins folder"
+        sys.exit()
+    chooser = chooser_class[chooser_name.index(argv[2])]()
     chooser.setup()
 
     #Get the output file name, if any
@@ -52,9 +49,7 @@ def main(argc,argv):
     if argc == 6: imstack.load_points(argv[5])
 
     #Create an instance of every predictor in the plugins folder
-    #predictor,predictor_name = find_subclasses('plugins',base.Predictor)
-    predictor = [guess.Guess]
-    predictor_name = ['Guess']
+    predictor,predictor_name = find_subclasses('plugins',base.Predictor)
     for i in range(0,len(predictor)):
         #predictor[i] will now hold a reference to an instance of the subclass
         predictor[i] = predictor[i]()
@@ -115,7 +110,7 @@ def find_subclasses(path,superclass):
         for name in files:
             if name.endswith('.py'):
                 path = os.path.join(root,name)
-                modulename = path.rsplit('.',1)[0].replace('/','.')
+                modulename = path.rsplit('.',1)[0].replace(os.path.sep,'.')
                 look_for_subclass(modulename)
 
     return subclasses,subclassnames
