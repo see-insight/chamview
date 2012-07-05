@@ -36,8 +36,8 @@ class SiftObject:
         frameSearches:(int) how many times the current update frame has been
                       searched for the object. If SiftObject.maxSearches is
                       reached, then searching will end for the current frame
-        predict_pos: (numpy 3x2 array) Predicted position of bounding box for the
-                     past three frames
+        predict_pos: (numpy 3x2 array) Actual or predicted position of bounding
+                     box for the past three frames
         predict_vel: (numpy 2x2 array) Actual velocity of bounding box for the
                      past two frames
         predict_accel: (numpy 1x2 array) Actual acceleration of bounding box
@@ -49,11 +49,9 @@ class SiftObject:
     sift_distratio = 0.75
     sift_twoway = False
     #Maximum number of additional keypoint searches before giving up on a frame
-    search_max = 4
+    search_max = 3
     #Percentage larger in side length the search box is than the bounding box
     search_boxratio = 1.25
-    #Should we use kinematics to predict the position of lost objects?
-    search_kinematics = True
     #Increase and decrease in trust when an untrusted keypoint is/is not matched
     reinforce_pos = 0.25
     reinforce_neg = 0.25
@@ -183,7 +181,7 @@ class SiftObject:
         self.update_trust()
         self.update_boundingbox()
         self.relate_keypoints()
-        if SiftObject.search_kinematics: self.update_prediction(img.shape)
+        self.update_prediction(img.shape)
 
 
     def update_keypoints(self,img):
@@ -309,28 +307,28 @@ class SiftObject:
         y = self.boundingBox[1]
         width = 0
         height = 0
-        #Calculate search box(es)
+        #Look in the last known position and expand the search box a bit
         bx = [];by = [];bw = [];bh = []
-        count = 0
-        if lost == 0:
-            width = self.boundingBox[2] - self.boundingBox[0]
-            height = self.boundingBox[3] - self.boundingBox[1]
-            #Simply expand the current bounding box by a bit
-            bx = [x - width*(SiftObject.search_boxratio-1)*0.5]
-            by = [y - height*(SiftObject.search_boxratio-1)*0.5]
-            bw = [width*SiftObject.search_boxratio]
-            bh = [height*SiftObject.search_boxratio]
-            count = 1
-        else:
+        width = self.boundingBox[2] - self.boundingBox[0]
+        height = self.boundingBox[3] - self.boundingBox[1]
+        bx.append(x - width*(SiftObject.search_boxratio-1)*0.5)
+        by.append(y - height*(SiftObject.search_boxratio-1)*0.5)
+        bw.append(width*SiftObject.search_boxratio)
+        bh.append(height*SiftObject.search_boxratio)
+        count = 1
+        #If the box is lost, also search the predicted position
+        if not self.visible:
+            x = self.predict_pos[0,0]
+            y = self.predict_pos[0,1]
             width = self.origSize[0]
             height = self.origSize[1]
             #If we're searching for the object, incrementally expand the search
             #area and never search area that's already been searched
             #Check that we haven't searched for too long
             if (width*lost>imgSize[1]) or (height*lost>imgSize[0]):
-                count = 0
+                count = 0;bx = [];by = [];bw = [];bh = []
                 return bx,by,bw,bh,count
-            #Make search boxes outlining the previosuly searched area
+            #Make search boxes outlining the previously searched area
             for i in range(0,lost*2+1):
                 #Top edge
                 ix = x - width*lost + width*i;iy = y - height*lost
@@ -351,12 +349,8 @@ class SiftObject:
         for i in range(0,count):
             if bx[i] < 0: bx[i] = 0
             if by[i] < 0: by[i] = 0
-            if bx[i]+bw[i] > imgSize[1]: bw[i] = imgSize[1]-bx[i]
-            if by[i]+bh[i] > imgSize[0]: bh[i] = imgSize[0]-by[i]
-        #Ensure that the search box(es) isn't (aren't) too small
-        for i in range(0,count):
-            if bw[i] < SiftObject.minBoxLength: bw[i] = SiftObject.minBoxLength
-            if bh[i] < SiftObject.minBoxLength: bh[i] = SiftObject.minBoxLength
+            if bx[i]+bw[i] > imgSize[1]: bx[i] = imgSize[1]-bw[i]
+            if by[i]+bh[i] > imgSize[0]: by[i] = imgSize[0]-bh[i]
         return bx,by,bw,bh,count
 
 
@@ -459,23 +453,17 @@ class SiftObject:
             self.predict_vel[0] = self.predict_pos[0] - self.predict_pos[1]
             self.predict_accel = self.predict_vel[0] - self.predict_vel[1]
         else:
-            #Extrapolate previous measurements
-            self.predict_pos[2] = self.predict_pos[1]
-            self.predict_pos[1] = self.predict_pos[0]
+            #Extrapolate previous values
             self.predict_pos[0] += self.predict_vel[0]
-            self.predict_vel[1] = self.predict_vel[0]
             #self.predict_vel[0] += self.predict_accel
-            self.predict_vel[0] *= 0.9
+            self.predict_vel[0] *= 0.9 #hack: seems to work better
             #Ensure that the box didn't go off-screen
             if self.predict_pos[0,0] < 0:self.predict_pos[0,0] = 0
             if self.predict_pos[0,1] < 0:self.predict_pos[0,1] = 0
-            if self.predict_pos[0,0] > imgSize[1]:self.predict_pos[0,0] = imgSize[1]
-            if self.predict_pos[0,1] > imgSize[0]:self.predict_pos[0,1] = imgSize[0]
-            #Use to move the bounding box in hopes of finding object again
-            self.boundingBox[0] = self.predict_pos[0,0]
-            self.boundingBox[1] = self.predict_pos[0,1]
-            self.boundingBox[2] = self.predict_pos[0,0]+self.origSize[0]
-            self.boundingBox[3] = self.predict_pos[0,1]+self.origSize[1]
+            if self.predict_pos[0,0]+self.origSize[0] > imgSize[1]:
+                self.predict_pos[0,0] = imgSize[1]-self.origSize[0]
+            if self.predict_pos[0,1]+self.origSize[1] > imgSize[0]:
+                self.predict_pos[0,1] = imgSize[0]-self.origSize[1]
 
 
     def show_plot(self,img):
