@@ -1,3 +1,16 @@
+#!/usr/bin/env python
+"""Video file frame extractor
+Requires that AVBin be installed.
+
+Usage:
+    python mov2img.py videoFile [destinationFolder] [startTime] [endTime]
+    ./mov2img.py videoFile [destinationFolder] [startTime] [endTime]
+
+Example:
+    python mov2img.py example.mv4 frames 10 15
+    ./mov2img.py myvideo.avi
+"""
+
 import os
 import sys
 try:
@@ -11,7 +24,7 @@ except ImportError:
 def mov2img(source,destination='',start=-1,end=-1,output = False):
 
     #Load in the video source file
-    if output: sys.stdout.write('Loading video [')
+    if output: sys.stdout.write('Loading video          [')
     try:
         sourceVid = pyglet.media.load(source)
     except pyglet.media.MediaException:
@@ -87,7 +100,7 @@ def mov2img(source,destination='',start=-1,end=-1,output = False):
         if output: print "Frames will be saved in '"+destination+"'"
 
         #Save the video's frames until we run out of them or reach the end time
-        if output: sys.stdout.write('Saving frames [');sys.stdout.flush()
+        if output: sys.stdout.write('Saving frames          [');sys.stdout.flush()
         frameCount = 1
         notify = (end-start) / 20.0
         while frame != None and time <= end:
@@ -97,8 +110,8 @@ def mov2img(source,destination='',start=-1,end=-1,output = False):
             imageData = frame.get_image_data()
             pixels = imageData.get_data(imageData.format,imageData.pitch *-1)
             imageData.set_data(imageData.format,imageData.pitch,pixels)
-            imageData.save(destination+os.path.sep+"frame"+str(frameCount)+
-                ".png")
+            imageData.save(destination+os.path.sep+"frame"+
+                str(frameCount).zfill(3)+".png")
             time = sourceVid.get_next_video_timestamp()
             frame = sourceVid.get_next_video_frame()
             frameCount += 1
@@ -115,10 +128,10 @@ if __name__ == '__main__':
     argc = len(sys.argv)
     argv = sys.argv
     if argc < 2:
-        print "ERROR: specify a movie to convert. See 'mov2img --help'."
+        print "ERROR: specify a movie to convert. For help use --help"
         exit()
     if argv[1] == '--help':
-        print 'usage: mov2img source [destination] [start time] [end time]'
+        print __doc__
         exit()
     dest = ''
     start = -1
@@ -128,5 +141,4 @@ if __name__ == '__main__':
     if argc >= 4: start = int(argv[3])
     if argc >= 5: end = int(argv[4])
     mov2img(src,dest,start,end,True)
-
 
