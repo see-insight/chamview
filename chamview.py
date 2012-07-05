@@ -58,18 +58,18 @@ def main(argc,argv):
     predict_point = zeros((len(predictor),imstack.point_kinds,3))
     for i in range(0,len(predictor)):
         guess = predictor[i].setup(imstack)
-        for j in range(0,imstack.point_kinds):
-            predict_point[i,j] = guess
+        if guess != None:
+            for j in range(0,imstack.point_kinds):
+                predict_point[i,j] = guess
 
     #Give this result to the chooser to get the "real" first point
     chooser.choose(imstack,predict_point,predictor_name)
 
-    #Repeat until the chooser wants to exit
+    #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Give each predictor the current image stack and get a prediction back
         for i in range(0,len(predictor)):
-            for j in range(0,imstack.point_kinds):
-                predict_point[i,j] = predictor[0].predict(imstack)
+            predict_point[i] = predictor[i].predict(imstack)
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)
 
