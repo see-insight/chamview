@@ -92,7 +92,10 @@ class BasicGui(Chooser):
         self.listbox.selection_clear(self.pointKind)
         if event.char == '??':
             #User clicked on the listbox
-            self.pointKind = int(self.listbox.curselection()[0])
+            try:
+                self.pointKind = int(self.listbox.curselection()[0])
+            except IndexError:
+                pass
         else:
             #User hit a key 1-9 on the keyboard
             self.pointKind = int(event.char) - 1
@@ -110,7 +113,7 @@ class BasicGui(Chooser):
     def onClick(self,event):
         #Set the current pointkind's position in the current frame to the mouse
         #position and redraw it
-        mouseX,mouseY = event.x,event.y
+        mouseX,mouseY = event.x/self.scale,event.y/self.scale
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = mouseX
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = mouseY
         self.drawCanvas()
@@ -155,8 +158,8 @@ class BasicGui(Chooser):
         #Draw the point already defined for this frame, if any
         if(self.imstack.point[self.imstack.current_frame,self.pointKind,0] != 0 or
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] != 0):
-            x = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
-            y = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
+            x = self.imstack.point[self.imstack.current_frame,self.pointKind,0] * self.scale
+            y = self.imstack.point[self.imstack.current_frame,self.pointKind,1] * self.scale
             rad = BasicGui.circle_radius
             self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
 
