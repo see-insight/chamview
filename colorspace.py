@@ -5,7 +5,6 @@ from PIL import Image
 from skimage.feature import match_template
 import skimage.color as color
 from PIL import ImageEnhance
-#from skimage import exposure
 
 def test(image, coin):
     result = match_template(image, coin)
@@ -51,7 +50,6 @@ def confidence(count, templates, curr_slice):
         r+=1
     tmp_avg = float(tmp_sum)/((templates[count][1]-templates[count][0])*
                               (templates[count][3]-templates[count][2]))
-    
     dev_sum = 0
     r = templates[count][0]
     
@@ -110,8 +108,8 @@ def colorspace(image):
                      int(c*25/40),int(c*31/40)]]
 
     color_list = ['red','green','blue','hue','saturation','value',
-                 'grey','enh red','enh green', 'enh blue',
-                 'r cie','g cie', 'b cie','x','y','z']  
+                  'grey','enh red','enh green', 'enh blue',
+                  'r cie','g cie', 'b cie','x','y','z']  
        
     slice_count = 0
     errors = []
@@ -159,7 +157,7 @@ def colorspace(image):
         if item < least_item:
             least_item = item
             least_ind = index
-    #print error_list
+    print errors
     return color_list[least_ind]
 
 print colorspace('test_file')
