@@ -44,7 +44,7 @@ class ImageStack:
         self.current_frame = 0
         self.total_frames = 0
         if os.path.isdir(directory) == False: return
-        valid_extensions = ['.bmp','.jpg','.png','.gif']
+        valid_extensions = ['.ppm','.bmp','.jpg','.png','.gif']
         file_list = dircache.listdir(directory)
         for filename in file_list:
             extension = os.path.splitext(filename)[1].lower()
@@ -103,6 +103,7 @@ class ImageStack:
         if self.current_frame < 0: return
         if self.current_frame > self.total_frames - 1: return
         self.img_current = Image.open(self.img_list[self.current_frame])
+        print "Loading Image = ", self.img_list[self.current_frame]
         if self.current_frame > 0:
             self.img_previous = Image.open(self.img_list[self.current_frame-1])
         else:
