@@ -15,7 +15,7 @@ class Accuracy(Chooser):
             #Save data to file
             fo = open('accuracy_'+self.name[i]+'.txt','w')
             for j in range(0,self.x[i].shape[0]):
-                fo.write(str(self.x[i][j])+','+str(self.y[i][j])+'\n')
+                fo.write(str(self.x[i][j]).zfill(4)+','+str(self.y[i][j])+'\n')
             fo.close()
             #Plot the error vs frame graph
             figure()
@@ -26,7 +26,7 @@ class Accuracy(Chooser):
         show()
 
     def choose(self,stack,predicted,predictor_name):
-        print 'Frame '+str(stack.current_frame)+'/'+str(stack.total_frames)
+        print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         #Have we yet to create numpy arrays to hold test results?
         if len(self.name) != len(predictor_name):
             for name in predictor_name:
