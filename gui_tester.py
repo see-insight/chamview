@@ -24,7 +24,7 @@ def show(dirname='./images/'):
     imst.get_point_kinds() #load default point names
     gui = basicgui.BasicGui()
     gui.setup()
-    while (imst.current_frame < imst.total_frames):
+    while (imst.exit == False):
         predict_point = zeros((1,imst.point_kinds,3))
         gui.choose(imst,predict_point,[])
         imst.next()
