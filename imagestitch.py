@@ -1,10 +1,30 @@
+#!/usr/bin/env python
+""" Stitch two imges together into a single image
+Algorithm by Dirk Colbry
+Written by Jeremy Martin
+
+Usage options:
+    -h --help Print this help message
+    -r --row row offset (user will be prompted if not specified)
+    -c --col column offset (user will be prompted if not specified)
+    
+Example:
+    imagestitch.py image1 image2
+"""
+import sys
+import getopt
 from numpy import *
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from pylab import ginput
+from string import atoi
 
-def picker (im1, im2):
+class Usage(Exception):
+    def __init__(self,msg):
+        self.msg = msg;
+
+def picker(im1, im2):
 
     imgL = Image.open(im1)
     imgR = Image.open(im2)
@@ -155,11 +175,41 @@ def imagestitch(im1, im2, t):
 
     return im
 
-imgfile_1 = 'test_file1'
-imgfile_2 = 'test_file2'
+def main(argv=None):
+    dirname='./images'
+    if argv is None:
+        argv = sys.argv
+    try:
+        try:
+            opts, args = getopt.getopt(argv[1:], 'r:c:h:d', ['row=', 'col=', 'help','dir='])
+        except getopt.error, msg:
+            raise Usage(msg)
+        t = [0,0]
+        for opt, arg in opts:
+            if opt in ('-h', '--help'):
+                print __doc__
+                sys.exit(0)
+            elif opt in ('-r', '--row'):
+                print arg
+                t[0] = atoi(arg)
+            elif opt in ('-c', '--col'):
+                print arg
+                t[1] = atoi(arg)
+        print args
+        imagefile_1 = args[-1]
+        imagefile_2 = args[-0]
+        if(t[0] == 0 and t[1] == 0):
+            t = picker(imagefile_1, imagefile_2)
+        fig2 = plt.imshow(imagestitch(imagefile_1,imagefile_2,t), origin='lower')
+        fig2.axes.get_xaxis().set_visible(False)
+        fig2.axes.get_yaxis().set_visible(False)
+        plt.show()
+        
+    except Usage, err:
+        print >>sys.stderr, err.msg
+        print >>sys.stderr, "for help use --help"
+        return 2
 
-t = picker(imgfile_1, imgfile_2)
-fig2 = plt.imshow(imagestitch(imgfile_1,imgfile_2,t), origin='lower')
-fig2.axes.get_xaxis().set_visible(False)
-fig2.axes.get_yaxis().set_visible(False)
-plt.show()
+if __name__ == "__main__":
+    sys.exit(main())
+
