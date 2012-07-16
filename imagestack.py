@@ -6,7 +6,7 @@ from numpy import *
 
 class ImageStack:
 
-    #---- Instance variables ----
+    """    #---- Instance variables ----
     #point             row,column of each point kind in a given frame. Format is
     #                  a numpy array [frame,point kind,row/column]
     #point_kind[]      list of string labels associated with each point kind
@@ -14,10 +14,11 @@ class ImageStack:
     #img_list[]        list of paths to image files to load and use as frames
     #img_current       PIL image of current frame or None if no frames loaded
     #img_previous      PIL image of previous frame or None if current_frame == 0
+    #name_current      Current File name
     #current_frame     0-based index of which frame is being analyzed
     #total_frames      number of valid images to use in the image directory
     #exit              if set to True, main ChamView file will exit and save
-    #                  the current point set
+    #                  the current point set """
 
     def __init__(self,directory=''):
         #Called upon instance creation
@@ -102,8 +103,9 @@ class ImageStack:
         if self.total_frames == 0: return
         if self.current_frame < 0: return
         if self.current_frame > self.total_frames - 1: return
-        self.img_current = Image.open(self.img_list[self.current_frame])
-        print "Loading Image = ", self.img_list[self.current_frame]
+        self.name_current = self.img_list[self.current_frame]
+        self.img_current = Image.open(self.name_current)
+        #print "Loading Image = ", self.name_current
         if self.current_frame > 0:
             self.img_previous = Image.open(self.img_list[self.current_frame-1])
         else:

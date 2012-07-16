@@ -149,6 +149,7 @@ class BasicGui(Chooser):
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
         #Draw predicted point (if any) and current point
+        self.master.title(self.imstack.name_current)
         if self.imstack.current_frame == self.predictedFrame:
             self.drawPrediction()
         self.drawPoints()
