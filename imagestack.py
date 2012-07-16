@@ -74,11 +74,17 @@ class ImageStack:
 
     def load_points(self,filename):
         #Loads previous point data in from a file. Each line should be in the
-        #format frame,point label,row,column
+        #format frame,point label,row,column. If the input file is legacy from
+        #the old Chamview, it will be loaded appropriately
         self.point = zeros((self.total_frames,self.point_kinds,2))
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         for line in file_in:
+            #If it's an old point file, switch over to the legacy point loader
+            if len(line.split(',')) == 1 and len(line.split(':')) == 6:
+                file_in.close()
+                self.load_legacyPoints(filename)
+                return
             line_list = line.split(',')
             frame = int(line_list[0])
             kind = line_list[1]
@@ -93,6 +99,32 @@ class ImageStack:
             self.point[frame,kind_index,0] = row
             self.point[frame,kind_index,1] = column
         file_in.close()
+
+    def load_legacyPoints(self,filename):
+        #Loads previous point data in from a file. Each line should be in the
+        #old format of frame+n:row0:column0:row1:column1:circleID+label
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        if os.path.exists(filename) == False: return
+        file_in = open(filename)
+        for line in file_in:
+            line_list = line.split(':')
+            frame = int(line_list[0][:-1]) - 1 #old ChamView is 1-based
+            kind = line_list[5][1:-1]
+            #Take the average of each set of points describing the circle to get
+            #the center
+            row = int((int(line_list[1])+int(line_list[3]))/2)
+            column = int((int(line_list[2])+int(line_list[4]))/2)
+            try:
+                kind_index = self.point_kind.index(kind)
+            except ValueError:
+                kind_index = -1
+            if frame > self.total_frames - 1 or frame < 0: continue
+            if kind_index > self.point_kinds - 1 or kind_index == -1: continue
+            self.point[frame,kind_index,0] = row
+            self.point[frame,kind_index,1] = column
+        file_in.close()
+        exit()
+
 
     def load_img(self):
         #Loads the correct self.img_current and self.img_previous into memory
