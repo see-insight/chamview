@@ -20,6 +20,7 @@ class BasicGui(Chooser):
         self.photo = None
         self.pointKind = 0
         self.madePointkindList = False
+        self.showPredictions = True
         #Intitialize GUI, but don't show it yet
         self.createGui()
         self.createKeyBindings()
@@ -108,6 +109,7 @@ class BasicGui(Chooser):
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<s>',self.predict)
+        self.master.bind_all('<h>',self.togglePredictions)
         self.canvas.bind("<Button-1>",self.onClick)
 
     def onClick(self,event):
@@ -126,7 +128,8 @@ class BasicGui(Chooser):
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
         #Draw predicted point (if any) and current point
-        if self.imstack.current_frame == self.predictedFrame:
+        if (self.imstack.current_frame == self.predictedFrame and
+                                            self.showPredictions):
             self.drawPrediction()
         self.drawPoint()
 
@@ -189,3 +192,6 @@ class BasicGui(Chooser):
         #a prediction is made, choose() will be called and the window appears
         self.master.quit()
 
+    def togglePredictions(self,event=''):
+        self.showPredictions = not self.showPredictions
+        self.drawCanvas()

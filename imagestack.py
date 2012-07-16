@@ -67,10 +67,13 @@ class ImageStack:
         file_in = open(filename)
         for line in file_in:
             #If it's an old point kind file, switch over to the legacy loader
-            if int(line) == self.point_kinds-1:
-                file_in.close()
-                self.get_point_kinds_legacy(filename)
-                return
+            try:
+                if int(line) == self.point_kinds-1:
+                    file_in.close()
+                    self.get_point_kinds_legacy(filename)
+                    return
+            except ValueError:
+                pass
             line_list = line.split(',')
             if len(line_list[0]) == 0: continue
             if line_list[0].endswith('\n'):
