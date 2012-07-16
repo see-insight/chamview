@@ -58,7 +58,8 @@ class ImageStack:
         #Creates a list of valid point kinds read in from a file. Each line of
         #the file should have a point kind (i.e. Left back foot) with any
         #additional information separated by commas (which will be ignored). The
-        #default point kind file will be used if no file is specified
+        #default point kind file will be used if no file is specified. If the
+        #file is legacy from the old Chamview, it will be loaded appropriately
         if filename == '': filename = 'defaultPointKinds.txt'
         if os.path.exists(filename) == False: return
         self.point_kinds = sum(1 for line in open(filename))
@@ -66,6 +67,11 @@ class ImageStack:
         self.point = zeros((self.total_frames,self.point_kinds,2))
         file_in = open(filename)
         for line in file_in:
+            #If it's an old point kind file, switch over to the legacy loader
+            if int(line) == self.point_kinds-1:
+                file_in.close()
+                self.get_point_kinds_legacy(filename)
+                return
             line_list = line.split(',')
             if len(line_list[0]) == 0: continue
             if line_list[0].endswith('\n'):
@@ -73,13 +79,34 @@ class ImageStack:
             self.point_kind.append(line_list[0])
         file_in.close()
 
+    def get_point_kinds_legacy(self,filename=''):
+        #Loads point kinds from a file in the legacy format. The first line of
+        #the file contains the number of point kinds and each line thereafter
+        #is in the format buttonToHit label color
+        self.point_kinds = sum(1 for line in open(filename)) - 1
+        self.point_kind = []
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        file_in = open(filename)
+        for line in file_in:
+            line_list = line.split(' ')
+            if len(line_list) == 1:continue
+            if len(line_list[0]) == 0: continue
+            self.point_kind.append(line_list[1])
+        file_in.close()
+
     def load_points(self,filename):
         #Loads previous point data in from a file. Each line should be in the
-        #format frame,point label,row,column
+        #format frame,point label,row,column. If the input file is legacy from
+        #the old Chamview, it will be loaded appropriately
         self.point = zeros((self.total_frames,self.point_kinds,2))
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         for line in file_in:
+            #If it's an old point file, switch over to the legacy point loader
+            if len(line.split(',')) == 1 and len(line.split(':')) == 6:
+                file_in.close()
+                self.load_points_legacy(filename)
+                return
             line_list = line.split(',')
             frame = int(line_list[0])
             kind = line_list[1]
@@ -88,7 +115,33 @@ class ImageStack:
             except ValueError:
                 kind_index = -1
             row = int(line_list[2])
+            if line_list[3].endswith('\n'): line_list[3] = line_list[3][0:-1]
             column = int(line_list[3])
+            if frame > self.total_frames - 1 or frame < 0: continue
+            if kind_index > self.point_kinds - 1 or kind_index == -1: continue
+            self.point[frame,kind_index,0] = row
+            self.point[frame,kind_index,1] = column
+        file_in.close()
+
+    def load_points_legacy(self,filename):
+        #Loads previous point data in from a file. Each line should be in the
+        #old format of frame+n:row0:column0:row1:column1:circleID+label
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        if os.path.exists(filename) == False: return
+        file_in = open(filename)
+        for line in file_in:
+            line_list = line.split(':')
+            frame = int(line_list[0][:-1]) - 1 #old ChamView is 1-based
+            if line_list[5].endswith('\n'): line_list[5] = line_list[5][0:-1]
+            kind = line_list[5][1:-1]
+            #Take the average of each set of points describing the circle to get
+            #the center
+            row = int((int(line_list[1])+int(line_list[3]))/2)
+            column = int((int(line_list[2])+int(line_list[4]))/2)
+            try:
+                kind_index = self.point_kind.index(kind)
+            except ValueError:
+                kind_index = -1
             if frame > self.total_frames - 1 or frame < 0: continue
             if kind_index > self.point_kinds - 1 or kind_index == -1: continue
             self.point[frame,kind_index,0] = row

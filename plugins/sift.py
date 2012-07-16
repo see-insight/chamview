@@ -4,23 +4,43 @@ import os, sys
 from PIL import Image, ImageEnhance
 from pylab import *
 
+#Note: Sift.setup(), Sift.teardown(), and Sift.predict() output info to a file,
+#which is an unnecessary debugging hack (go ahead and remove it if you so wish)
+
 class Sift(Predictor):
 
     def setup(self,stack):
         #Add contrast to image frames to make keypoint detection easier
-        self.contrastAdd = 2.5
+        self.contrastAdd = 3.5
         #Create one SiftObject for each point kind in the stack
         self.obj = []
         for i in range(0,stack.point_kinds):
             self.obj.append(SiftObject())
         #Keep track of past predictions
         self.prediction = zeros([stack.total_frames,stack.point_kinds,3])
+        #Hack: create a file to write debug info to
+        self.fileOutA = open('plugins'+os.path.sep+'siftTrustedKeyCount.txt','w')
+        self.fileOutB = open('plugins'+os.path.sep+'siftTrustedKeyMatch.txt','w')
+        #Don't return an initial guess
         return array([0,0,0])
 
     def teardown(self):
+        #Hack: close the debug info file
+        self.fileOutA.close()
+        self.fileOutB.close()
         pass
 
     def predict(self,stack):
+        #Hack: output info to file
+        trust = 0
+        match = 0
+        for i in range(0,self.obj[0].key_count):
+            if self.obj[0].key_trust[i] == 1.0:
+                trust += 1
+                if self.obj[0].key_match[i]:
+                    match += 1
+        self.fileOutA.write(str(stack.current_frame).zfill(4)+','+str(trust)+'\n')
+        self.fileOutB.write(str(stack.current_frame).zfill(4)+','+str(match)+'\n')
         #Create a contrast-enhanced numpy array from the current frame
         arr = img_contrast(img_toArr(stack.img_current),self.contrastAdd)
         #Get a prediction for each different point kind in this frame
@@ -32,12 +52,10 @@ class Sift(Predictor):
             result[pointKind,0] = self.prediction[stack.current_frame,pointKind,0]
             result[pointKind,1] = self.prediction[stack.current_frame,pointKind,1]
             result[pointKind,2] = self.prediction[stack.current_frame,pointKind,2]
+
         return result
 
     def getPointPrediction(self,stack,arr,pointKind):
-        #Have we already made a prediction for this point?
-        if (self.prediction[stack.current_frame,pointKind,0] != 0 or
-        self.prediction[stack.current_frame,pointKind,1] != 0): return
         #Get the SiftObject that tracks this point kind
         obj = self.obj[pointKind]
         #Train Sift if this is the first frame. Otherwise, predict a point
@@ -51,26 +69,34 @@ class Sift(Predictor):
             self.prediction[stack.current_frame,pointKind,1] = y
             self.prediction[stack.current_frame,pointKind,2] = 1.0
         else:
-            #Find the most recent frame for which we have a prediction and
-            #base this next prediction off of it
-            x = self.prediction[0,pointKind,0]
-            y = self.prediction[0,pointKind,1]
-            for i in range(stack.current_frame,0,-1):
-                if (self.prediction[i,pointKind,0] != 0 or
-                self.prediction[i,pointKind,1] != 0):
-                    x = self.prediction[i,pointKind,0]
-                    y = self.prediction[i,pointKind,1]
-                    break
-            #Move the SiftObject there
-            dx = x - obj.position[0]
-            dy = y - obj.position[1]
-            obj.shift(dx,dy)
+            if True:
+                #Go back one frame and correct our previous prediction
+                x = stack.point[stack.current_frame-1,pointKind,0]
+                y = stack.point[stack.current_frame-1,pointKind,1]
+                if x != 0 or y != 0:
+                    #Find the error and adjust for it
+                    dx = x - obj.position[0]
+                    dy = y - obj.position[1]
+                    obj.shift(dx,dy)
+
+            if True:
+                #Realign keypoint/bounding box vectors
+                for i in range(0,obj.key_count):
+                    if obj.key_match[i]:
+                        obj.key_vector[i,0] = -1
+                        obj.key_vector[i,1] = -1
+                obj.relate_keypoints()
+
             #Perform a keypoint search and store the predicted position
             obj.update(arr)
+
             x = obj.position[0];y = obj.position[1];conf = 0.5
             self.prediction[stack.current_frame,pointKind,0] = x
             self.prediction[stack.current_frame,pointKind,1] = y
             self.prediction[stack.current_frame,pointKind,2] = conf
+            dx = x - stack.point[stack.current_frame-1,pointKind,0]
+            dy = y - stack.point[stack.current_frame-1,pointKind,1]
+
 
 class SiftObject:
 
@@ -112,19 +138,22 @@ class SiftObject:
     """
 
     #SIFT parameters (suggested: edge 10, peak 5, distratio 0.8)
-    sift_params = "--edge-thresh 10 --peak-thresh 5"
-    sift_distratio = 0.75
+    #edge: edge rejection, ^ -> more keypoints
+    #peak: minimum contrast to accept a keypoint, ^ -> fewer keypoints
+    #distratio: max distance between keypoint angles to match, ^ -> more matches
+    sift_params = "--edge-thresh 10 --peak-thresh 6"
+    sift_distratio = 1.0
     sift_twoway = False
     #Maximum number of additional keypoint searches before giving up on a frame
     search_max = 3
     #Percentage larger in side length the search box is than the bounding box
     search_boxratio = 1.25
     #Increase and decrease in trust when an untrusted keypoint is/is not matched
-    reinforce_pos = 0.25
-    reinforce_neg = 0.25
+    reinforce_pos = 0.2
+    reinforce_neg = 0.3
     #Smallest bounding box side length
     minBoxLength = 25
-    #Rending options
+    #Rendering options
     plotUnmatched = False
     plotMatched = True
 
