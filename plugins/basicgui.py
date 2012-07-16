@@ -156,6 +156,12 @@ class BasicGui(Chooser):
 
     def drawPoint(self):
         #Draw the point already defined for this frame, if any
+        for i in range(0,self.imstack.point_kinds):
+            x = self.imstack.point[self.imstack.current_frame,i,0] * self.scale
+            y = self.imstack.point[self.imstack.current_frame,i,1] * self.scale
+            rad = BasicGui.circle_radius
+            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='yellow')
+        self.listbox.selection_set(0)
         if(self.imstack.point[self.imstack.current_frame,self.pointKind,0] != 0 or
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] != 0):
             x = self.imstack.point[self.imstack.current_frame,self.pointKind,0] * self.scale
