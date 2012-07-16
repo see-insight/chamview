@@ -122,8 +122,12 @@ class BasicGui(Chooser):
         self.drawCanvas()
 
     def createKeyBindings(self):
-        self.master.bind_all('<q>',self.decPointKind)
-        self.master.bind_all('<z>',self.incPointKind)
+        self.master.bind_all('<Up>',self.decPointKind)
+        self.master.bind_all('<Down>',self.incPointKind)
+        self.master.bind_all('<Left>',self.prev)
+        self.master.bind_all('<Right>',self.next)
+        self.master.bind_all('<w>',self.decPointKind)
+        self.master.bind_all('<x>',self.incPointKind)
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<s>',self.predict)
