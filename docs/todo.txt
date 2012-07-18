@@ -2,18 +2,12 @@ Last updated 7/17/2012
 
 -Misc
 	-Installation documentation
-	-Documentation on how to write plugins
 	-Clean up folder structure
+	-Write TemplateMatch predictor
+	-Write Kinematic predictor
 
--ChamView
-	-Usage documentation
-
--ImageStack
-	-Write a __print__() method or similar
-
--BasicGui
+-BasicGui chooser
 	-Move buttons to the left side of the window
 	-Multiple windows containing different tools (like GIMP)
 	-Enable/disable predictors (click a button, a window pops up with a checkbox next to each predictor)
 	-Help menu (click a button, popup window with controls)
-	-Usage documentation

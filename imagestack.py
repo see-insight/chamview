@@ -34,7 +34,18 @@ class ImageStack:
             self.get_img_list(directory)
             self.load_img()
 
-    #TODO add a __print__ (or similar) function
+    def __str__(self):
+        #Called when an instance is used as a string, i.e. "print myImStack"
+        result = '['
+        if self.img_list:
+            result += 'Image ' + str(self.current_frame+1) + '/'
+            result += str(self.total_frames) + ' is '
+            result += '"' + self.img_list[self.current_frame] + '", '
+        else:
+            result += 'No valid image files, '
+        result += str(self.point_kinds) + ' point kinds'
+        result += ']'
+        return result
 
     def get_img_list(self,directory):
         #Creates a list of every image file that can be used in the specified
