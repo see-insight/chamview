@@ -24,8 +24,8 @@ class Chooser(object):
 class Predictor(object):
 
     def setup(self,stack):
-        #Called by ChamView before the plugin has to do anything. Optioanlly
-        #perform initial analysis on the first frame and/or return a predicition
+        #Called by ChamView before the plugin has to do anything. Optionally
+        #perform initial analysis on the first frame and/or return a prediction
         #of a point that may be of interest to track. If it returns, it must be
         #a numpy array [row/column/confidence]
         raise NotImplementedError
