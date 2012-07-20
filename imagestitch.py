@@ -10,6 +10,7 @@ Usage options:
     
 Example:
     imagestitch.py image1 image2
+    (left-most image must be chosen as image1)
 """
 import sys
 import getopt
@@ -37,25 +38,28 @@ def picker(im1, im2):
     ax2 = fig1.add_subplot(122)
     ax2.set_axis_off()
     ax2.imshow(imgR, origin='lower')
-    LOffset = ginput(1)
-    ROffset = ginput(1)
+    LOffset,ROffset = ginput(2)
     plt.close()
     
     offset = [0,0]
-    # Offset is set up as [row,column] and not [x,y]
-    offset[0] = LOffset[0][1]-ROffset[0][1]
-    offset[1] = LOffset[0][0]-ROffset[0][0]
+    # Makes sure that the right-most image can be chosen first.
+    # However, it is assumed that the left-most image is displayed
+    # on the left.
+    if ROffset[0] <= ROffset[0]:
+        offset[0] = LOffset[1]-ROffset[1]
+        offset[1] = LOffset[0]-ROffset[0]
+    if ROffset[0] > LOffset[0]:
+        offset[0] = ROffset[1]-LOffset[1]
+        offset[1] = ROffset[0]-LOffset[0]
     return offset
 
 # Wrapper function for evaluating the variable IA.
 def WA(im1, im2, t):
     
-    t = int32([round(i) for i in t]) 
-
-    row1 = im1[:,0,0].size
-    row2 = im2[:,0,0].size
-    col1 = im1[0,:,0].size
-    col2 = im2[0,:,0].size
+    t = int32([round(i) for i in t])
+    
+    row1,col1 = im1[:,:,0].shape
+    row2,col2 = im2[:,:,0].shape
     
     row_b = array([0, t[0], row1, row2+t[0]])
     col_b = array([0, t[1], col1, col2+t[1]])
@@ -72,13 +76,13 @@ def WA(im1, im2, t):
     c2 = t[1]
     bound = array([r2, row1, c2, col1])
 
-    if (1+t[0] < 1):
+    if (t[0] < 0):
         r1 = -t[0]
         r2 = 0
         bound[0] = r1
         bound[1] = row2
 
-    if (1+t[1] < 1):
+    if (t[1] < 0):
         c1 = -t[1]
         c2 = 0
         bound[2] = c1
@@ -102,10 +106,8 @@ def imagestitch(im1, im2, t):
     
     t = int32([round(i) for i in t])
 
-    row1 = im1[:,0,0].size
-    row2 = im2[:,0,0].size
-    col1 = im1[0,:,0].size
-    col2 = im2[0,:,0].size
+    row1,col1 = im1[:,:,0].shape
+    row2,col2 = im2[:,:,0].shape
 
     # Potential boundaries of the new image
     row_b = array([0, t[0], row1, row2+t[0]])
@@ -126,14 +128,14 @@ def imagestitch(im1, im2, t):
     bound = array([r2, row1, c2, col1])
 
     # Swapping statements if any value is negative
-    if (1+t[0] < 1):
+    if (t[0] < 0):
         r1 = -t[0]
         r2 = 0
         bound[0] = r1
         bound[1] = row2
         print 'swapping r'
 
-    if (1+t[1] < 1):
+    if (t[1] < 0):
         c1 = -t[1]
         c2 = 0
         bound[2] = c1
@@ -144,10 +146,10 @@ def imagestitch(im1, im2, t):
     y = arange(1,bound[1]-bound[0]+1)
     [a,b] = meshgrid(x,y)
 
-    if (1+t[0] < 1):
+    if (t[0] < 0):
         b = b.max()-b
 
-    if (1+t[1] < 1):
+    if (t[1] < 0):
         a = a.max()-a
 
     # Minimum distance to the upper left and lower right edges of overlap    
@@ -196,8 +198,8 @@ def main(argv=None):
                 print arg
                 t[1] = atoi(arg)
         print args
-        imagefile_1 = args[-1]
-        imagefile_2 = args[-0]
+        imagefile_1 = args[-0]
+        imagefile_2 = args[-1]
         if(t[0] == 0 and t[1] == 0):
             t = picker(imagefile_1, imagefile_2)
         fig2 = plt.imshow(imagestitch(imagefile_1,imagefile_2,t), origin='lower')
