@@ -110,12 +110,33 @@ class BasicGui(Chooser):
         else:
             #User hit a key 1-9 on the keyboard
             self.pointKind = int(event.char) - 1
+        self.updatePointKind()
+
+    def incPointKind(self,event=''):
+        self.listbox.selection_clear(self.pointKind)
+        self.pointKind = self.pointKind+1
+        if self.pointKind > self.imstack.point_kinds -1:
+            self.pointKind = self.imstack.point_kinds - 1
+        self.updatePointKind()
+
+    def decPointKind(self,event=''):
+        self.listbox.selection_clear(self.pointKind)
+        self.pointKind = (self.pointKind-1)
+        if self.pointKind < 0:
+            self.pointKind = 0
+        self.updatePointKind()
+
+    def updatePointKind(self):
         #Set the listbox's selection and draw the new pointkind on the frame
         self.listbox.selection_set(self.pointKind)
         self.listbox.see(self.pointKind)
         self.drawCanvas()
 
     def createKeyBindings(self):
+        self.master.bind_all('<Up>',self.decPointKind)
+        self.master.bind_all('<Down>',self.incPointKind)
+        self.master.bind_all('<Left>',self.prev)
+        self.master.bind_all('<Right>',self.next)
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<s>',self.predict)
@@ -134,7 +155,7 @@ class BasicGui(Chooser):
         self.drawCanvas()
 
     def drawCanvas(self):
-        #Set the selected point if a prediction is selected
+        #If we're using a predictor to set the selected point, then set it
         if (self.selectedPrediction[self.pointKind] != -1 and
                             self.imstack.current_frame == self.predictedFrame):
             i = self.selectedPrediction[self.pointKind]
@@ -148,16 +169,14 @@ class BasicGui(Chooser):
         if self.photo == None:
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
-        #Draw predicted point (if any) and current point
-        if (self.imstack.current_frame == self.predictedFrame and self.showPredictions):
-            self.drawPrediction()
-        if self.selectedPrediction[self.pointKind] == -1:
-            self.drawPoint()
-        elif self.imstack.current_frame < self.predictedFrame:
-            x = self.imstack.point[self.imstack.current_frame,self.pointKind,0] * self.scale
-            y = self.imstack.point[self.imstack.current_frame,self.pointKind,1] * self.scale
-            rad = BasicGui.circle_radius
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+        #Set the title of the window to the current image filename
+        self.master.title(self.imstack.name_current)
+        #Draw predictions of the current point kind in yellow if we're on the
+        #frame that the predictions are for
+        if(self.imstack.current_frame == self.predictedFrame and self.showPredictions):
+            self.drawPredictions()
+        #Draw the selected point for every point kind in this frame
+        self.drawPoints()
 
     def updatePhoto(self):
         #Scale the photo to fit the canvas
@@ -174,29 +193,31 @@ class BasicGui(Chooser):
         self.currentFrame.set('Frame '+str(self.imstack.current_frame+1)+'/'+
             str(self.imstack.total_frames))
 
-    def drawPrediction(self):
+    def drawPredictions(self):
         rad = BasicGui.circle_radius
         #For each predictor, draw the current pointkind's predicted position
+        #in yellow
         for pred in self.predicted[:]:
             x = pred[self.pointKind,0] * self.scale
             y = pred[self.pointKind,1] * self.scale
             conf = pred[self.pointKind,2]
+            #If it didn't return a point, don't draw anything
+            if x == 0 and y == 0 and conf == 0: continue
             self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='yellow')
-        #If there is one, draw the selected prediction in green
-        if self.selectedPrediction[self.pointKind] >= 0:
-            i = self.selectedPrediction[self.pointKind]
-            x = self.predicted[i][self.pointKind,0] * self.scale
-            y = self.predicted[i][self.pointKind,1] * self.scale
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
-    def drawPoint(self):
-        #Draw the point already defined for this frame, if any
-        if(self.imstack.point[self.imstack.current_frame,self.pointKind,0] != 0 or
-        self.imstack.point[self.imstack.current_frame,self.pointKind,1] != 0):
-            x = self.imstack.point[self.imstack.current_frame,self.pointKind,0] * self.scale
-            y = self.imstack.point[self.imstack.current_frame,self.pointKind,1] * self.scale
-            rad = BasicGui.circle_radius
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+    def drawPoints(self):
+        #Draw the selected points in this frame. The current pointkind is in red
+        #and the other pointkinds are in green
+        rad = BasicGui.circle_radius
+        for i in range(0,self.imstack.point_kinds):
+            x = self.imstack.point[self.imstack.current_frame,i,0] * self.scale
+            y = self.imstack.point[self.imstack.current_frame,i,1] * self.scale
+            #If we haven't selected a point yet then don't draw it
+            if x == 0 and y == 0: continue
+            if i == self.pointKind:
+                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+            else:
+                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
     def quit(self,event=''):
         #Exit ChamView's main loop and destroy the GUI window
@@ -238,7 +259,9 @@ class BasicGui(Chooser):
         #Shows basic usage information in a popup window
         message = ''
         message += 'Previous/next image\ta/d\n'
+        message += 'Previous/next image\tL/R arrow\n'
         message += 'Choose point kind\t\t1-9\n'
+        message += 'Choose point kind\t\tU/D arrow\n'
         message += 'Calculate predictions\ts\n'
         message += 'Toggle predictions\t\th\n'
         message += 'Cycle chosen prediction\tz/x\n'
