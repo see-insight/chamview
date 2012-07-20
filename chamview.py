@@ -123,7 +123,12 @@ def find_subclasses(path,superclass):
     subclassnames = []
 
     def look_for_subclass(modulename):
-        module = __import__(modulename)
+        try:
+            module = __import__(modulename)
+        except Exception as e:
+            #There's an error in the module - don't load it
+            print 'Unable to load plugin "'+modulename+'": '+repr(e)
+            return
         #walk the dictionaries to get to the last one
         d=module.__dict__
         for m in modulename.split('.')[1:]:
