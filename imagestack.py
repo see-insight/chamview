@@ -35,7 +35,18 @@ class ImageStack:
             self.get_img_list(directory)
             self.load_img()
 
-    #TODO add a __print__ (or similar) function
+    def __str__(self):
+        #Called when an instance is used as a string, i.e. "print myImStack"
+        result = '['
+        if self.img_list:
+            result += 'Image ' + str(self.current_frame+1) + '/'
+            result += str(self.total_frames) + ' is '
+            result += '"' + self.img_list[self.current_frame] + '", '
+        else:
+            result += 'No valid image files, '
+        result += str(self.point_kinds) + ' point kinds'
+        result += ']'
+        return result
 
     def get_img_list(self,directory):
         #Creates a list of every image file that can be used in the specified
@@ -68,10 +79,13 @@ class ImageStack:
         file_in = open(filename)
         for line in file_in:
             #If it's an old point kind file, switch over to the legacy loader
-            if int(line) == self.point_kinds-1:
-                file_in.close()
-                self.get_point_kinds_legacy(filename)
-                return
+            try:
+                if int(line) == self.point_kinds-1:
+                    file_in.close()
+                    self.get_point_kinds_legacy(filename)
+                    return
+            except ValueError:
+                pass
             line_list = line.split(',')
             if len(line_list[0]) == 0: continue
             if line_list[0].endswith('\n'):

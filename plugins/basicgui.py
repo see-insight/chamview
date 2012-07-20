@@ -19,8 +19,11 @@ class BasicGui(Chooser):
         self.currentFrame = StringVar()
         self.photo = None
         self.pointKind = 0
-        self.madePointkindList = False
+        #Choosing a prediction to use
+        self.showPredictions = True
+        self.selectedPrediction = []
         #Intitialize GUI, but don't show it yet
+        self.madePointkindList = False
         self.createGui()
         self.createKeyBindings()
 
@@ -33,10 +36,10 @@ class BasicGui(Chooser):
         self.imstack = stack
         self.predicted = predicted
         self.predictedFrame = self.imstack.current_frame
-        #Draw new frame and predictions
-        self.drawCanvas()
         #Fill the listbox with point kinds available for use if it hasn't been
         if not self.madePointkindList:self.fillPointkindList()
+        #Draw new frame and predictions
+        self.drawCanvas()
         #Show the window and get user input
         self.master.mainloop()
 
@@ -49,6 +52,9 @@ class BasicGui(Chooser):
             self.listbox.insert(END,self.imstack.point_kind[i])
             if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.listbox.selection_set(0)
+        #Fill the list of predictor choices
+        for i in range(0,self.imstack.point_kinds):
+            self.selectedPrediction.append(-1) #-1 corresponds to human input
 
     def createGui(self):
         #Create the window and grid manager
@@ -131,6 +137,9 @@ class BasicGui(Chooser):
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<s>',self.predict)
+        self.master.bind_all('<h>',self.togglePredictions)
+        self.master.bind_all('<z>',self.cycleSelectedPrediction)
+        self.master.bind_all('<x>',self.cycleSelectedPrediction)
         self.canvas.bind("<Button-1>",self.onClick)
 
     def onClick(self,event):
@@ -139,9 +148,18 @@ class BasicGui(Chooser):
         mouseX,mouseY = event.x/self.scale,event.y/self.scale
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = mouseX
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = mouseY
+        self.selectedPrediction[self.pointKind] = -1 #-1 corresponds to human choice
         self.drawCanvas()
 
     def drawCanvas(self):
+        #Set the selected point if a prediction is selected
+        if (self.selectedPrediction[self.pointKind] != -1 and
+                            self.imstack.current_frame == self.predictedFrame):
+            i = self.selectedPrediction[self.pointKind]
+            x = self.predicted[i][self.pointKind,0]
+            y = self.predicted[i][self.pointKind,1]
+            self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
+            self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
         #Clear out any existing points
         self.canvas.delete('all')
         #If the photo hasn't been set yet then do so
@@ -150,7 +168,7 @@ class BasicGui(Chooser):
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
         #Draw predicted point (if any) and current point
         self.master.title(self.imstack.name_current)
-        if self.imstack.current_frame == self.predictedFrame:
+        if (self.imstack.current_frame == self.predictedFrame and self.showPredictions):
             self.drawPrediction()
         self.drawPoints()
 
@@ -177,6 +195,12 @@ class BasicGui(Chooser):
             y = pred[self.pointKind,1] * self.scale
             conf = pred[self.pointKind,2]
             self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='yellow')
+        #If there is one, draw the selected prediction in green
+        if self.selectedPrediction[self.pointKind] >= 0:
+            i = self.selectedPrediction[self.pointKind]
+            x = self.predicted[i][self.pointKind,0] * self.scale
+            y = self.predicted[i][self.pointKind,1] * self.scale
+            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
     def drawPoints(self):
         #Draw the point already defined for this frame, if any
@@ -200,19 +224,42 @@ class BasicGui(Chooser):
         self.imstack.prev()
         if self.imstack.current_frame < 0:
             self.imstack.set_frame(0)
-        self.updatePhoto()
-        self.drawCanvas()
+        else:
+            self.updatePhoto()
+            self.drawCanvas()
 
     def next(self,event=''):
         #Move the frame forward by one and draw the correct image and points
         self.imstack.next()
         if self.imstack.current_frame > self.imstack.total_frames-1:
             self.imstack.set_frame(self.imstack.total_frames-1)
-        self.updatePhoto()
-        self.drawCanvas()
+        else:
+            self.updatePhoto()
+            self.drawCanvas()
 
     def predict(self,event=''):
         #Exit TKinter's update loop to control is given back to ChamView. After
         #a prediction is made, choose() will be called and the window appears
         self.master.quit()
+
+    def togglePredictions(self,event=''):
+        #Turn the drawing of predicted points on or off
+        self.showPredictions = not self.showPredictions
+        if not self.showPredictions:
+            for x in self.selectedPrediction:
+                x = -1 #-1 corresponds to human input
+        self.drawCanvas()
+
+    def cycleSelectedPrediction(self,event=''):
+        #Cycle through the predicted points to choose one as the next prediction
+        if not self.madePointkindList: return
+        if(event.char=='z'):
+            self.selectedPrediction[self.pointKind] -= 1
+            if self.selectedPrediction[self.pointKind] < -1:
+                self.selectedPrediction[self.pointKind] = len(self.predicted)-1
+        elif(event.char=='x'):
+            self.selectedPrediction[self.pointKind] += 1
+            if self.selectedPrediction[self.pointKind] > len(self.predicted)-1:
+                self.selectedPrediction[self.pointKind] = -1
+        self.drawCanvas()
 

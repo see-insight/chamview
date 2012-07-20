@@ -3,21 +3,72 @@
 Requires that AVBin be installed.
 
 Usage:
-    python mov2img.py videoFile [destinationFolder] [startTime] [endTime] [frameSkip]
-    ./mov2img.py videoFile [destinationFolder] [startTime] [endTime] [frameSkip]
+    ./mov2img.py videofile [options]
 
-Example:
-    python mov2img.py example.mv4 frames 10 15 1
-    ./mov2img.py myvideo.avi
+Usage options:
+    -h --help   Prints this help message
+    -d --dir    Directory to save frames in. Default is (./videofile)
+    -s --start  Time (in seconds) to start extracting frames. Default is (0)
+    -e --end    Time (in seconds) to stop extracting frames. Default is (video length)
+    -f --fskip  How many frames to skip between each saved frame. Default is (0)
 """
+
 
 import os
 import sys
+import getopt
 try:
     import pyglet
 except ImportError:
     print 'ERROR: you must install AVBin to use mov2img'
-    exit()
+    sys.exit(2)
+
+
+class Usage(Exception):
+    def __init__(self,msg):
+        self.msg = msg;
+
+
+def main(argc,argv):
+    #Default arguments
+    argFile = ''
+    argDir = ''
+    argStart = -1
+    argEnd = -1
+    argSkip = -1
+    try:
+        if argc < 2:
+            raise Usage('Specify a video file to use')
+
+        try:
+            argFile = argv[1]
+            if argFile == '-h' or argFile == '--help':
+                print __doc__
+                sys.exit(0)
+            opts, args = getopt.getopt(argv[2:],
+                                      'hd:s:e:f:',
+                                      ['help','dir=','start=','end=','fskip='])
+        except getopt.error, msg:
+            raise Usage(msg)
+
+        for opt, arg in opts:
+            if opt in ('-h', '--help'):
+                print __doc__
+                sys.exit(0)
+            elif opt in ('-d', '--dir'):
+               argDir = arg
+            elif opt in ('-s', '--start'):
+                argStart = int(arg)
+            elif opt in ('-e', '--end'):
+                argEnd = int(arg)
+            elif opt in ('-f', '--fskip'):
+                argSkip = int(arg)
+        mov2img(argFile,argDir,argStart,argEnd,argSkip,True)
+
+    except Usage, err:
+        print >>sys.stderr, err.msg
+        print >>sys.stderr, 'For help use --help'
+        return 2
 
 
 #Opens a video and outputs every frame of it as a .png file
@@ -132,24 +183,6 @@ def mov2img(source,destination='',start=-1,end=-1,skip=-1,output = False):
         return
 
 
-#If this file is being run from the commandline, get input arguments and run
 if __name__ == '__main__':
     argc = len(sys.argv)
-    argv = sys.argv
-    if argc < 2:
-        print "ERROR: specify a movie to convert. For help use --help"
-        exit()
-    if argv[1] == '--help':
-        print __doc__
-        exit()
-    dest = ''
-    start = -1
-    end = -1
-    skip = -1
-    src = argv[1]
-    if argc >= 3: dest = argv[2]
-    if argc >= 4: start = int(argv[3])
-    if argc >= 5: end = int(argv[4])
-    if argc >= 6: skip = int(argv[5])
-    mov2img(src,dest,start,end,skip,True)
-
+    sys.exit(main(argc,sys.argv))
