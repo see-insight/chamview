@@ -1,6 +1,7 @@
 from base import Chooser
 from numpy import *
 from Tkinter import *
+import tkMessageBox
 import ttk
 from PIL import Image, ImageTk
 
@@ -57,42 +58,46 @@ class BasicGui(Chooser):
             self.selectedPrediction.append(-1) #-1 corresponds to human input
 
     def createGui(self):
-        #Create the window and grid manager
-        self.frameT = Frame(self.master)
-        self.frameT.pack(side=LEFT,fill=X)
-        self.frameT.grid(columnspan=7,rowspan=1)
-        self.frameB = Frame(self.master)
-        self.frameB.pack(side=RIGHT,fill=X)
-        self.frameB.grid(columnspan=1,rowspan=1)
+        #Set up application window
         self.master.title('Basic GUI Chooser')
         self.master.protocol('WM_DELETE_WINDOW',self.quit)
+        #Grid manager: buttons on left size, image on right
+        self.frameL = Frame(self.master)
+        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=5)
+        self.frameR = Frame(self.master)
+        self.frameR.grid(row=0,column=3,columnspan=1,rowspan=1)
+        self.frameR.config(borderwidth=3,relief=GROOVE)
         #Quit button
-        self.button_quit = Button(self.frameT,text='Quit',command=self.quit)
-        self.button_quit.grid(column=1,row=1)
-        #Current frame label
-        self.label_framenum = Label(self.frameT,textvariable=self.currentFrame)
-        self.label_framenum.grid(column=2,row=1)
-        #Previous button
-        self.button_prev = Button(self.frameT,text='Previous',command=self.prev)
-        self.button_prev.grid(column=3,row=1)
-        #Next button
-        self.button_next = Button(self.frameT,text='Next',command=self.next)
-        self.button_next.grid(column=4,row=1)
+        self.button_quit = Button(self.frameL,text='Quit',command=self.quit)
+        self.button_quit.grid(column=0,row=0,columnspan=2)
+        #Help button
+        self.button_help = Button(self.frameL,text='Help',command=self.showHelp)
+        self.button_help.grid(column=2,row=0,columnspan=2)
         #Predict button
-        self.button_next = Button(self.frameT,text='Predict',command=self.predict)
-        self.button_next.grid(column=5,row=1)
+        self.button_next = Button(self.frameL,text='Predict',command=self.predict)
+        self.button_next.grid(column=0,row=1,columnspan=2)
+        #Current frame label
+        self.label_framenum = Label(self.frameL,textvariable=self.currentFrame)
+        self.label_framenum.grid(column=2,row=1)
+        self.label_framenum.config(borderwidth=2,relief=SUNKEN)
+        #Previous button
+        self.button_prev = Button(self.frameL,text='Previous',command=self.prev)
+        self.button_prev.grid(column=0,row=2,columnspan=2)
+        #Next button
+        self.button_next = Button(self.frameL,text='Next',command=self.next)
+        self.button_next.grid(column=2,row=2)
         #Listbox used to select point kind
-        self.listbar = Scrollbar(self.frameT)
-        self.listbar.grid(column=7,row=1)
-        self.listbox = Listbox(self.frameT,height=2)
-        self.listbox.grid(column=6,row=1)
+        self.listbox = Listbox(self.frameL,width=15,height=4)
+        self.listbox.grid(column=1,row=4,columnspan=2)
+        self.listbar = Scrollbar(self.frameL,orient=VERTICAL)
+        self.listbar.grid(column=0,row=4,sticky='ns')
+        self.listbar.config(command=self.listbox.yview,width=15)
         self.listbox.config(yscrollcommand=self.listbar.set)
-        self.listbar.config(command=self.listbox.yview)
         self.listbox.bind('<<ListboxSelect>>',self.setPointKind)
         #Canvas to display the current frame
-        self.canvas = Canvas(self.frameB,width=BasicGui.canvas_width,
+        self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
-        self.canvas.grid(column=1,row=1,columnspan=1,rowspan=1)
+        self.canvas.grid(column=0,row=0,columnspan=1,rowspan=1)
 
     def setPointKind(self,event=''):
         self.listbox.selection_clear(self.pointKind)
@@ -228,6 +233,16 @@ class BasicGui(Chooser):
             for x in self.selectedPrediction:
                 x = -1 #-1 corresponds to human input
         self.drawCanvas()
+
+    def showHelp(self,event=''):
+        #Shows basic usage information in a popup window
+        message = ''
+        message += 'Previous/next image\ta/d\n'
+        message += 'Choose point kind\t\t1-9\n'
+        message += 'Calculate predictions\ts\n'
+        message += 'Toggle predictions\t\th\n'
+        message += 'Cycle chosen prediction\tz/x\n'
+        tkMessageBox.showinfo("Chamview Help",message)
 
     def cycleSelectedPrediction(self,event=''):
         #Cycle through the predicted points to choose one as the next prediction
