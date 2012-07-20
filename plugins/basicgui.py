@@ -84,7 +84,7 @@ class BasicGui(Chooser):
         #Listbox used to select point kind
         self.listbar = Scrollbar(self.frameT)
         self.listbar.grid(column=7,row=1)
-        self.listbox = Listbox(self.frameT,height=2)
+        self.listbox = Listbox(self.frameT,height=4)
         self.listbox.grid(column=6,row=1)
         self.listbox.config(yscrollcommand=self.listbar.set)
         self.listbar.config(command=self.listbox.yview)
@@ -105,12 +105,35 @@ class BasicGui(Chooser):
         else:
             #User hit a key 1-9 on the keyboard
             self.pointKind = int(event.char) - 1
+        self.updatePointKind()
+        
+    def incPointKind(self,event=''):
+        self.listbox.selection_clear(self.pointKind)
+        self.pointKind = self.pointKind+1
+        if self.pointKind > self.imstack.point_kinds -1:
+            self.pointKind = self.imstack.point_kinds - 1
+        self.updatePointKind()
+
+    def decPointKind(self,event=''):
+        self.listbox.selection_clear(self.pointKind)
+        self.pointKind = (self.pointKind-1)
+        if self.pointKind < 0:
+            self.pointKind = 0
+        self.updatePointKind()
+    
+    def updatePointKind(self):
         #Set the listbox's selection and draw the new pointkind on the frame
         self.listbox.selection_set(self.pointKind)
         self.listbox.see(self.pointKind)
         self.drawCanvas()
 
     def createKeyBindings(self):
+        self.master.bind_all('<Up>',self.decPointKind)
+        self.master.bind_all('<Down>',self.incPointKind)
+        self.master.bind_all('<Left>',self.prev)
+        self.master.bind_all('<Right>',self.next)
+        self.master.bind_all('<w>',self.decPointKind)
+        self.master.bind_all('<x>',self.incPointKind)
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<s>',self.predict)
@@ -144,15 +167,10 @@ class BasicGui(Chooser):
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
         #Draw predicted point (if any) and current point
+        self.master.title(self.imstack.name_current)
         if (self.imstack.current_frame == self.predictedFrame and self.showPredictions):
             self.drawPrediction()
-        if self.selectedPrediction[self.pointKind] == -1:
-            self.drawPoint()
-        elif self.imstack.current_frame < self.predictedFrame:
-            x = self.imstack.point[self.imstack.current_frame,self.pointKind,0] * self.scale
-            y = self.imstack.point[self.imstack.current_frame,self.pointKind,1] * self.scale
-            rad = BasicGui.circle_radius
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+        self.drawPoints()
 
     def updatePhoto(self):
         #Scale the photo to fit the canvas
@@ -184,14 +202,17 @@ class BasicGui(Chooser):
             y = self.predicted[i][self.pointKind,1] * self.scale
             self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
-    def drawPoint(self):
+    def drawPoints(self):
         #Draw the point already defined for this frame, if any
-        if(self.imstack.point[self.imstack.current_frame,self.pointKind,0] != 0 or
-        self.imstack.point[self.imstack.current_frame,self.pointKind,1] != 0):
-            x = self.imstack.point[self.imstack.current_frame,self.pointKind,0] * self.scale
-            y = self.imstack.point[self.imstack.current_frame,self.pointKind,1] * self.scale
+        for i in range(0,self.imstack.point_kinds):
+            x = self.imstack.point[self.imstack.current_frame,i,0] * self.scale
+            y = self.imstack.point[self.imstack.current_frame,i,1] * self.scale
             rad = BasicGui.circle_radius
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+            if i == self.pointKind:
+                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+            else:
+                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
+        #self.listbox.selection_set(0)
 
     def quit(self,event=''):
         #Exit ChamView's main loop and destroy the GUI window
