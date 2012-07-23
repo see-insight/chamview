@@ -53,10 +53,10 @@ class Template:
 
     def findPoint(self,img):
         #Find the XY coordinates of the point to track in img (a numpy array)
-        result = match_template(img, template)
-        ij = np.unravel_index(argmax(result), result.shape)
+        result = match_template(img, self.template)
+        ij = unravel_index(argmax(result), result.shape)
         x, y = ij[::-1]
-        confidence = self.confidence(template)
+        confidence = self.confidence(self.template)
         return [x,y,confidence]
 
     def train(self,img,x,y):
@@ -67,7 +67,6 @@ class Template:
         self.template = img[bounds[1]:bounds[3], bounds[0]:bounds[2]]
         
     def confidence(self, template):
-        r,c = template.shape
         #Takes the sum of all pixel values, divides it by the area to find
         #average pixel value
         avg_val = sum(template)/template.size

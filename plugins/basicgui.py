@@ -1,6 +1,7 @@
 from base import Chooser
 from numpy import *
 from Tkinter import *
+import tkMessageBox
 import ttk
 from PIL import Image, ImageTk
 
@@ -57,42 +58,46 @@ class BasicGui(Chooser):
             self.selectedPrediction.append(-1) #-1 corresponds to human input
 
     def createGui(self):
-        #Create the window and grid manager
-        self.frameT = Frame(self.master)
-        self.frameT.pack(side=LEFT,fill=X)
-        self.frameT.grid(columnspan=7,rowspan=1)
-        self.frameB = Frame(self.master)
-        self.frameB.pack(side=RIGHT,fill=X)
-        self.frameB.grid(columnspan=1,rowspan=1)
+        #Set up application window
         self.master.title('Basic GUI Chooser')
         self.master.protocol('WM_DELETE_WINDOW',self.quit)
+        #Grid manager: buttons on left size, image on right
+        self.frameL = Frame(self.master)
+        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=5)
+        self.frameR = Frame(self.master)
+        self.frameR.grid(row=0,column=3,columnspan=1,rowspan=1)
+        self.frameR.config(borderwidth=3,relief=GROOVE)
         #Quit button
-        self.button_quit = Button(self.frameT,text='Quit',command=self.quit)
-        self.button_quit.grid(column=1,row=1)
-        #Current frame label
-        self.label_framenum = Label(self.frameT,textvariable=self.currentFrame)
-        self.label_framenum.grid(column=2,row=1)
-        #Previous button
-        self.button_prev = Button(self.frameT,text='Previous',command=self.prev)
-        self.button_prev.grid(column=3,row=1)
-        #Next button
-        self.button_next = Button(self.frameT,text='Next',command=self.next)
-        self.button_next.grid(column=4,row=1)
+        self.button_quit = Button(self.frameL,text='Quit',command=self.quit)
+        self.button_quit.grid(column=0,row=0,columnspan=2)
+        #Help button
+        self.button_help = Button(self.frameL,text='Help',command=self.showHelp)
+        self.button_help.grid(column=2,row=0,columnspan=2)
         #Predict button
-        self.button_next = Button(self.frameT,text='Predict',command=self.predict)
-        self.button_next.grid(column=5,row=1)
+        self.button_next = Button(self.frameL,text='Predict',command=self.predict)
+        self.button_next.grid(column=0,row=1,columnspan=2)
+        #Current frame label
+        self.label_framenum = Label(self.frameL,textvariable=self.currentFrame)
+        self.label_framenum.grid(column=2,row=1)
+        self.label_framenum.config(borderwidth=2,relief=SUNKEN)
+        #Previous button
+        self.button_prev = Button(self.frameL,text='Previous',command=self.prev)
+        self.button_prev.grid(column=0,row=2,columnspan=2)
+        #Next button
+        self.button_next = Button(self.frameL,text='Next',command=self.next)
+        self.button_next.grid(column=2,row=2)
         #Listbox used to select point kind
-        self.listbar = Scrollbar(self.frameT)
-        self.listbar.grid(column=7,row=1)
-        self.listbox = Listbox(self.frameT,height=4)
-        self.listbox.grid(column=6,row=1)
+        self.listbox = Listbox(self.frameL,width=15,height=4)
+        self.listbox.grid(column=1,row=4,columnspan=2)
+        self.listbar = Scrollbar(self.frameL,orient=VERTICAL)
+        self.listbar.grid(column=0,row=4,sticky='ns')
+        self.listbar.config(command=self.listbox.yview,width=15)
         self.listbox.config(yscrollcommand=self.listbar.set)
-        self.listbar.config(command=self.listbox.yview)
         self.listbox.bind('<<ListboxSelect>>',self.setPointKind)
         #Canvas to display the current frame
-        self.canvas = Canvas(self.frameB,width=BasicGui.canvas_width,
+        self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
-        self.canvas.grid(column=1,row=1,columnspan=1,rowspan=1)
+        self.canvas.grid(column=0,row=0,columnspan=1,rowspan=1)
 
     def setPointKind(self,event=''):
         self.listbox.selection_clear(self.pointKind)
@@ -106,7 +111,7 @@ class BasicGui(Chooser):
             #User hit a key 1-9 on the keyboard
             self.pointKind = int(event.char) - 1
         self.updatePointKind()
-        
+
     def incPointKind(self,event=''):
         self.listbox.selection_clear(self.pointKind)
         self.pointKind = self.pointKind+1
@@ -120,7 +125,7 @@ class BasicGui(Chooser):
         if self.pointKind < 0:
             self.pointKind = 0
         self.updatePointKind()
-    
+
     def updatePointKind(self):
         #Set the listbox's selection and draw the new pointkind on the frame
         self.listbox.selection_set(self.pointKind)
@@ -132,8 +137,6 @@ class BasicGui(Chooser):
         self.master.bind_all('<Down>',self.incPointKind)
         self.master.bind_all('<Left>',self.prev)
         self.master.bind_all('<Right>',self.next)
-        self.master.bind_all('<w>',self.decPointKind)
-        self.master.bind_all('<x>',self.incPointKind)
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<s>',self.predict)
@@ -152,7 +155,7 @@ class BasicGui(Chooser):
         self.drawCanvas()
 
     def drawCanvas(self):
-        #Set the selected point if a prediction is selected
+        #If we're using a predictor to set the selected point, then set it
         if (self.selectedPrediction[self.pointKind] != -1 and
                             self.imstack.current_frame == self.predictedFrame):
             i = self.selectedPrediction[self.pointKind]
@@ -166,10 +169,13 @@ class BasicGui(Chooser):
         if self.photo == None:
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
-        #Draw predicted point (if any) and current point
+        #Set the title of the window to the current image filename
         self.master.title(self.imstack.name_current)
-        if (self.imstack.current_frame == self.predictedFrame and self.showPredictions):
-            self.drawPrediction()
+        #Draw predictions of the current point kind in yellow if we're on the
+        #frame that the predictions are for
+        if(self.imstack.current_frame == self.predictedFrame and self.showPredictions):
+            self.drawPredictions()
+        #Draw the selected point for every point kind in this frame
         self.drawPoints()
 
     def updatePhoto(self):
@@ -187,32 +193,31 @@ class BasicGui(Chooser):
         self.currentFrame.set('Frame '+str(self.imstack.current_frame+1)+'/'+
             str(self.imstack.total_frames))
 
-    def drawPrediction(self):
+    def drawPredictions(self):
         rad = BasicGui.circle_radius
         #For each predictor, draw the current pointkind's predicted position
+        #in yellow
         for pred in self.predicted[:]:
             x = pred[self.pointKind,0] * self.scale
             y = pred[self.pointKind,1] * self.scale
             conf = pred[self.pointKind,2]
+            #If it didn't return a point, don't draw anything
+            if x == 0 and y == 0 and conf == 0: continue
             self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='yellow')
-        #If there is one, draw the selected prediction in green
-        if self.selectedPrediction[self.pointKind] >= 0:
-            i = self.selectedPrediction[self.pointKind]
-            x = self.predicted[i][self.pointKind,0] * self.scale
-            y = self.predicted[i][self.pointKind,1] * self.scale
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
     def drawPoints(self):
-        #Draw the point already defined for this frame, if any
+        #Draw the selected points in this frame. The current pointkind is in red
+        #and the other pointkinds are in green
+        rad = BasicGui.circle_radius
         for i in range(0,self.imstack.point_kinds):
             x = self.imstack.point[self.imstack.current_frame,i,0] * self.scale
             y = self.imstack.point[self.imstack.current_frame,i,1] * self.scale
-            rad = BasicGui.circle_radius
+            #If we haven't selected a point yet then don't draw it
+            if x == 0 and y == 0: continue
             if i == self.pointKind:
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
             else:
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
-        #self.listbox.selection_set(0)
 
     def quit(self,event=''):
         #Exit ChamView's main loop and destroy the GUI window
@@ -249,6 +254,18 @@ class BasicGui(Chooser):
             for x in self.selectedPrediction:
                 x = -1 #-1 corresponds to human input
         self.drawCanvas()
+
+    def showHelp(self,event=''):
+        #Shows basic usage information in a popup window
+        message = ''
+        message += 'Previous/next image\ta/d\n'
+        message += 'Previous/next image\tL/R arrow\n'
+        message += 'Choose point kind\t\t1-9\n'
+        message += 'Choose point kind\t\tU/D arrow\n'
+        message += 'Calculate predictions\ts\n'
+        message += 'Toggle predictions\t\th\n'
+        message += 'Cycle chosen prediction\tz/x\n'
+        tkMessageBox.showinfo("Chamview Help",message)
 
     def cycleSelectedPrediction(self,event=''):
         #Cycle through the predicted points to choose one as the next prediction
