@@ -2,7 +2,6 @@ from base import Predictor
 from numpy import *
 from skimage.feature import match_template
 
-
 class TemplateMatch(Predictor):
 
     def setup(self,stack):
@@ -67,6 +66,9 @@ class Template:
         self.template = img[bounds[1]:bounds[3], bounds[0]:bounds[2]]
         
     def confidence(self, template):
+        '''After thinking further, not a correct way of measuring confidence.
+        Still needs revision.
+        '''
         #Takes the sum of all pixel values, divides it by the area to find
         #average pixel value
         avg_val = sum(template)/template.size
@@ -79,9 +81,6 @@ class Template:
             #Sum of how much the pixel values deviate from the average
             dev_sum += abs(tmp_reshape[i]-avg_val)
             i+=1
-        #If all pixels are average pixel value, will give std_dev of 1
-        #(confidence of 0). Confidence is measured by deviation from the
-        #average (easier to match).
         std_dev = float(dev_sum)/template.size/100
         #Confidence value from 0-1
         return 1-std_dev

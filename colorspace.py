@@ -1,75 +1,34 @@
-from numpy import *
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-from PIL import Image
-from skimage.feature import match_template
-import skimage.color as color
-from PIL import ImageEnhance
+#!/usr/bin/env python
+""" Return the most useful 2-dimensional representation of an image
+Written by Jeremy Martin
 
-def test(image, coin):
-    result = match_template(image, coin)
+Usage options:
+    -h --help Print this help message
+    
+Example:
+    colorspace.py imagefile
+"""
+import sys
+import getopt
+from numpy import *
+from PIL import Image
+from PIL import ImageEnhance
+import matplotlib.image as mpimg
+import skimage.color as color
+from skimage.feature import match_template
+
+#Function to take the given template and match it (from skimage)
+def test(image, template):
+    result = match_template(image, template)
     ij = unravel_index(argmax(result), result.shape)
     x, y = ij[::-1]
-    
-    '''fig, (ax1, ax2, ax3) = plt.subplots(ncols=3, figsize=(8, 3))
-
-    ax1.imshow(coin)
-    ax1.set_axis_off()
-    ax1.set_title('template')
-
-    ax2.imshow(image)
-    ax2.set_axis_off()
-    ax2.set_title('image')
-    # highlight matched region
-    hcoin, wcoin = coin.shape
-    rect = plt.Rectangle((x, y), wcoin, hcoin, edgecolor='r', facecolor='none')
-    ax2.add_patch(rect)
-
-    ax3.imshow(result)
-    ax3.set_axis_off()
-    ax3.set_title('`match_template`\nresult')
-    # highlight matched region
-    ax3.autoscale(False)
-    ax3.plot(x, y, 'o', markeredgecolor='r', markerfacecolor='none', markersize=10)
-
-    plt.show()'''
-    
     return y,x
 
-def confidence(count, templates, curr_slice):
-
-    tmp_sum = 0
-    r = templates[count][0]
-    c = templates[count][2]
-    
-    while r >= templates[count][0] and r < templates[count][1]:
-        c = templates[count][2]
-        while c >= templates[count][2] and c < templates[count][3]:
-            tmp_sum += curr_slice[r][c]
-            c+=1
-        r+=1
-    tmp_avg = float(tmp_sum)/((templates[count][1]-templates[count][0])*
-                              (templates[count][3]-templates[count][2]))
-    dev_sum = 0
-    r = templates[count][0]
-    
-    while r >= templates[count][0] and r < templates[count][1]:
-        c = templates[count][2]      
-        while c >= templates[count][2] and c < templates[count][3]:
-            dev_sum += abs(curr_slice[r][c]-tmp_avg)
-            c+=1
-        r+=1
-    std_dev = dev_sum/((templates[count][1]-templates[count][0])*
-                       (templates[count][3]-templates[count][2]))
-    return 100-std_dev   
-
 def colorspace(image):
-
-    pil_im = Image.open(image)
-    
+    pil_im = Image.open(image) 
     enhancer = ImageEnhance.Contrast(pil_im)
     im_enh = enhancer.enhance(2)
-    
+    #Conversions to separate color spaces
     rgb = mpimg.pil_to_array(pil_im)
     hsv = color.rgb2hsv(rgb)
     xyz = color.rgb2xyz(rgb)
@@ -78,14 +37,15 @@ def colorspace(image):
     enh = mpimg.pil_to_array(im_enh)
 
     r,c = rgb[:,:,0].shape
-
+    #Slicing of arrays to get each 2-dimensional matrix
+    #(z-slice produces an error, still not fixed)
     slices = [rgb[:,:,0], rgb[:,:,1], rgb[:,:,2],
               hsv[:,:,0], hsv[:,:,1], hsv[:,:,2],
               grey,
               enh[:,:,0], enh[:,:,1], enh[:,:,2],
               cie[:,:,0], cie[:,:,1], cie[:,:,2],
               xyz[:,:,0], xyz[:,:,1]]#, xyz[:,:,2]]
-
+    #Reference to where the templates should be matched to
     dist_compare = [[int(r*3/40),int(r*12/40),
                      int(c*6/40),int(c*19/40)],
                     [int(r*3/40),int(r*7/40),
@@ -106,19 +66,13 @@ def colorspace(image):
                      int(c*31/40),int(c*37/40)],
                     [int(r*34/40),int(r*38/40),
                      int(c*25/40),int(c*31/40)]]
-
-    color_list = ['red','green','blue','hue','saturation','value',
-                  'grey','enh red','enh green', 'enh blue',
-                  'r cie','g cie', 'b cie','x','y','z']  
-       
     slice_count = 0
     errors = []
- 
     while slice_count < len(slices):
         temp_count = 0
         err_dist = 0
         curr_im = slices[slice_count]
-        
+        #Test templates of the current image
         templates = [curr_im[int(r*3/40):int(r*12/40),
                              int(c*6/40):int(c*19/40)],
                      curr_im[int(r*3/40):int(r*7/40),
@@ -139,25 +93,44 @@ def colorspace(image):
                              int(c*31/40):int(c*37/40)],
                      curr_im[int(r*34/40):int(r*38/40),
                              int(c*25/40):int(c*31/40)]]
-        
         while temp_count < len(templates):
             row,col = test(slices[slice_count],templates[temp_count])
+            #Total errors in current image
             err_dist += sqrt((row-dist_compare[temp_count][0])**2+
                              (col-dist_compare[temp_count][2])**2)
-            print 'confidence: ', confidence(temp_count, dist_compare,
-                                             slices[slice_count])
-            print 'distance: ', sqrt((row-dist_compare[temp_count][0])**2+
-                                     (col-dist_compare[temp_count][2])**2)
             temp_count += 1
         errors.append(err_dist)
         slice_count += 1
+    #Least defaults to first slice
     least_item = errors[0]
     least_ind = 0
     for index,item in enumerate(errors):   
         if item < least_item:
             least_item = item
             least_ind = index
-    print errors
-    return color_list[least_ind]
+    return slices[least_ind]
 
-print colorspace('test_file')
+def main(argv=None):
+    dirname='./images'
+    if argv is None:
+        argv = sys.argv
+    try:
+        try:
+            opts, args = getopt.getopt(argv[1:], 'h:d', ['help','dir='])
+        except getopt.error, msg:
+            raise Usage(msg)
+        for opt, arg in opts:
+            if opt in ('-h', '--help'):
+                print __doc__
+                sys.exit(0)
+        print args
+        imagefile = args[-0]
+        return colorspace(imagefile)
+
+    except Usage, err:
+        print >>sys.stderr, err.msg
+        print >>sys.stderr, "for help use --help"
+        return 2
+
+if __name__ == "__main__":
+    sys.exit(main())
