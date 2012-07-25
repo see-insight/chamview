@@ -3,11 +3,17 @@ import os
 from pylab import *
 
 class Accuracy(Chooser):
+    """Can be used to find the difference between each Predictor and ground-truth
+    points. Outputs the difference (in pixels) to file and displays a graph. Only
+    uses the first pointkind on file.
+    Usage: ./chamview.py -c Accuracy -d <image directory> -p <ground truth file>
+    """
 
     def setup(self):
-        self.x = []
-        self.y = []
-        self.name = []
+        self.x = [] #Frame number
+        self.y = [] #Error from ground-truth
+        self.name = [] #Name of predictor
+        self.filledLists = False
 
     def teardown(self):
         #Go through each predictor
@@ -27,14 +33,14 @@ class Accuracy(Chooser):
 
     def choose(self,stack,predicted,predictor_name):
         print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
-        #Have we yet to create numpy arrays to hold test results?
-        if len(self.name) != len(predictor_name):
+        #Have we yet to take in Predictor info?
+        if self.filledLists == False:
+            self.filledLists = True
             for name in predictor_name:
                 self.name.append(name)
             for i in range(0,len(self.name)):
                 self.x.append(arange(0,stack.total_frames,1))
                 self.y.append(zeros(stack.total_frames))
-            return
         #Get the accuracy of each predictor
         for i in range(0,len(self.name)):
             #Get distance between predicted and ground truth for pointkind 0
