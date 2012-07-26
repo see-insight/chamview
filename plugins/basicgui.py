@@ -214,6 +214,7 @@ class BasicGui(Chooser):
             y = self.imstack.point[self.imstack.current_frame,i,1] * self.scale
             #If we haven't selected a point yet then don't draw it
             if x == 0 and y == 0: continue
+            #Red is selected pointkind, green is other pointkinds
             if i == self.pointKind:
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
             else:
@@ -278,5 +279,9 @@ class BasicGui(Chooser):
             self.selectedPrediction[self.pointKind] += 1
             if self.selectedPrediction[self.pointKind] > len(self.predicted)-1:
                 self.selectedPrediction[self.pointKind] = -1
+        #Reset the clicked point if it's selected as active
+        if self.selectedPrediction[self.pointKind] == -1:
+            self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
+            self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
 
