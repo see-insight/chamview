@@ -87,13 +87,15 @@ class BasicGui(Chooser):
         self.button_next = Button(self.frameL,text='Next',command=self.next)
         self.button_next.grid(column=2,row=2)
         #Listbox used to select point kind
-        self.listbox = Listbox(self.frameL,width=15,height=4)
+        self.listbox = Listbox(self.frameL,width=15,height=10)
+        #self.listbox.config(cursor=0)
         self.listbox.grid(column=1,row=4,columnspan=2)
         self.listbar = Scrollbar(self.frameL,orient=VERTICAL)
         self.listbar.grid(column=0,row=4,sticky='ns')
         self.listbar.config(command=self.listbox.yview,width=15)
         self.listbox.config(yscrollcommand=self.listbar.set)
         self.listbox.bind('<<ListboxSelect>>',self.setPointKind)
+        self.listbox.focus()
         #Canvas to display the current frame
         self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
@@ -115,8 +117,8 @@ class BasicGui(Chooser):
     def incPointKind(self,event=''):
         self.listbox.selection_clear(self.pointKind)
         self.pointKind = self.pointKind+1
-        if self.pointKind > self.imstack.point_kinds -1:
-            self.pointKind = self.imstack.point_kinds - 1
+        if self.pointKind > self.imstack.point_kinds-1:
+            self.pointKind = self.imstack.point_kinds-1
         self.updatePointKind()
 
     def decPointKind(self,event=''):
@@ -128,13 +130,15 @@ class BasicGui(Chooser):
 
     def updatePointKind(self):
         #Set the listbox's selection and draw the new pointkind on the frame
+        self.listbox.selection_clear(self.pointKind)
         self.listbox.selection_set(self.pointKind)
         self.listbox.see(self.pointKind)
+        self.listbox.activate(self.pointKind)
         self.drawCanvas()
 
     def createKeyBindings(self):
-        self.master.bind_all('<Up>',self.decPointKind)
-        self.master.bind_all('<Down>',self.incPointKind)
+        #self.master.bind_all('t',self.decPointKind)
+        #self.master.bind_all('b',self.incPointKind)
         self.master.bind_all('<Left>',self.prev)
         self.master.bind_all('<Right>',self.next)
         self.master.bind_all('<a>',self.prev)
