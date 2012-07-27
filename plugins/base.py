@@ -1,4 +1,5 @@
 from numpy import *
+from PIL import Image
 
 
 class Chooser(object):
@@ -42,3 +43,21 @@ class Predictor(object):
         #return a numpy array [point kind,row/column/confidence]
         raise NotImplementedError
 
+
+class Preprocessor(object):
+
+    def setup(self,args):
+        #Called by ChamView before the plugin has to do anything. If necessary,
+        #load any files and initialize things here. args is a list of arguments
+        #that may or may not be passed depending on the nature of the
+        #Preprocessor, such as contrast amount, etc. Does not return anything
+        raise NotImplementedError
+
+    def teardown(self):
+        #Called to allow the plugin to free any resources or delete temporary
+        #files
+        raise NotImplementedError
+
+    def process(self,image):
+        #image is a PIL image. Process it and return it as a PIL image
+        raise NotImplementedError

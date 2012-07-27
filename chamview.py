@@ -5,6 +5,7 @@ Usage options:
     -h --help    Print this help message
     -d --dir     Image directory. Default is (./images)
     -c --chooser Chooser subclass. Default is (BasicGui)
+    -i --prep    Preprocessor subclass. Default is (none)
     -o --output  Output file. Default is (none)
     -k --pkind   Point kind file. Default is (defaultPointKinds.txt)
     -p --ppos    Previously saved output file. Default is (none)
@@ -30,15 +31,16 @@ def main(argc,argv):
     #Default arguments
     argDir = './images'
     argChooser = 'BasicGui'
+    argPreproc = ''
     argOutput = ''
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                      'hd:c:o:k:p:',
-                                      ['help','dir=','chooser=','output=',
-                                      'pkind=','ppos='])
+                                      'hd:c:i:o:k:p:',
+                                      ['help','dir=','chooser=','prep=',
+                                      'output=','pkind=','ppos='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -50,13 +52,15 @@ def main(argc,argv):
                argDir = arg
             elif opt in ('-c', '--chooser'):
                 argChooser = arg
+            elif opt in ('-i', '--prep'):
+                argPreproc = arg
             elif opt in ('-o', '--output'):
                 argOutput = arg
             elif opt in ('-k', '--pkind'):
                 argPKind = arg
             elif opt in ('-p', '--ppos'):
                 argPPos = arg
-        run(argDir,argChooser,argOutput,argPKind,argPPos)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -64,7 +68,7 @@ def main(argc,argv):
         return 2
 
 
-def run(argDir,argChooser,argOutput,argPKind,argPPos):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     #Load images into memory
     imstack = ImageStack(argDir)
     if imstack.total_frames == 0:
@@ -82,11 +86,26 @@ def run(argDir,argChooser,argOutput,argPKind,argPPos):
     chooser = chooser_class[chooser_name.index(argChooser)]()
     chooser.setup()
 
+    #Load the Preprocessor subclass instance
+    if argPreproc != '':
+        preproc_class,preproc_name = find_subclasses('plugins',base.Preprocessor)
+        if not (argPreproc in preproc_name):
+            raise Usage('Preprocessor "'+argPreproc+'" not found in plugins '+
+                                                                        'directory')
+        preproc = preproc_class[preproc_name.index(argPreproc)]()
+        #If Preprocessors ever accept input arguments, they would replace None below
+        preproc.setup(None)
+    else:
+        preproc = None
+
     #Load the Predictor subclass instances
     predictor,predictor_name = find_subclasses('plugins',base.Predictor)
     for i in range(0,len(predictor)):
         #predictor[i] will now hold a reference to an instance of the subclass
         predictor[i] = predictor[i]()
+
+    #Preprocess the ImageStack image
+    if preproc: imstack.img_current = preproc.process(imstack.img_current)
 
     #Initialize every predictor and optionally get a first guess
     predict_point = zeros((len(predictor),imstack.point_kinds,3))
@@ -101,6 +120,8 @@ def run(argDir,argChooser,argOutput,argPKind,argPPos):
 
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
+        #Preprocess the ImageStack image
+        if preproc: imstack.img_current = preproc.process(imstack.img_current)
         #Give each predictor the current image stack and get a prediction back
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack)
