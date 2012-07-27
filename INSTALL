@@ -1,0 +1,6 @@
+#Updating scikits-image to use template matching
+
+git clone http://github.com/scikits-image/scikits-image.git
+cd scikits-image/
+sudo python setup.py install
+
