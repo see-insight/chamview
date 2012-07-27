@@ -1,4 +1,4 @@
-from base import Chooser
+from grammar import Chooser
 from numpy import *
 from Tkinter import *
 import tkMessageBox

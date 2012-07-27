@@ -19,7 +19,7 @@ import imp
 import dircache
 from numpy import *
 from imagestack import ImageStack
-from plugins import base
+from plugins import grammar 
 
 
 class Usage(Exception):
@@ -80,7 +80,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     if argPPos != '': imstack.load_points(argPPos)
 
     #Load the Chooser subclass instance
-    chooser_class,chooser_name = find_subclasses('plugins',base.Chooser)
+    chooser_class,chooser_name = find_subclasses('plugins',grammar.Chooser)
     if not (argChooser in chooser_name):
         raise Usage('Chooser "'+argChooser+'" not found in plugins directory')
     chooser = chooser_class[chooser_name.index(argChooser)]()
@@ -88,7 +88,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
 
     #Load the Preprocessor subclass instance
     if argPreproc != '':
-        preproc_class,preproc_name = find_subclasses('plugins',base.Preprocessor)
+        preproc_class,preproc_name = find_subclasses('plugins',grammar.Preprocessor)
         if not (argPreproc in preproc_name):
             raise Usage('Preprocessor "'+argPreproc+'" not found in plugins '+
                                                                         'directory')
@@ -99,7 +99,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         preproc = None
 
     #Load the Predictor subclass instances
-    predictor,predictor_name = find_subclasses('plugins',base.Predictor)
+    predictor,predictor_name = find_subclasses('plugins',grammar.Predictor)
     for i in range(0,len(predictor)):
         #predictor[i] will now hold a reference to an instance of the subclass
         predictor[i] = predictor[i]()

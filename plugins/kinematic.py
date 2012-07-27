@@ -1,4 +1,4 @@
-from base import Predictor
+from grammar import Predictor
 from numpy import *
 import random
 from imagestack import ImageStack

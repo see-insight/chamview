@@ -1,4 +1,4 @@
-from base import Predictor
+from grammar import Predictor
 from numpy import *
 from skimage.feature import match_template
 
