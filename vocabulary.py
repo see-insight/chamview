@@ -1,14 +1,7 @@
 #!/usr/bin/env python
-"""Main Chamview testing program
+"""Lists and manages current image grammar vocabular
 
-Usage options:
-    -h --help    Print this help message
-    -d --dir     Image directory. Default is (./images)
-    -c --chooser Chooser subclass. Default is (BasicGui)
-    -i --prep    Preprocessor subclass. Default is (none)
-    -o --output  Output file. Default is (none)
-    -k --pkind   Point kind file. Default is (defaultPointKinds.txt)
-    -p --ppos    Previously saved output file. Default is (none)
+
 """
 
 
@@ -17,7 +10,6 @@ import sys
 import getopt
 import imp
 import dircache
-import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
 from plugins import grammar 
@@ -61,67 +53,55 @@ def main(argc,argv):
                 argPKind = arg
             elif opt in ('-p', '--ppos'):
                 argPPos = arg
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos)
-
+        show()
+        
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, 'For help use --help'
         return 2
+def show():
+    print "Choosers:"
+    classes,names = find_subclasses('plugins',grammar.Chooser)
+    print names
+    print "" 
+    print "Predictors:"
+    classes,names = find_subclasses('plugins',grammar.Predictor)
+    print names
+    print "" 
+    print "Preprocessors:"
+    classes,names = find_subclasses('plugins',grammar.Preprocessor)
+    print names
+    print "" 
 
-
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
-    #Load images into memory
-    imstack = ImageStack(argDir)
-    if imstack.total_frames == 0:
-        raise Usage('No valid image files found in "'+argDir+'"')
-    imstack.load_img()
-
-    #Load point kind and point position files
-    imstack.get_point_kinds(argPKind)
-    if argPPos != '': imstack.load_points(argPPos)
-
+def getChooser(argChooser):
     #Load the Chooser subclass instance
-    chooser = vocab.getChooser(argChooser)
-    chooser.setup()
+    chooser_class,chooser_name = find_subclasses('plugins',grammar.Chooser)
+    if not (argChooser in chooser_name):
+        raise Usage('Chooser "'+argChooser+'" not found in plugins directory')
+    chooser = chooser_class[chooser_name.index(argChooser)]()
+    return chooser
 
+def getPreprocessor(argPreproc):
     #Load the Preprocessor subclass instance
-    preproc = vocab.getPreprocessor(argPreproc)
+    if argPreproc != '':
+        preproc_class,preproc_name = find_subclasses('plugins',grammar.Preprocessor)
+        if not (argPreproc in preproc_name):
+            raise Usage('Preprocessor "'+argPreproc+'" not found in plugins '+
+                                                                        'directory')
+        preproc = preproc_class[preproc_name.index(argPreproc)]()
+        #If Preprocessors ever accept input arguments, they would replace None below
+        preproc.setup(None)
+    else:
+        preproc = None
+    return preproc
 
+def getPredictors():
     #Load the Predictor subclass instances
-    predictor,predictor_name = vocab.getPredictors()
-
-    #Preprocess the ImageStack image
-    if preproc: imstack.img_current = preproc.process(imstack.img_current)
-
-    #Initialize every predictor and optionally get a first guess
-    predict_point = zeros((len(predictor),imstack.point_kinds,3))
+    predictor,predictor_name = find_subclasses('plugins',grammar.Predictor)
     for i in range(0,len(predictor)):
-        guess = predictor[i].setup(imstack)
-        if guess != None:
-            for j in range(0,imstack.point_kinds):
-                predict_point[i,j] = guess
-
-    #Give this result to the chooser to get the initial ground-truth point
-    chooser.choose(imstack,predict_point,predictor_name)
-
-    #Repeat until the chooser signals to exit
-    while(imstack.exit == False):
-        #Preprocess the ImageStack image
-        if preproc: imstack.img_current = preproc.process(imstack.img_current)
-        #Give each predictor the current image stack and get a prediction back
-        for i in range(0,len(predictor)):
-            predict_point[i] = predictor[i].predict(imstack)
-        #Give this result to the chooser to get the "real" point
-        chooser.choose(imstack,predict_point,predictor_name)
-
-    #Save points to file
-    if argOutput != '': imstack.save_points(argOutput)
-
-    #Clear out any Chooser or Predictor data
-    chooser.teardown()
-    for pred in predictor:
-        pred.teardown()
-
+        #predictor[i] will now hold a reference to an instance of the subclass
+        predictor[i] = predictor[i]()
+    return predictor,predictor_name
 
 def find_subclasses(path,superclass):
     #Returns a list of subclasses of 'superclass' given a directory 'path' to
