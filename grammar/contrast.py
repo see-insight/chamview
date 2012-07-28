@@ -1,4 +1,4 @@
-from grammar import Preprocessor
+from Grammar import Preprocessor
 from PIL import ImageEnhance
 
 class Contrast(Preprocessor):

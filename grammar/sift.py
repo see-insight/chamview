@@ -1,4 +1,4 @@
-from grammar import Predictor
+from Grammar import Predictor
 from numpy import *
 import os, sys
 from PIL import Image, ImageEnhance
@@ -673,7 +673,7 @@ def feature_save(imagename,resultname,box=None,params="--edge-thresh 10 --peak-t
         im.save('tmp.pgm')
         imagename = 'tmp.pgm'
     #Hand it over to the OS-specific SIFT binary for processing
-    command = os.getcwd()+os.path.sep+'plugins'+os.path.sep+'vlfeat'+os.path.sep
+    command = os.getcwd()+os.path.sep+'grammar'+os.path.sep+'vlfeat'+os.path.sep
     if sys.platform.startswith('linux'):
         command += 'glnx86'
     elif sys.platform == 'win32' or sys.platform == 'cygwin':

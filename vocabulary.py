@@ -12,7 +12,7 @@ import imp
 import dircache
 from numpy import *
 from imagestack import ImageStack
-from plugins import grammar 
+from grammar import Grammar 
 
 
 class Usage(Exception):
@@ -61,32 +61,32 @@ def main(argc,argv):
         return 2
 def show():
     print "Choosers:"
-    classes,names = find_subclasses('plugins',grammar.Chooser)
+    classes,names = find_subclasses('grammar',Grammar.Chooser)
     print names
     print "" 
     print "Predictors:"
-    classes,names = find_subclasses('plugins',grammar.Predictor)
+    classes,names = find_subclasses('grammar',Grammar.Predictor)
     print names
     print "" 
     print "Preprocessors:"
-    classes,names = find_subclasses('plugins',grammar.Preprocessor)
+    classes,names = find_subclasses('grammar',Grammar.Preprocessor)
     print names
     print "" 
 
 def getChooser(argChooser):
     #Load the Chooser subclass instance
-    chooser_class,chooser_name = find_subclasses('plugins',grammar.Chooser)
+    chooser_class,chooser_name = find_subclasses('grammar',Grammar.Chooser)
     if not (argChooser in chooser_name):
-        raise Usage('Chooser "'+argChooser+'" not found in plugins directory')
+        raise Usage('Chooser "'+argChooser+'" not found in grammar directory')
     chooser = chooser_class[chooser_name.index(argChooser)]()
     return chooser
 
 def getPreprocessor(argPreproc):
     #Load the Preprocessor subclass instance
     if argPreproc != '':
-        preproc_class,preproc_name = find_subclasses('plugins',grammar.Preprocessor)
+        preproc_class,preproc_name = find_subclasses('grammar',Grammar.Preprocessor)
         if not (argPreproc in preproc_name):
-            raise Usage('Preprocessor "'+argPreproc+'" not found in plugins '+
+            raise Usage('Preprocessor "'+argPreproc+'" not found in grammar '+
                                                                         'directory')
         preproc = preproc_class[preproc_name.index(argPreproc)]()
         #If Preprocessors ever accept input arguments, they would replace None below
@@ -97,7 +97,7 @@ def getPreprocessor(argPreproc):
 
 def getPredictors():
     #Load the Predictor subclass instances
-    predictor,predictor_name = find_subclasses('plugins',grammar.Predictor)
+    predictor,predictor_name = find_subclasses('grammar',Grammar.Predictor)
     for i in range(0,len(predictor)):
         #predictor[i] will now hold a reference to an instance of the subclass
         predictor[i] = predictor[i]()

@@ -1,4 +1,4 @@
-from grammar import Chooser
+from Grammar import Chooser
 import os
 from pylab import *
 

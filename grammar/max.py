@@ -1,4 +1,4 @@
-from grammar import Chooser
+from Grammar import Chooser
 from numpy import *
 
 class Max(Chooser):

@@ -20,7 +20,7 @@ import dircache
 import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
-from plugins import grammar 
+from grammar import Grammar 
 
 
 class Usage(Exception):

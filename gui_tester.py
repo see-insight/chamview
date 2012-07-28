@@ -12,7 +12,7 @@ See help for slideshow for more information
 import sys
 import getopt
 from imagestack import *
-from plugins import basicgui
+from grammar import basicgui
 
 class Usage(Exception):
     def __init__(self,msg):
