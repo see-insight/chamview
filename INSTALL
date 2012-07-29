@@ -4,3 +4,9 @@ git clone http://github.com/scikits-image/scikits-image.git
 cd scikits-image/
 sudo python setup.py install
 
+#Installing AVBin for video decodeing
+http://avbin.github.com/AVbin/Home/Home.html
+tar -zxvf avbin-drwin-x86-32-v8.1.tar.bz2
+cd avbin-darwin-x86-32-v8.1
+sudo ./install.sh
+

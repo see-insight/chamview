@@ -9,6 +9,12 @@ Usage options:
     -o --output  Output file. Default is (none)
     -k --pkind   Point kind file. Default is (defaultPointKinds.txt)
     -p --ppos    Previously saved output file. Default is (none)
+
+Example:
+
+    >>> print "hello world"
+    hello world
+
 """
 
 
@@ -33,7 +39,7 @@ def main(argc,argv):
     argDir = './images'
     argChooser = 'BasicGui'
     argPreproc = ''
-    argOutput = ''
+    argOutput = './output_points.txt'
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     try:

@@ -189,6 +189,7 @@ class ImageStack:
                     str(int(self.point[frame,kind_index,0]))+','+
                     str(int(self.point[frame,kind_index,1]))+'\n')
         file_out.close()
+        print "points saved to "+filename
 
     def show(self):
         #A method for debugging. Displays the current frame

@@ -83,6 +83,8 @@ def mov2img(source,destination='',start=-1,end=-1,skip=-1,output = False):
         if output:
             sys.stdout.write(']\n')
             print 'ERROR: input file format is not supported'
+            print '       This may indicate that AVBin is not installed.'
+            print '       http://avbin.github.com/AVbin/Home/Home.html'
         return
     except IOError:
         #Error reading in the file
