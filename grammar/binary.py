@@ -23,7 +23,7 @@ class Binary(Preprocessor):
         image = mpimg.pil_to_array(image)
         #image = color.rgb2gray(image)
         thresh = threshold_otsu(image)
-        thresh = thresh + 57
+        #thresh = thresh + 57
         binary = image > thresh
         binary = numpy.flipud(binary)
         binary = (binary*255).astype('uint8')

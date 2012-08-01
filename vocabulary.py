@@ -95,6 +95,15 @@ def getPreprocessor(argPreproc):
         preproc = None
     return preproc
 
+def getPreprocessors():
+    #Load the Predictor subclass instances
+    predictor,predictor_name = find_subclasses('grammar',Grammar.Preprocessor)
+    for i in range(0,len(predictor)):
+        #predictor[i] will now hold a reference to an instance of the subclass
+        predictor[i] = predictor[i]()
+    return predictor,predictor_name
+
+
 def getPredictors():
     #Load the Predictor subclass instances
     predictor,predictor_name = find_subclasses('grammar',Grammar.Predictor)
