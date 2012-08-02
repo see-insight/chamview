@@ -5,6 +5,7 @@ Slideshow test program written by Dirk
 Usage options:
     -h --help Print this help message
     -d --dir= change directory
+    -p --pre= add preprocessor
 
 Using convention described in the following blog posts:
     http://www.artima.com/weblogs/viewpost.jsp?thread=4829
@@ -21,34 +22,40 @@ As an argument to python:
     python slideshow.py --dir=./new/image/directory/
 
 Python Prompt
-    >>>import slideshow
-    >>>slideshow.show('./new/image/directory/')
+    >import slideshow
+    >slideshow.show('./new/image/directory/')
 """
 
 import time
 import sys
 import getopt
 from imagestack import *
-
+from grammar import Grammar
+import vocabulary as vocab
 class Usage(Exception):
     def __init__(self,msg):
         self.msg = msg;
 
-def show(dirname='./images/'):
+def show(dirname='./images/',preprocessor=None):
     print dirname
     imst = ImageStack(dirname)
     while (imst.current_frame < imst.total_frames):
-        im = imst.show()
+        im = imst.img_current
+        if(im!=None and preprocessor!=None):
+            #print "preprocess" 
+            im=preprocessor.process(im)
+        im.show()
         time.sleep(1)
         imst.next()
 
 def main(argv=None):
     dirname='./images'
+    preprocessor=None
     if argv is None:
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'h:d', ['help','dir='])
+            opts, args = getopt.getopt(argv[1:], 'h:d:p', ['help','dir=','pre='])
         except getopt.error, msg:
             raise Usage(msg)
         
@@ -58,7 +65,10 @@ def main(argv=None):
                 sys.exit(0)
             elif opt in ('-d', '--dir'):
                dirname = arg 
-        show(dirname) 
+            elif opt in ('-p', '--pre'):
+               preprocessor = arg
+        pre=vocab.getPreprocessor(preprocessor)
+        show(dirname,pre) 
         
     except Usage, err:
         print >>sys.stderr, err.msg

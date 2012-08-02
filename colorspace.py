@@ -14,8 +14,14 @@ from numpy import *
 from PIL import Image
 from PIL import ImageEnhance
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
 import skimage.color as color
 from skimage.feature import match_template
+
+class Usage(Exception):
+    def __init__(self,msg):
+        self.msg = msg;
+
 
 #Function to take the given template and match it (from skimage)
 def test(image, template):
@@ -39,6 +45,12 @@ def colorspace(image):
     r,c = rgb[:,:,0].shape
     #Slicing of arrays to get each 2-dimensional matrix
     #(z-slice produces an error, still not fixed)
+    names = [ 'red', 'green', 'blue',
+              'Hue', 'Saturation', 'Valuse',
+              'Gray',
+              'Enhanced Red', 'Enhanced Green', 'Enhanced Blue',
+              'CIE[1]', 'CIE[2]', 'CIE[3]',
+              'X', 'Y', 'Z']
     slices = [rgb[:,:,0], rgb[:,:,1], rgb[:,:,2],
               hsv[:,:,0], hsv[:,:,1], hsv[:,:,2],
               grey,
@@ -68,6 +80,7 @@ def colorspace(image):
                      int(c*25/40),int(c*31/40)]]
     slice_count = 0
     errors = []
+    fig = plt.figure() 
     while slice_count < len(slices):
         temp_count = 0
         err_dist = 0
@@ -93,14 +106,21 @@ def colorspace(image):
                              int(c*31/40):int(c*37/40)],
                      curr_im[int(r*34/40):int(r*38/40),
                              int(c*25/40):int(c*31/40)]]
+        ##TODO show image here
+        ax = fig.add_subplot(3,5,slice_count,title=names[slice_count])
+        ax.set_axis_off()
+        ax.imshow(slices[slice_count], origin='lower')
         while temp_count < len(templates):
             row,col = test(slices[slice_count],templates[temp_count])
             #Total errors in current image
             err_dist += sqrt((row-dist_compare[temp_count][0])**2+
                              (col-dist_compare[temp_count][2])**2)
             temp_count += 1
+        ax.set_xlabel(err_dist)
         errors.append(err_dist)
         slice_count += 1
+    fig.show();
+    raw_input("Press Enter to continue...")
     #Least defaults to first slice
     least_item = errors[0]
     least_ind = 0

@@ -83,7 +83,7 @@ def getChooser(argChooser):
 
 def getPreprocessor(argPreproc):
     #Load the Preprocessor subclass instance
-    if argPreproc != '':
+    if argPreproc != '' and argPreproc != None:
         preproc_class,preproc_name = find_subclasses('grammar',Grammar.Preprocessor)
         if not (argPreproc in preproc_name):
             raise Usage('Preprocessor "'+argPreproc+'" not found in grammar '+
