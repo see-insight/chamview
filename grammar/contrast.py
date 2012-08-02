@@ -14,7 +14,6 @@ class Contrast(Preprocessor):
 
     def process(self,image):
         #Add contrast to the image and return the modified version
-        if (self.contrast_amount == None)
-            self.contrast_amount = 2.0
+        self.contrast_amount = 2.0
         enhancer = ImageEnhance.Contrast(image)
         return enhancer.enhance(self.contrast_amount)

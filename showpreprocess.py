@@ -14,6 +14,7 @@ Example:
 """
 import sys
 import getopt
+import slideshow
 from numpy import *
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -51,11 +52,12 @@ def main(argv=None):
 
         im = Image.open(args[-0]) 
         dir(im)
-        im.show()
+        slideshow.imshow(im)
         preps,names = vocab.getPreprocessors()       
-        for p in preps:
+        for p,n in zip(preps,names):
+            print n
             pim = p.process(im)
-            pim.show() 
+            slideshow.imshow(pim,n)        
 
 
  

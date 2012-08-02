@@ -32,11 +32,26 @@ import getopt
 from imagestack import *
 from grammar import Grammar
 import vocabulary as vocab
+
 class Usage(Exception):
     def __init__(self,msg):
         self.msg = msg;
 
-def show(dirname='./images/',preprocessor=None):
+def imshow(im,name=''):
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.imshow(im,origin='lower')
+    ax.set_axis_off()
+    ax.set_title(name)
+    fig.show()
+    time.sleep(1)
+
+def imshow2(im,name=''):
+    im.show()
+    time.sleep(1)
+
+def slideshow(dirname='./images/',preprocessor=None):
     print dirname
     imst = ImageStack(dirname)
     while (imst.current_frame < imst.total_frames):
@@ -44,9 +59,9 @@ def show(dirname='./images/',preprocessor=None):
         if(im!=None and preprocessor!=None):
             #print "preprocess" 
             im=preprocessor.process(im)
-        im.show()
-        time.sleep(1)
+        imshow(im,imst.name_current)
         imst.next()
+
 
 def main(argv=None):
     dirname='./images'
@@ -68,7 +83,7 @@ def main(argv=None):
             elif opt in ('-p', '--pre'):
                preprocessor = arg
         pre=vocab.getPreprocessor(preprocessor)
-        show(dirname,pre) 
+        slideshow(dirname,pre) 
         
     except Usage, err:
         print >>sys.stderr, err.msg
