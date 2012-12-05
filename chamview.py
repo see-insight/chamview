@@ -39,7 +39,7 @@ def main(argc,argv):
     argDir = './images'
     argChooser = 'BasicGui'
     argPreproc = ''
-    argOutput = './output_points.txt'
+    argOutput = ''
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     try:
@@ -67,6 +67,8 @@ def main(argc,argv):
                 argPKind = arg
             elif opt in ('-p', '--ppos'):
                 argPPos = arg
+        if argOutput == '':
+            argOutput = argDir+'.txt'
         run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos)
 
     except Usage, err:
