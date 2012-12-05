@@ -232,20 +232,20 @@ class BasicGui(Chooser):
     def prev(self,event=''):
         #Move the frame back by one and draw the correct image and points
         self.imstack.prev()
-        if self.imstack.current_frame < 0:
-            self.imstack.set_frame(0)
-        else:
-            self.updatePhoto()
-            self.drawCanvas()
+        #if self.imstack.current_frame < 0:
+        #    self.imstack.set_frame(0)
+        #else:
+        self.updatePhoto()
+        self.drawCanvas()
 
     def next(self,event=''):
         #Move the frame forward by one and draw the correct image and points
         self.imstack.next()
-        if self.imstack.current_frame > self.imstack.total_frames-1:
-            self.imstack.set_frame(self.imstack.total_frames-1)
-        else:
-            self.updatePhoto()
-            self.drawCanvas()
+        #self.imif self.imstack.current_frame > self.imstack.total_frames-1:
+        #    self.imstack.set_frame(self.imstack.total_frames-1)
+        #else:
+        self.updatePhoto()
+        self.drawCanvas()
 
     def predict(self,event=''):
         #Exit TKinter's update loop to control is given back to ChamView. After

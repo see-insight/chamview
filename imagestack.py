@@ -30,6 +30,7 @@ class ImageStack:
         self.img_previous = None
         self.current_frame = 0
         self.total_frames = 0
+        self.single_img = False
         self.exit = False
         if directory != '':
             self.get_img_list(directory)
@@ -61,12 +62,14 @@ class ImageStack:
             directory = './'
         else:
             file_list = dircache.listdir(directory)
-        print file_list
+        #print file_list
         for filename in file_list:
             extension = os.path.splitext(filename)[1].lower()
             if extension in valid_extensions:
                 self.img_list.append(directory+os.path.sep+filename)
         self.total_frames = len(self.img_list)
+        if self.total_frames == 1:
+            self.single_img = True
         self.point = zeros((self.total_frames,self.point_kinds,2))
 
     def get_point_kinds(self,filename=''):
@@ -171,6 +174,10 @@ class ImageStack:
         #based on self.current_frame.
         self.img_current = None
         self.img_previous = None
+        if self.single_img == True:
+            self.name_current = self.img_list[0]
+            self.img_current = Image.open(self.name_current) 
+            return
         if self.total_frames == 0: return
         #if self.total_frames == 1: return
         if self.current_frame < 0: return
@@ -202,13 +209,17 @@ class ImageStack:
             self.img_current.show()
 
     def set_frame(self,frame):
-	#Sets the current frame and loads the corresponding image
+        #Sets the current frame and loads the corresponding image
         #The bounds allow looping through each image to work better
         self.current_frame = frame
-        if self.current_frame < -1:
-            self.current_frame = -1
-        if self.current_frame > self.total_frames:
-            self.current_frame = self.total_frames
+        if self.current_frame < 0:
+            self.current_frame = 0 
+        if self.current_frame > self.total_frames-1:
+            if self.single_img == True:
+                self.total_frames = self.current_frame+1
+                self.point.resize((self.total_frames,self.point_kinds,2))
+            else:
+                self.current_frame = self.total_frames-1
         self.load_img()
 
     def advance_frame(self,frames):
