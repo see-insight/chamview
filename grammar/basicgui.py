@@ -18,6 +18,7 @@ class BasicGui(Chooser):
         self.master = Tk()
         #Frame and point info
         self.currentFrame = StringVar()
+        self.totalFrame = StringVar()
         self.photo = None
         self.pointKind = 0
         #Choosing a prediction to use
@@ -25,6 +26,7 @@ class BasicGui(Chooser):
         self.selectedPrediction = []
         #Intitialize GUI, but don't show it yet
         self.madePointkindList = False
+        self.madePredictorList = False
         self.createGui()
         self.createKeyBindings()
 
@@ -36,9 +38,12 @@ class BasicGui(Chooser):
         #Get the imagestack and predicted points
         self.imstack = stack
         self.predicted = predicted
+        self.predictor_name = predictor_name
         self.predictedFrame = self.imstack.current_frame
         #Fill the listbox with point kinds available for use if it hasn't been
         if not self.madePointkindList:self.fillPointkindList()
+        if not self.madePredictorList:self.fillPredictorList()
+
         #Draw new frame and predictions
         self.drawCanvas()
         #Show the window and get user input
@@ -51,11 +56,16 @@ class BasicGui(Chooser):
         #and bind the first 9 to the number keys on the keyboard
         for i in range(0,self.imstack.point_kinds):
             self.listbox.insert(END,self.imstack.point_kind[i])
-            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
+            #if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.listbox.selection_set(0)
         #Fill the list of predictor choices
         for i in range(0,self.imstack.point_kinds):
             self.selectedPrediction.append(-1) #-1 corresponds to human input
+    
+    def fillPredictorList(self):
+        self.madePredictorList = True
+        for n in self.predictor_name:
+            self.prelist.insert(END,n)
 
     def createGui(self):
         #Set up application window
@@ -76,10 +86,19 @@ class BasicGui(Chooser):
         #Predict button
         self.button_next = Button(self.frameL,text='Predict',command=self.predict)
         self.button_next.grid(column=0,row=1,columnspan=2)
-        #Current frame label
-        self.label_framenum = Label(self.frameL,textvariable=self.currentFrame)
+        #frame label
+        self.label_framenum = Label(self.frameL,text='Frame')
         self.label_framenum.grid(column=2,row=1)
-        self.label_framenum.config(borderwidth=2,relief=SUNKEN)
+        self.label_framenum.config(borderwidth=0)
+        #Current frame label
+        self.label_goto = Entry(self.frameL,width=3,textvariable=self.currentFrame)
+        self.label_goto.grid(column=3,row=1)
+        self.label_goto.config(borderwidth=2,relief=SUNKEN)
+        self.label_goto.bind("<KeyRelease-Return>", self.gotoFrame)
+        #Total Frames
+        self.label_framenum = Label(self.frameL,textvariable=self.totalFrame)
+        self.label_framenum.grid(column=4,row=1)
+        self.label_framenum.config(borderwidth=0)
         #Previous button
         self.button_prev = Button(self.frameL,text='Previous',command=self.prev)
         self.button_prev.grid(column=0,row=2,columnspan=2)
@@ -96,10 +115,33 @@ class BasicGui(Chooser):
         self.listbox.config(yscrollcommand=self.listbar.set)
         self.listbox.bind('<<ListboxSelect>>',self.setPointKind)
         self.listbox.focus()
+        
+    
+        #Listbox used to show predictors
+        self.prelist= Listbox(self.frameL,width=15,height=10)
+        self.prelist.grid(column=1,row=5,columnspan=2)
+
         #Canvas to display the current frame
         self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
         self.canvas.grid(column=0,row=0,columnspan=1,rowspan=1)
+
+    def gotoFrame(self,event=''):
+        try:
+            frame=int(float(self.currentFrame.get())-1)
+        except ValueError:
+            self.currentFrame.set(str(self.imstack.current_frame+1))
+            return
+        if frame < 0:
+            self.currentFrame.set(str(self.imstack.current_frame+1))
+            return
+        if frame > self.imstack.total_frames-1:
+            self.currentFrame.set(str(self.imstack.current_frame+1))
+            return
+        #Move the frame forward by one and draw the correct image and points
+        self.imstack.set_frame(frame)
+        self.updatePhoto()
+        self.master.quit()
 
     def setPointKind(self,event=''):
         self.listbox.selection_clear(self.pointKind)
@@ -134,7 +176,7 @@ class BasicGui(Chooser):
         self.listbox.selection_set(self.pointKind)
         self.listbox.see(self.pointKind)
         self.listbox.activate(self.pointKind)
-        self.drawCanvas()
+        self.master.quit()
 
     def createKeyBindings(self):
         #self.master.bind_all('t',self.decPointKind)
@@ -156,7 +198,8 @@ class BasicGui(Chooser):
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = mouseX
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = mouseY
         self.selectedPrediction[self.pointKind] = -1 #-1 corresponds to human choice
-        self.drawCanvas()
+        self.master.quit()
+        #self.drawCanvas()
 
     def drawCanvas(self):
         #If we're using a predictor to set the selected point, then set it
@@ -177,7 +220,7 @@ class BasicGui(Chooser):
         self.master.title(self.imstack.name_current)
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for
-        if(self.imstack.current_frame == self.predictedFrame and self.showPredictions):
+        if(self.imstack.current_frame == self.predictedFrame):
             self.drawPredictions()
         #Draw the selected point for every point kind in this frame
         self.drawPoints()
@@ -194,20 +237,33 @@ class BasicGui(Chooser):
                 Image.ANTIALIAS)
         self.photo = ImageTk.PhotoImage(photo)
         #Update the GUI label that displays the frame number
-        self.currentFrame.set('Frame '+str(self.imstack.current_frame+1)+'/'+
-            str(self.imstack.total_frames))
+        self.currentFrame.set(str(self.imstack.current_frame+1))
+        self.totalFrame.set('/'+str(self.imstack.total_frames))
 
     def drawPredictions(self):
         rad = BasicGui.circle_radius
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
+        cnt = -1
+        self.prelist.selection_clear(0,END) 
         for pred in self.predicted[:]:
+            cnt = cnt+1
             x = pred[self.pointKind,0] * self.scale
             y = pred[self.pointKind,1] * self.scale
             conf = pred[self.pointKind,2]
+            color='yellow'
+            if self.selectedPrediction[self.pointKind] == -1:
+                    color='yellow'
+            else:
+                if cnt == self.selectedPrediction[self.pointKind]: 
+                    color='blue'
             #If it didn't return a point, don't draw anything
-            if x == 0 and y == 0 and conf == 0: continue
-            self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='yellow')
+            if x == 0 and y == 0 and conf == 0: 
+                self.prelist.selection_clear(cnt)
+                color='yellow'
+            else:
+                self.prelist.selection_set(cnt)
+                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
 
     def drawPoints(self):
         #Draw the selected points in this frame. The current pointkind is in red
@@ -236,6 +292,7 @@ class BasicGui(Chooser):
             self.imstack.set_frame(0)
         else:
             self.updatePhoto()
+            #self.master.quit()
             self.drawCanvas()
 
     def next(self,event=''):
@@ -245,7 +302,8 @@ class BasicGui(Chooser):
             self.imstack.set_frame(self.imstack.total_frames-1)
         else:
             self.updatePhoto()
-            self.drawCanvas()
+            self.master.quit()
+            #self.drawCanvas()
 
     def predict(self,event=''):
         #Exit TKinter's update loop to control is given back to ChamView. After
@@ -258,7 +316,8 @@ class BasicGui(Chooser):
         if not self.showPredictions:
             for x in self.selectedPrediction:
                 x = -1 #-1 corresponds to human input
-        self.drawCanvas()
+        self.master.quit()
+        #self.drawCanvas()
 
     def showHelp(self,event=''):
         #Shows basic usage information in a popup window
