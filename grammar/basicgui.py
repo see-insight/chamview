@@ -79,7 +79,7 @@ class BasicGui(Chooser):
         self.frameR.config(borderwidth=3,relief=GROOVE)
         #Quit button
         self.button_quit = Button(self.frameL,text='Quit',command=self.quit)
-        self.button_quit.grid(column=0,row=0,columnspan=2)
+        self.button_quit.grid(column=0,row=0,columnspan=3)
         #Help button
         self.button_help = Button(self.frameL,text='Help',command=self.showHelp)
         self.button_help.grid(column=2,row=0,columnspan=2)
