@@ -79,32 +79,32 @@ class BasicGui(Chooser):
         self.frameR.config(borderwidth=3,relief=GROOVE)
         #Quit button
         self.button_quit = Button(self.frameL,text='Quit',command=self.quit)
-        self.button_quit.grid(column=0,row=0,columnspan=3)
+        self.button_quit.grid(column=0,row=3,columnspan=2)
         #Help button
         self.button_help = Button(self.frameL,text='Help',command=self.showHelp)
-        self.button_help.grid(column=2,row=0,columnspan=2)
+        self.button_help.grid(column=2,row=3,columnspan=2)
         #Predict button
         self.button_next = Button(self.frameL,text='Predict',command=self.predict)
-        self.button_next.grid(column=0,row=1,columnspan=2)
+        self.button_next.grid(column=1,row=2,columnspan=2)
         #frame label
         self.label_framenum = Label(self.frameL,text='Frame')
-        self.label_framenum.grid(column=2,row=1)
+        self.label_framenum.grid(column=1,row=0)
         self.label_framenum.config(borderwidth=0)
         #Current frame label
         self.label_goto = Entry(self.frameL,width=3,textvariable=self.currentFrame)
-        self.label_goto.grid(column=3,row=1)
+        self.label_goto.grid(column=2,row=0)
         self.label_goto.config(borderwidth=2,relief=SUNKEN)
         self.label_goto.bind("<KeyRelease-Return>", self.gotoFrame)
         #Total Frames
         self.label_framenum = Label(self.frameL,textvariable=self.totalFrame)
-        self.label_framenum.grid(column=4,row=1)
+        self.label_framenum.grid(column=3,row=0)
         self.label_framenum.config(borderwidth=0)
         #Previous button
         self.button_prev = Button(self.frameL,text='Previous',command=self.prev)
-        self.button_prev.grid(column=0,row=2,columnspan=2)
+        self.button_prev.grid(column=0,row=1,columnspan=2)
         #Next button
         self.button_next = Button(self.frameL,text='Next',command=self.next)
-        self.button_next.grid(column=2,row=2)
+        self.button_next.grid(column=2,row=1,columnspan=2)
         #Listbox used to select point kind
         self.listbox = Listbox(self.frameL,width=15,height=10)
         #self.listbox.config(cursor=0)

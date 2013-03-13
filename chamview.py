@@ -124,8 +124,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)
 
-    #Save points to file
-    if argOutput != '': imstack.save_points(argOutput)
+        #Save points to file
+        if argOutput != '': imstack.save_points(argOutput)
 
     #Clear out any Chooser or Predictor data
     chooser.teardown()
