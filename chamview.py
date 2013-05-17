@@ -97,8 +97,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
 
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
-    predictor=''
-    predictor_name=''
+    #predictor=''
+    #predictor_name=''
 
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
