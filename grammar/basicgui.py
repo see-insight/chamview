@@ -69,23 +69,26 @@ class BasicGui(Chooser):
 
     def createGui(self):
         #Set up application window
-        self.master.title('Basic GUI Chooser')
+        self.master.title('Tkinter GUI Chooser')
         self.master.protocol('WM_DELETE_WINDOW',self.quit)
-        #Grid manager: buttons on left size, image on right
+        #Grid manager: buttons on left side, image on right
         self.frameL = Frame(self.master)
-        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=5)
+        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=6)
         self.frameR = Frame(self.master)
         self.frameR.grid(row=0,column=3,columnspan=1,rowspan=1)
         self.frameR.config(borderwidth=3,relief=GROOVE)
         #Quit button
         self.button_quit = Button(self.frameL,text='Quit',command=self.quit)
-        self.button_quit.grid(column=0,row=3,columnspan=2)
+        self.button_quit.grid(column=0,row=4,columnspan=2)
         #Help button
         self.button_help = Button(self.frameL,text='Help',command=self.showHelp)
-        self.button_help.grid(column=2,row=3,columnspan=2)
+        self.button_help.grid(column=2,row=4,columnspan=2)
         #Predict button
-        self.button_next = Button(self.frameL,text='Predict',command=self.predict)
-        self.button_next.grid(column=1,row=2,columnspan=2)
+        self.button_pred = Button(self.frameL,text='Predict',command=self.predict)
+        self.button_pred.grid(column=1,row=3,columnspan=2)
+        #Delete button
+        self.button_del = Button(self.frameL,text='Delete',command=self.delete)
+        self.button_del.grid(column=1,row=2,columnspan=2)
         #frame label
         self.label_framenum = Label(self.frameL,text='Frame')
         self.label_framenum.grid(column=1,row=0)
@@ -108,9 +111,9 @@ class BasicGui(Chooser):
         #Listbox used to select point kind
         self.listbox = Listbox(self.frameL,width=15,height=10)
         #self.listbox.config(cursor=0)
-        self.listbox.grid(column=1,row=4,columnspan=2)
+        self.listbox.grid(column=1,row=5,columnspan=2)
         self.listbar = Scrollbar(self.frameL,orient=VERTICAL)
-        self.listbar.grid(column=0,row=4,sticky='ns')
+        self.listbar.grid(column=0,row=5,sticky='ns')
         self.listbar.config(command=self.listbox.yview,width=15)
         self.listbox.config(yscrollcommand=self.listbar.set)
         self.listbox.bind('<<ListboxSelect>>',self.setPointKind)
@@ -119,7 +122,7 @@ class BasicGui(Chooser):
     
         #Listbox used to show predictors
         self.prelist= Listbox(self.frameL,width=15,height=10)
-        self.prelist.grid(column=1,row=5,columnspan=2)
+        self.prelist.grid(column=1,row=6,columnspan=2)
 
         #Canvas to display the current frame
         self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
@@ -189,6 +192,7 @@ class BasicGui(Chooser):
         self.master.bind_all('<h>',self.togglePredictions)
         self.master.bind_all('<z>',self.cycleSelectedPrediction)
         self.master.bind_all('<x>',self.cycleSelectedPrediction)
+        self.master.bind_all('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
 
     def onClick(self,event):
@@ -199,7 +203,7 @@ class BasicGui(Chooser):
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = mouseY
         self.selectedPrediction[self.pointKind] = -1 #-1 corresponds to human choice
         self.master.quit()
-        #self.drawCanvas()
+        self.drawCanvas()
 
     def drawCanvas(self):
         #If we're using a predictor to set the selected point, then set it
@@ -307,7 +311,14 @@ class BasicGui(Chooser):
         #Exit TKinter's update loop to control is given back to ChamView. After
         #a prediction is made, choose() will be called and the window appears
         self.master.quit()
-
+        
+    def delete(self,event=''):
+        #Reset the clicked point if it's selected as active
+        if self.selectedPrediction[self.pointKind] == -1:
+            self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
+            self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
+        self.drawCanvas()
+        
     def togglePredictions(self,event=''):
         #Turn the drawing of predicted points on or off
         self.showPredictions = not self.showPredictions
@@ -315,18 +326,19 @@ class BasicGui(Chooser):
             for x in self.selectedPrediction:
                 x = -1 #-1 corresponds to human input
         self.master.quit()
-        #self.drawCanvas()
+        self.drawCanvas()
 
     def showHelp(self,event=''):
         #Shows basic usage information in a popup window
         message = ''
-        message += 'Previous/next image\ta/d\n'
-        message += 'Previous/next image\tL/R arrow\n'
+        message += 'Previous/next image\t\ta/d\n'
+        message += 'Previous/next image\t\tL/R arrow\n'
         message += 'Choose point kind\t\t1-9\n'
         message += 'Choose point kind\t\tU/D arrow\n'
-        message += 'Calculate predictions\ts\n'
+        message += 'Calculate predictions\t\ts\n'
         message += 'Toggle predictions\t\th\n'
         message += 'Cycle chosen prediction\tz/x\n'
+        message += 'Delete selected point\t\t<Del>\n'
         tkMessageBox.showinfo("Chamview Help",message)
 
     def cycleSelectedPrediction(self,event=''):
@@ -340,7 +352,7 @@ class BasicGui(Chooser):
             self.selectedPrediction[self.pointKind] += 1
             if self.selectedPrediction[self.pointKind] > len(self.predicted)-1:
                 self.selectedPrediction[self.pointKind] = -1
-        #Reset the clicked point if it's selected as active
+        #Reset the clicked point if it's selected as active (MAY REPLACE W/ DELETE FUNC)
         if self.selectedPrediction[self.pointKind] == -1:
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
