@@ -40,7 +40,7 @@ class BasicGui(Chooser):
         self.predicted = predicted
         self.predictor_name = predictor_name
         self.predictedFrame = self.imstack.current_frame
-        #Fill the listbox with point kinds available for use if it hasn't been
+        #Fill the pointlist with point kinds available for use if it hasn't been
         if not self.madePointkindList:self.fillPointkindList()
         if not self.madePredictorList:self.fillPredictorList()
 
@@ -55,9 +55,9 @@ class BasicGui(Chooser):
         #For every point kind in our imagestack, create an entry in the list
         #and bind the first 9 to the number keys on the keyboard
         for i in range(0,self.imstack.point_kinds):
-            self.listbox.insert(END,self.imstack.point_kind[i])
-            #if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
-        self.listbox.selection_set(0)
+            self.pointlist.insert(END,self.imstack.point_kind[i])
+            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
+        self.pointlist.selection_set(0)
         #Fill the list of predictor choices
         for i in range(0,self.imstack.point_kinds):
             self.selectedPrediction.append(-1) #-1 corresponds to human input
@@ -65,69 +65,123 @@ class BasicGui(Chooser):
     def fillPredictorList(self):
         self.madePredictorList = True
         for n in self.predictor_name:
-            self.prelist.insert(END,n)
+            self.predlist.insert(END,n)
 
     def createGui(self):
         #Set up application window
         self.master.title('Tkinter GUI Chooser')
         self.master.protocol('WM_DELETE_WINDOW',self.quit)
-        #Grid manager: buttons on left side, image on right
+        #Set up top menu: File Help
+        self.topmenu = Menu(self.master)
+        self.master.config(menu=self.topmenu)
+        self.filemenu = Menu(self.topmenu)
+        self.topmenu.add_cascade(label='File', menu=self.filemenu)
+        self.filemenu.add_command(label='New', command=self.new)
+        self.filemenu.add_command(label='Open', command=self.open)
+        self.filemenu.add_command(label='Save As', command=self.save_as)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label='Exit', command=self.quit)
+        self.topmenu.add_command(label='Help', command=self.showHelp)
+        #Grid manager:
+        #       Annotation buttons, point kinds, and predictors on left
+        #       Image and navigation buttons on right
         self.frameL = Frame(self.master)
-        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=6)
+        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=7)
         self.frameR = Frame(self.master)
-        self.frameR.grid(row=0,column=3,columnspan=1,rowspan=1)
+        self.frameR.grid(row=0,column=3,columnspan=1,rowspan=7)
         self.frameR.config(borderwidth=3,relief=GROOVE)
-        #Quit button
-        self.button_quit = Button(self.frameL,text='Quit',command=self.quit)
-        self.button_quit.grid(column=0,row=4,columnspan=2)
-        #Help button
-        self.button_help = Button(self.frameL,text='Help',command=self.showHelp)
-        self.button_help.grid(column=2,row=4,columnspan=2)
-        #Predict button
-        self.button_pred = Button(self.frameL,text='Predict',command=self.predict)
-        self.button_pred.grid(column=1,row=3,columnspan=2)
-        #Delete button
-        self.button_del = Button(self.frameL,text='Delete',command=self.delete)
-        self.button_del.grid(column=1,row=2,columnspan=2)
-        #frame label
-        self.label_framenum = Label(self.frameL,text='Frame')
-        self.label_framenum.grid(column=1,row=0)
-        self.label_framenum.config(borderwidth=0)
-        #Current frame label
-        self.label_goto = Entry(self.frameL,width=3,textvariable=self.currentFrame)
-        self.label_goto.grid(column=2,row=0)
-        self.label_goto.config(borderwidth=2,relief=SUNKEN)
-        self.label_goto.bind("<KeyRelease-Return>", self.gotoFrame)
-        #Total Frames
-        self.label_framenum = Label(self.frameL,textvariable=self.totalFrame)
-        self.label_framenum.grid(column=3,row=0)
-        self.label_framenum.config(borderwidth=0)
-        #Previous button
-        self.button_prev = Button(self.frameL,text='Previous',command=self.prev)
-        self.button_prev.grid(column=0,row=1,columnspan=2)
-        #Next button
-        self.button_next = Button(self.frameL,text='Next',command=self.next)
-        self.button_next.grid(column=2,row=1,columnspan=2)
-        #Listbox used to select point kind
-        self.listbox = Listbox(self.frameL,width=15,height=10)
-        #self.listbox.config(cursor=0)
-        self.listbox.grid(column=1,row=5,columnspan=2)
-        self.listbar = Scrollbar(self.frameL,orient=VERTICAL)
-        self.listbar.grid(column=0,row=5,sticky='ns')
-        self.listbar.config(command=self.listbox.yview,width=15)
-        self.listbox.config(yscrollcommand=self.listbar.set)
-        self.listbox.bind('<<ListboxSelect>>',self.setPointKind)
-        self.listbox.focus()
         
-    
+        ###frameL###
+        #Annotation frame
+        self.aframe = Frame(self.frameL)
+        self.aframe.grid(row=0,column=0,columnspan=3,rowspan=1)
+        #Predict button
+        self.button_pred = Button(self.aframe,text='Predict',command=self.predict)
+        self.button_pred.grid(row=0,column=0,sticky=E)
+        #Delete button
+        self.button_del = Button(self.aframe,text='Delete',command=self.delete)
+        self.button_del.grid(row=0,column=1,sticky=W)
+        #Clear Frame button
+        self.button_clearf = Button(self.aframe,
+                        text='Clear Frame',command=self.clearFrame)
+        self.button_clearf.grid(row=1,column=0,sticky=E)
+        #Clear All button
+        self.button_cleara = Button(self.aframe,
+                        text='Clear All',command=self.clearAll)
+        self.button_cleara.grid(row=1,column=1,sticky=W)
+        #Separator line
+        self.lineframe = Frame(self.frameL, height=1, bg='black')
+        self.lineframe.grid(row=1,column=0,columnspan=3,rowspan=1)
+        #Save and Help frame
+        self.shframe = Frame(self.frameL)
+        self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1)
+        #Save button
+        self.button_save = Button(self.shframe,text='Save',command=self.save_as)
+        self.button_save.grid(row=0,column=0,sticky=E)
+        #Help button
+        self.button_help = Button(self.shframe,text='Help',command=self.showHelp)
+        self.button_help.grid(row=0,column=1,sticky=W)
+        #Point Types Label and edit button
+        self.pt_label = Label(self.frameL,text='Point Types')
+        self.pt_label.grid(row=3,column=1)
+        self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
+        self.pt_edit.grid(row=3,column=2)
+        #Listbox used to select point kind
+        self.pointlist = Listbox(self.frameL,width=15,height=10)
+        #self.pointlist.config(cursor=0)
+        self.pointlist.grid(row=4,column=1,columnspan=2)
+        self.pt_scroll = Scrollbar(self.frameL,orient=VERTICAL)
+        self.pt_scroll.grid(row=4,column=0,sticky=NS)
+        self.pt_scroll.config(command=self.pointlist.yview,width=15)
+        self.pointlist.config(yscrollcommand=self.pt_scroll.set)
+        self.pointlist.bind('<<ListboxSelect>>',self.setPointKind)
+        self.pointlist.focus()
+        #Predictors Label and edit button
+        self.pd_label = Label(self.frameL,text='Predictors')
+        self.pd_label.grid(row=5,column=1)
+        self.pd_edit = Button(self.frameL,text='Edit',command=self.predictorsOnOff)
+        self.pd_edit.grid(row=5,column=2)
         #Listbox used to show predictors
-        self.prelist= Listbox(self.frameL,width=15,height=10)
-        self.prelist.grid(column=1,row=6,columnspan=2)
-
+        self.predlist= Listbox(self.frameL,width=15,height=10)
+        self.predlist.grid(row=6,column=1,columnspan=2)
+        self.pd_scroll = Scrollbar(self.frameL,orient=VERTICAL)
+        self.pd_scroll.grid(row=6,column=0,sticky=NS)
+        self.pd_scroll.config(command=self.predlist.yview,width=15)
+        self.predlist.config(yscrollcommand=self.pd_scroll.set)
+        
+        ###frameR###
         #Canvas to display the current frame
         self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
-        self.canvas.grid(column=0,row=0,columnspan=1,rowspan=1)
+        self.canvas.grid(row=0,column=0,columnspan=1,rowspan=1)
+        #Status bar and frame counter Frame
+        self.info_frame = Frame(self.frameR)
+        self.info_frame.grid(row=1,column=0,columnspan=1,rowspan=1)
+        #Status Bar
+        self.temporary_statusbar = Label(self.info_frame,text='Status Bar')
+        self.temporary_statusbar.grid(row=0,column=0,columnspan=3)
+        #frame label
+        self.label_framenum = Label(self.info_frame,text='Frame')
+        self.label_framenum.grid(row=1,column=0,sticky=E)
+        self.label_framenum.config(borderwidth=0)
+        #Current frame label
+        self.label_goto = Entry(self.info_frame,width=3,textvariable=self.currentFrame)
+        self.label_goto.grid(row=1,column=1)
+        self.label_goto.config(borderwidth=2,relief=SUNKEN)
+        self.label_goto.bind("<KeyRelease-Return>", self.gotoFrame)
+        #Total Frames
+        self.label_framenum = Label(self.info_frame,textvariable=self.totalFrame)
+        self.label_framenum.grid(row=1,column=2,sticky=W)
+        self.label_framenum.config(borderwidth=0)
+        #Navigation frame
+        self.navframe = Frame(self.frameR)
+        self.navframe.grid(row=2,column=0,columnspan=1,rowspan=1)
+        #Previous button
+        self.button_prev = Button(self.navframe,text='Previous',command=self.prev)
+        self.button_prev.grid(row=0,column=0)
+        #Next button
+        self.button_next = Button(self.navframe,text='Next',command=self.next)
+        self.button_next.grid(row=0,column=1)
 
     def gotoFrame(self,event=''):
         try:
@@ -147,11 +201,11 @@ class BasicGui(Chooser):
         self.master.quit()
 
     def setPointKind(self,event=''):
-        self.listbox.selection_clear(self.pointKind)
+        self.pointlist.selection_clear(self.pointKind)
         if event.char == '??':
-            #User clicked on the listbox
+            #User clicked on the pointlist
             try:
-                self.pointKind = int(self.listbox.curselection()[0])
+                self.pointKind = int(self.pointlist.curselection()[0])
             except IndexError:
                 pass
         else:
@@ -160,25 +214,25 @@ class BasicGui(Chooser):
         self.updatePointKind()
 
     def incPointKind(self,event=''):
-        self.listbox.selection_clear(self.pointKind)
+        self.pointlist.selection_clear(self.pointKind)
         self.pointKind = self.pointKind+1
         if self.pointKind > self.imstack.point_kinds-1:
             self.pointKind = self.imstack.point_kinds-1
         self.updatePointKind()
 
     def decPointKind(self,event=''):
-        self.listbox.selection_clear(self.pointKind)
+        self.pointlist.selection_clear(self.pointKind)
         self.pointKind = (self.pointKind-1)
         if self.pointKind < 0:
             self.pointKind = 0
         self.updatePointKind()
 
     def updatePointKind(self):
-        #Set the listbox's selection and draw the new pointkind on the frame
-        self.listbox.selection_clear(self.pointKind)
-        self.listbox.selection_set(self.pointKind)
-        self.listbox.see(self.pointKind)
-        self.listbox.activate(self.pointKind)
+        #Set the pointlist's selection and draw the new pointkind on the frame
+        self.pointlist.selection_clear(self.pointKind)
+        self.pointlist.selection_set(self.pointKind)
+        self.pointlist.see(self.pointKind)
+        self.pointlist.activate(self.pointKind)
         self.master.quit()
 
     def createKeyBindings(self):
@@ -207,8 +261,8 @@ class BasicGui(Chooser):
 
     def drawCanvas(self):
         #If we're using a predictor to set the selected point, then set it
-        if (self.selectedPrediction[self.pointKind] != -1 and
-                            self.imstack.current_frame == self.predictedFrame):
+        if (self.selectedPrediction[self.pointKind] != -1 and 
+                self.imstack.current_frame == self.predictedFrame):
             i = self.selectedPrediction[self.pointKind]
             x = self.predicted[i][self.pointKind,0]
             y = self.predicted[i][self.pointKind,1]
@@ -249,7 +303,7 @@ class BasicGui(Chooser):
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
-        self.prelist.selection_clear(0,END) 
+        self.predlist.selection_clear(0,END) 
         for pred in self.predicted[:]:
             cnt = cnt+1
             x = pred[self.pointKind,0] * self.scale
@@ -263,10 +317,10 @@ class BasicGui(Chooser):
                     color='blue'
             #If it didn't return a point, don't draw anything
             if x == 0 and y == 0 and conf == 0: 
-                self.prelist.selection_clear(cnt)
+                self.predlist.selection_clear(cnt)
                 color='yellow'
             else:
-                self.prelist.selection_set(cnt)
+                self.predlist.selection_set(cnt)
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
 
     def drawPoints(self):
@@ -318,6 +372,27 @@ class BasicGui(Chooser):
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
+        
+    def clearFrame(self,event=''):
+        print "Clear Frame"
+        
+    def clearAll(self,event=''):
+        print "Clear All"
+        
+    def new(self,event=''):
+        print "New"
+        
+    def open(self,event=''):
+        print "Open"
+        
+    def save_as(self,event=''):
+        print "Save As"
+        
+    def pointKindEdit(self,event=''):
+        print "Window to Edit Points"
+        
+    def predictorsOnOff(self,event=''):
+        print "Window to turn Predictors on/off"
         
     def togglePredictions(self,event=''):
         #Turn the drawing of predicted points on or off
