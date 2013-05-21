@@ -1,9 +1,0 @@
-#Python compiled files
-*.pyc
-
-#General files to ignore
-*~
-*.lock
-*.DS_Store
-*.swp
-*.out

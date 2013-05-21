@@ -1,5 +1,0 @@
-Left front foot
-Right front foot
-Left back foot
-Right back foot
-Snout/Vent
