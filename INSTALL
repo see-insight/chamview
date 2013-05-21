@@ -1,0 +1,20 @@
+#Updating scikits-image to use template matching
+
+git clone http://github.com/scikit-image/scikit-image.git
+cd scikit-image/
+sudo python setup.py install
+
+# LIST OF cygwin modules I prefer to use
+ssh
+git
+make
+vim
+more
+less
+
+#Installing AVBin for video decodeing
+http://avbin.github.com/AVbin/Home/Home.html
+tar -zxvf avbin-drwin-x86-32-v8.1.tar.bz2
+cd avbin-darwin-x86-32-v8.1
+sudo ./install.sh
+
