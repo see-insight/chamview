@@ -85,10 +85,10 @@ class BasicGui(Chooser):
         #Grid manager:
         #       Annotation buttons, point kinds, and predictors on left
         #       Image and navigation buttons on right
-        self.frameL = Frame(self.master)
-        self.frameL.grid(row=0,column=0,columnspan=3,rowspan=7)
+        self.frameL = Frame(self.master,height=BasicGui.canvas_height)
+        self.frameL.pack(side=LEFT,fill=Y)
         self.frameR = Frame(self.master)
-        self.frameR.grid(row=0,column=3,columnspan=1,rowspan=7)
+        self.frameR.pack(side=LEFT,fill=BOTH)
         self.frameR.config(borderwidth=3,relief=GROOVE)
         
         ###frameL###
@@ -110,7 +110,7 @@ class BasicGui(Chooser):
                         text='Clear All',command=self.clearAll)
         self.button_cleara.grid(row=1,column=1,sticky=W)
         #Separator line
-        self.lineframe = Frame(self.frameL, height=1, bg='black')
+        self.lineframe = Frame(self.frameL, height=20)
         self.lineframe.grid(row=1,column=0,columnspan=3,rowspan=1)
         #Save and Help frame
         self.shframe = Frame(self.frameL)
@@ -122,10 +122,10 @@ class BasicGui(Chooser):
         self.button_help = Button(self.shframe,text='Help',command=self.showHelp)
         self.button_help.grid(row=0,column=1,sticky=W)
         #Point Types Label and edit button
-        self.pt_label = Label(self.frameL,text='Point Types')
+        self.pt_label = Label(self.frameL,text='Point Types',height=4,anchor=S)
         self.pt_label.grid(row=3,column=1)
         self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
-        self.pt_edit.grid(row=3,column=2)
+        self.pt_edit.grid(row=3,column=2,sticky=S)
         #Listbox used to select point kind
         self.pointlist = Listbox(self.frameL,width=15,height=10)
         #self.pointlist.config(cursor=0)
@@ -137,10 +137,10 @@ class BasicGui(Chooser):
         self.pointlist.bind('<<ListboxSelect>>',self.setPointKind)
         self.pointlist.focus()
         #Predictors Label and edit button
-        self.pd_label = Label(self.frameL,text='Predictors')
+        self.pd_label = Label(self.frameL,text='Predictors',height=3,anchor=S)
         self.pd_label.grid(row=5,column=1)
         self.pd_edit = Button(self.frameL,text='Edit',command=self.predictorsOnOff)
-        self.pd_edit.grid(row=5,column=2)
+        self.pd_edit.grid(row=5,column=2,sticky=S)
         #Listbox used to show predictors
         self.predlist= Listbox(self.frameL,width=15,height=10)
         self.predlist.grid(row=6,column=1,columnspan=2)
@@ -153,35 +153,64 @@ class BasicGui(Chooser):
         #Canvas to display the current frame
         self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
-        self.canvas.grid(row=0,column=0,columnspan=1,rowspan=1)
-        #Status bar and frame counter Frame
-        self.info_frame = Frame(self.frameR)
-        self.info_frame.grid(row=1,column=0,columnspan=1,rowspan=1)
+        self.canvas.pack()
+        #Status bar Frame
+        self.stat_frame = Frame(self.frameR)
+        self.stat_frame.pack(fill=X)
         #Status Bar
-        self.temporary_statusbar = Label(self.info_frame,text='Status Bar')
-        self.temporary_statusbar.grid(row=0,column=0,columnspan=3)
+        self.temporary_statusbar = StatusBar(self.stat_frame)
+        self.temporary_statusbar.pack(fill=X)
+        self.format = 'Point Kind: %s\t\tCursor Position: X: %5.1d\tY: %5.1d\t'
+        self.temporary_statusbar.set(self.format, 'TEMP', 0, 0)
+        #frame counter Frame
+        self.fframe = Frame(self.frameR)
+        self.fframe.pack()
         #frame label
-        self.label_framenum = Label(self.info_frame,text='Frame')
-        self.label_framenum.grid(row=1,column=0,sticky=E)
+        self.label_framenum = Label(self.fframe,text='Frame')
+        self.label_framenum.grid(row=0,column=0,pady=10,sticky=E)
         self.label_framenum.config(borderwidth=0)
         #Current frame label
-        self.label_goto = Entry(self.info_frame,width=3,textvariable=self.currentFrame)
-        self.label_goto.grid(row=1,column=1)
+        self.label_goto = Entry(self.fframe,width=3,textvariable=self.currentFrame)
+        self.label_goto.grid(row=0,column=1)
         self.label_goto.config(borderwidth=2,relief=SUNKEN)
         self.label_goto.bind("<KeyRelease-Return>", self.gotoFrame)
         #Total Frames
-        self.label_framenum = Label(self.info_frame,textvariable=self.totalFrame)
-        self.label_framenum.grid(row=1,column=2,sticky=W)
+        self.label_framenum = Label(self.fframe,textvariable=self.totalFrame)
+        self.label_framenum.grid(row=0,column=2,sticky=W)
         self.label_framenum.config(borderwidth=0)
         #Navigation frame
         self.navframe = Frame(self.frameR)
-        self.navframe.grid(row=2,column=0,columnspan=1,rowspan=1)
+        self.navframe.pack()
+        #First Frame button
+        self.nav_button = Button(self.navframe,text='First',
+                            command=lambda x=0: self.navigate(x))
+        self.nav_button.grid(row=0,column=0,padx=7)
+        #Previous 100 button
+        self.nav_button = Button(self.navframe,text='-100',
+                            command=lambda x=-100: self.navigate(x))
+        self.nav_button.grid(row=0,column=1,padx=7)
+        #Previous 10 button
+        self.nav_button = Button(self.navframe,text='-10',
+                            command=lambda x=-10: self.navigate(x))
+        self.nav_button.grid(row=0,column=2,padx=7)
         #Previous button
-        self.button_prev = Button(self.navframe,text='Previous',command=self.prev)
-        self.button_prev.grid(row=0,column=0)
+        self.nav_button = Button(self.navframe,text='Previous',command=self.prev)
+        self.nav_button.grid(row=0,column=3,padx=7)
         #Next button
-        self.button_next = Button(self.navframe,text='Next',command=self.next)
-        self.button_next.grid(row=0,column=1)
+        self.nav_button = Button(self.navframe,text='Next',command=self.next)
+        self.nav_button.grid(row=0,column=4,padx=7)
+        #Next 10 button
+        self.nav_button = Button(self.navframe,text='+10',
+                            command=lambda x=10: self.navigate(x))
+        self.nav_button.grid(row=0,column=5,padx=7)
+        #Next 100 button
+        self.nav_button = Button(self.navframe,text='+100',
+                            command=lambda x=100: self.navigate(x))
+        self.nav_button.grid(row=0,column=6,padx=7)
+        #Last Frame button
+        self.nav_button = Button(self.navframe,text='Last',
+                            command=lambda x=-1: self.navigate(x))
+        self.nav_button.grid(row=0,column=7,padx=7)
 
     def gotoFrame(self,event=''):
         try:
@@ -360,6 +389,18 @@ class BasicGui(Chooser):
         #else:
         self.updatePhoto()
         self.drawCanvas()
+        
+    def navigate(self,n,event=''):
+        #Move n frames away from current frame, 0 is the first frame in the
+        #image stack, -1 is the last frame
+        if n == 0:
+            self.imstack.set_frame(0)
+        elif n == -1:
+            self.imstack.set_frame(self.imstack.total_frames)
+        else:
+            self.imstack.advance_frame(n)
+        self.updatePhoto()
+        self.drawCanvas()              
 
     def predict(self,event=''):
         #Exit TKinter's update loop to control is given back to ChamView. After
@@ -433,3 +474,20 @@ class BasicGui(Chooser):
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
 
+
+class StatusBar(Frame):
+    def __init__(self, master):
+        Frame.__init__(self, master)
+        self.label = Label(self, bd=1, relief=GROOVE)
+        self.label.pack(fill=X)
+        
+    def set(self, format, *args):
+        self.label.config(text=format % args)
+        self.label.update_idletasks()
+        
+    def clear(self):
+        self.label.config(text='')
+        self.label.update_idletasks()
+        
+
+        
