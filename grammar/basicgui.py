@@ -4,6 +4,7 @@ from Tkinter import *
 import tkMessageBox
 import ttk
 from PIL import Image, ImageTk
+import tkSimpleDialog
 
 
 class BasicGui(Chooser):
@@ -92,9 +93,12 @@ class BasicGui(Chooser):
         self.frameR.config(borderwidth=3,relief=GROOVE)
         
         ###frameL###
+        #Separator line
+        self.lineframe = Frame(self.frameL, height=20)
+        self.lineframe.grid(row=0,column=0,columnspan=3,rowspan=1)
         #Annotation frame
         self.aframe = Frame(self.frameL)
-        self.aframe.grid(row=0,column=0,columnspan=3,rowspan=1)
+        self.aframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=15)
         #Predict button
         self.button_pred = Button(self.aframe,text='Predict',command=self.predict)
         self.button_pred.grid(row=0,column=0,sticky=E)
@@ -109,12 +113,9 @@ class BasicGui(Chooser):
         self.button_cleara = Button(self.aframe,
                         text='Clear All',command=self.clearAll)
         self.button_cleara.grid(row=1,column=1,sticky=W)
-        #Separator line
-        self.lineframe = Frame(self.frameL, height=20)
-        self.lineframe.grid(row=1,column=0,columnspan=3,rowspan=1)
         #Save and Help frame
         self.shframe = Frame(self.frameL)
-        self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1)
+        self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=10)
         #Save button
         self.button_save = Button(self.shframe,text='Save',command=self.save_as)
         self.button_save.grid(row=0,column=0,sticky=E)
@@ -263,6 +264,12 @@ class BasicGui(Chooser):
         self.pointlist.see(self.pointKind)
         self.pointlist.activate(self.pointKind)
         self.master.quit()
+    
+    def addPointKind(self):
+        pass
+        
+    def deletePointKind(self):
+        pass
 
     def createKeyBindings(self):
         #self.master.bind_all('t',self.decPointKind)
@@ -430,7 +437,9 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
-        print "Window to Edit Points"
+        dialog_window = EditPointKinds(self.master,self.imstack.point_kind,'Edit Point Kinds')
+        self.temp = dialog_window.result
+        print self.temp
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"
@@ -474,6 +483,7 @@ class BasicGui(Chooser):
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
 
+####################################
 
 class StatusBar(Frame):
     def __init__(self, master):
@@ -490,4 +500,53 @@ class StatusBar(Frame):
         self.label.update_idletasks()
         
 
+class EditPointKinds(tkSimpleDialog.Dialog):
+    def __init__(self, parent, pointlist=[], title=None):
+        self.currentpoints = pointlist
+        tkSimpleDialog.Dialog.__init__(self,parent,title)
         
+    def body(self, master):
+        # create dialog body.  return widget that should have
+        # initial focus.
+        self.topframe = Frame(master)
+        self.topframe.grid(padx=15,pady=15)
+        self.listbox = Listbox(self.topframe,width=45,relief=SUNKEN)
+        self.listbox.pack(fill=BOTH)
+        for kind in self.currentpoints:
+            self.listbox.insert(END,kind)
+        self.listbox.bind('<<ListboxSelect>>',self.highlight)
+        
+        self.bottomframe = Frame(master,height=70,width=295)
+        self.bottomframe.grid(row=1,padx=15,pady=15)
+        self.ptkind = StringVar()
+        self.entry = Entry(self.bottomframe,textvariable=self.ptkind,
+                    width=35,relief=SUNKEN)
+        self.ptkind.set('Type entry here')
+        self.entry.pack(side=LEFT,fill=Y)
+        self.add = Button(self.bottomframe,text='Add',command=self.add)
+        self.add.pack(side=LEFT,fill=Y)
+        self.delete = Button(self.bottomframe,text='Delete',command=self.delete)
+        self.delete.pack(side=LEFT,fill=Y)
+        
+    def highlight(self):
+        #Set the listbox's selection
+        try:
+            self.point = int(self.listbox.curselection()[0])
+        except IndexError:
+            pass
+        self.listbox.selection_clear(self.point)
+        self.listbox.selection_set(self.point)
+        self.listbox.see(self.point)
+        self.listbox.activate(self.point)
+        
+    def add(self):
+        self.listbox.insert(END,self.ptkind.get())
+        self.listbox.select_anchor(self.listbox.size()-1)
+        self.listbox.activate(self.listbox.size()-1)
+        
+    def delete(self):
+        self.listbox.delete(ANCHOR)  
+        
+    def apply(self):
+        self.result = self.listbox.get(0,END)
+
