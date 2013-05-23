@@ -56,7 +56,7 @@ class BasicGui(Chooser):
         #For every point kind in our imagestack, create an entry in the list
         #and bind the first 9 to the number keys on the keyboard
         for i in range(0,self.imstack.point_kinds):
-            self.pointlist.insert(END,self.imstack.point_kind[i])
+            self.pointlist.insert(END,self.imstack.point_kind_list[i])
             if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.pointlist.selection_set(0)
         #Fill the list of predictor choices
@@ -258,19 +258,12 @@ class BasicGui(Chooser):
         self.updatePointKind()
 
     def updatePointKind(self):
-        #Set the pointlist's selection and draw the new pointkind on the frame
-        self.pointlist.selection_clear(self.pointKind)
+        '''Set the pointlist's selection and draw the new pointkind on the frame.'''
         self.pointlist.selection_set(self.pointKind)
         self.pointlist.see(self.pointKind)
         self.pointlist.activate(self.pointKind)
         self.master.quit()
     
-    def addPointKind(self):
-        pass
-        
-    def deletePointKind(self):
-        pass
-
     def createKeyBindings(self):
         #self.master.bind_all('t',self.decPointKind)
         #self.master.bind_all('b',self.incPointKind)
@@ -437,9 +430,17 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
-        dialog_window = EditPointKinds(self.master,self.imstack.point_kind,'Edit Point Kinds')
-        self.temp = dialog_window.result
-        print self.temp
+        print self.imstack.point_kinds
+        print self.imstack.point_kind_list
+        print self.imstack.point
+        dialog_window = EditPointKinds(self.master,self.imstack.point_kind_list,
+                                        'Edit Point Kinds')
+        new_points, added, deleted = dialog_window.result
+        self.imstack.get_point_kinds(List=new_points)
+        self.pointlist.delete(0,END)
+        self.fillPointkindList()
+        self.imstack.deletePointKinds(deleted)
+        self.imstack.addPointKinds(added)
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"
@@ -503,6 +504,8 @@ class StatusBar(Frame):
 class EditPointKinds(tkSimpleDialog.Dialog):
     def __init__(self, parent, pointlist=[], title=None):
         self.currentpoints = pointlist
+        self.num_added = 0
+        self.deleted_indices = []
         tkSimpleDialog.Dialog.__init__(self,parent,title)
         
     def body(self, master):
@@ -528,25 +531,33 @@ class EditPointKinds(tkSimpleDialog.Dialog):
         self.delete = Button(self.bottomframe,text='Delete',command=self.delete)
         self.delete.pack(side=LEFT,fill=Y)
         
-    def highlight(self):
+    def highlight(self,event=''):
         #Set the listbox's selection
         try:
             self.point = int(self.listbox.curselection()[0])
         except IndexError:
             pass
-        self.listbox.selection_clear(self.point)
         self.listbox.selection_set(self.point)
         self.listbox.see(self.point)
         self.listbox.activate(self.point)
         
-    def add(self):
+    def add(self,event=''):
+        self.listbox.select_clear(ACTIVE)
         self.listbox.insert(END,self.ptkind.get())
-        self.listbox.select_anchor(self.listbox.size()-1)
-        self.listbox.activate(self.listbox.size()-1)
+        self.point = self.listbox.size()-1
+        self.listbox.selection_set(self.point)
+        self.listbox.see(self.point)
+        self.listbox.activate(self.point)
+        self.num_added += 1
         
-    def delete(self):
-        self.listbox.delete(ANCHOR)  
+    def delete(self,event=''):
+        original_index = self.currentpoints.index(self.listbox.get(ACTIVE))
+        if original_index < len(self.currentpoints):
+            self.deleted_indices.append(original_index)
+        self.listbox.delete(ACTIVE) 
         
     def apply(self):
-        self.result = self.listbox.get(0,END)
+        self.result = (self.listbox.get(0,END), 
+                       self.num_added, 
+                       tuple(self.deleted_indices))
 

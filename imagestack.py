@@ -9,7 +9,7 @@ class ImageStack:
     """    #---- Instance variables ----
     #point             row,column of each point kind in a given frame. Format is
     #                  a numpy array [frame,point kind,row/column]
-    #point_kind[]      list of string labels associated with each point kind
+    #point_kind_list[] list of string labels associated with each point kind
     #point_kinds       number of point kinds is use
     #img_list[]        list of paths to image files to load and use as frames
     #img_current       PIL image of current frame or None if no frames loaded
@@ -23,7 +23,7 @@ class ImageStack:
     def __init__(self,directory=''):
         #Called upon instance creation
         self.point = zeros((0,0,2))
-        self.point_kind = []
+        self.point_kind_list = []
         self.point_kinds = 0
         self.img_list = []
         self.img_current = None
@@ -72,47 +72,54 @@ class ImageStack:
             self.single_img = True
         self.point = zeros((self.total_frames,self.point_kinds,2))
 
-    def get_point_kinds(self,filename=''):
-        #Creates a list of valid point kinds read in from a file. Each line of
-        #the file should have a point kind (i.e. Left back foot) with any
-        #additional information separated by commas (which will be ignored). The
-        #default point kind file will be used if no file is specified. If the
-        #file is legacy from the old Chamview, it will be loaded appropriately
-        if filename == '': filename = 'defaultPointKinds.txt'
-        if os.path.exists(filename) == False: return
-        self.point_kinds = sum(1 for line in open(filename))
-        self.point_kind = []
-        self.point = zeros((self.total_frames,self.point_kinds,2))
-        file_in = open(filename)
-        for line in file_in:
-            #If it's an old point kind file, switch over to the legacy loader
-            try:
-                if int(line) == self.point_kinds-1:
-                    file_in.close()
-                    self.get_point_kinds_legacy(filename)
-                    return
-            except ValueError:
-                pass
-            line_list = line.split(',')
-            if len(line_list[0]) == 0: continue
-            if line_list[0].endswith('\n'):
-                line_list[0] = line_list[0][0:-1]
-            self.point_kind.append(line_list[0])
-        file_in.close()
+    def get_point_kinds(self,filename='',List=[]):
+        #Creates a list of valid point kinds read in from a file or a list of
+        #string names of point kinds. Each line of the file should have a point 
+        #kind (i.e. Left back foot) with any additional information separated by 
+        #commas (which will be ignored). The default point kind file will be 
+        #used if no file is specified and no list is provided. If the file is 
+        #legacy from the old Chamview, it will be loaded appropriately.
+        if List == []:
+            if filename == '': filename = 'defaultPointKinds.txt'   
+            if os.path.exists(filename) == False: return
+            self.point_kinds = sum(1 for line in open(filename))
+            self.point_kind_list = []
+            self.point = zeros((self.total_frames,self.point_kinds,2))
+            file_in = open(filename)
+            for line in file_in:
+                #If it's an old point kind file, switch over to the legacy loader
+                try:
+                    if int(line) == self.point_kinds-1:
+                        file_in.close()
+                        self.get_point_kinds_legacy(filename)
+                        return
+                except ValueError:
+                    pass
+                line_list = line.split(',')
+                if len(line_list[0]) == 0: continue
+                if line_list[0].endswith('\n'):
+                    line_list[0] = line_list[0][0:-1]
+                self.point_kind_list.append(line_list[0])
+            file_in.close()
+        else:
+            self.point_kinds = len(List)
+            self.point_kind_list = List
+            if self.point == zeros((0,0,2)):
+                self.point = zeros((self.total_frames,self.point_kinds,2))
 
     def get_point_kinds_legacy(self,filename=''):
         #Loads point kinds from a file in the legacy format. The first line of
         #the file contains the number of point kinds and each line thereafter
         #is in the format buttonToHit label color
         self.point_kinds = sum(1 for line in open(filename)) - 1
-        self.point_kind = []
+        self.point_kind_list = []
         self.point = zeros((self.total_frames,self.point_kinds,2))
         file_in = open(filename)
         for line in file_in:
             line_list = line.split(' ')
             if len(line_list) == 1:continue
             if len(line_list[0]) == 0: continue
-            self.point_kind.append(line_list[1])
+            self.point_kind_list.append(line_list[1])
         file_in.close()
 
     def load_points(self,filename):
@@ -132,7 +139,7 @@ class ImageStack:
             frame = int(line_list[0])
             kind = line_list[1]
             try:
-                kind_index = self.point_kind.index(kind)
+                kind_index = self.point_kind_list.index(kind)
             except ValueError:
                 kind_index = -1
             row = int(line_list[2])
@@ -160,7 +167,7 @@ class ImageStack:
             row = int((int(line_list[1])+int(line_list[3]))/2)
             column = int((int(line_list[2])+int(line_list[4]))/2)
             try:
-                kind_index = self.point_kind.index(kind)
+                kind_index = self.point_kind_list.index(kind)
             except ValueError:
                 kind_index = -1
             if frame > self.total_frames - 1 or frame < 0: continue
@@ -168,6 +175,32 @@ class ImageStack:
             self.point[frame,kind_index,0] = row
             self.point[frame,kind_index,1] = column
         file_in.close()
+        
+    def addPointKinds(self,n):
+        '''Add n new Point Kinds to the image stack's numpy array of point information.'''
+        temp_list = self.point.tolist()
+        for frame in temp_list:
+            frame.append([0,0])
+        self.point = array(temp_list)
+        
+    def deletePointKinds(self,*args):
+        '''Delete Point information for the image stack's numpy array of point 
+        information for each index provided.'''
+        temp_list = self.point.tolist()
+        for index in args:
+            if index < len(temp_list):
+                temp_list[index] = -1
+        temp_list2 = []
+        for point in temp_list:
+            if point != -1:
+                temp_list2.append(point)
+        self.point = array(temp_list2)
+        
+    def clearFrame(self):
+        pass
+        
+    def clearAll(self):
+        pass
 
     def load_img(self):
         #Loads the correct self.img_current and self.img_previous into memory
@@ -196,7 +229,7 @@ class ImageStack:
         file_out = open(filename,'w')
         for frame in range(0,self.total_frames):
             for kind_index in range(0,self.point_kinds):
-                kind = self.point_kind[kind_index]
+                kind = self.point_kind_list[kind_index]
                 file_out.write(str(frame)+','+kind+','+
                     str(int(self.point[frame,kind_index,0]))+','+
                     str(int(self.point[frame,kind_index,1]))+'\n')
