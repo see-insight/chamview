@@ -29,7 +29,6 @@ class Dialog(Toplevel):
             self.title(title)
 
         self.parent = parent
-        self.result = None
 
         body = Frame(self)
         self.initial_focus = self.body(body)
@@ -112,6 +111,7 @@ class EditPointKinds(Dialog):
         self.currentpoints = pointlist
         self.num_added = 0
         self.deleted_indices = []
+        self.result = (self.currentpoints,self.num_added,self.deleted_indices)
         Dialog.__init__(self,parent,title)
         
     def body(self, master):
@@ -157,9 +157,11 @@ class EditPointKinds(Dialog):
         self.num_added += 1
         
     def delete(self,event=''):
-        original_index = self.currentpoints.index(self.listbox.get(ACTIVE))
-        if original_index < len(self.currentpoints):
+        try:
+            original_index = self.currentpoints.index(self.listbox.get(ACTIVE))
             self.deleted_indices.append(original_index)
+        except ValueError:
+            self.num_added -= 1
         self.listbox.delete(ACTIVE) 
         
     def apply(self):

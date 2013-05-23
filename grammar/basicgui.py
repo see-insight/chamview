@@ -433,6 +433,7 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
+        print self.imstack.point_kind_list
         dialog_window = support.EditPointKinds(self.master,self.imstack.point_kind_list,
                                         'Edit Point Kinds')
         new_points, self.added, self.deleted = dialog_window.result
@@ -442,6 +443,7 @@ class BasicGui(Chooser):
         self.imstack.get_point_kinds(List=new_points)
         self.pointlist.delete(0,END)
         self.fillPointkindList()
+        print self.imstack.point_kind_list
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"
