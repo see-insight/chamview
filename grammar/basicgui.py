@@ -22,6 +22,8 @@ class BasicGui(Chooser):
         self.totalFrame = StringVar()
         self.photo = None
         self.pointKind = 0
+        self.added = 0      # number of new point types added during cycle
+        self.deleted = []   # indices of point types deleted during cycle
         #Choosing a prediction to use
         self.showPredictions = True
         self.selectedPrediction = []
@@ -49,6 +51,7 @@ class BasicGui(Chooser):
         self.drawCanvas()
         #Show the window and get user input
         self.master.mainloop()
+        return self.added, self.deleted
 
     def fillPointkindList(self):
         #We don't have to fill the list again after this
@@ -430,21 +433,15 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
-        print self.imstack.point_kinds
-        print self.imstack.point_kind_list
-        print self.imstack.point
         dialog_window = EditPointKinds(self.master,self.imstack.point_kind_list,
                                         'Edit Point Kinds')
-        new_points, added, deleted = dialog_window.result
+        new_points, self.added, self.deleted = dialog_window.result
         
-        self.imstack.deletePointKinds(deleted)
-        self.imstack.addPointKinds(added)
+        self.imstack.deletePointKinds(self.deleted)
+        self.imstack.addPointKinds(self.added)
         self.imstack.get_point_kinds(List=new_points)
         self.pointlist.delete(0,END)
         self.fillPointkindList()
-        print self.imstack.point_kinds
-        print self.imstack.point_kind_list
-        print self.imstack.point
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"

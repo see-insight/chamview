@@ -185,7 +185,7 @@ class ImageStack:
         self.point = array(temp_list)
         
     def deletePointKinds(self,indices):
-        '''Delete Point information for the image stack's numpy array of point 
+        '''Delete Point information in the image stack's numpy array of point 
         information for each index provided.'''
         temp = self.point.tolist()
         new_point = []

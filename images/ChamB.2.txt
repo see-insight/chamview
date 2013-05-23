@@ -1,65 +1,65 @@
-0,Left front foot,656,392
-0,Right front foot,0,0
+0,Left front foot,657,380
 0,Left back foot,0,0
 0,Right back foot,0,0
 0,Snout/Vent,0,0
-1,Left front foot,622,388
-1,Right front foot,0,0
+0,two,0,0
+1,Left front foot,0,0
 1,Left back foot,0,0
 1,Right back foot,0,0
 1,Snout/Vent,0,0
-2,Left front foot,593,396
-2,Right front foot,0,0
+1,two,0,0
+2,Left front foot,0,0
 2,Left back foot,0,0
 2,Right back foot,0,0
 2,Snout/Vent,0,0
-3,Left front foot,553,385
-3,Right front foot,0,0
+2,two,0,0
+3,Left front foot,0,0
 3,Left back foot,0,0
 3,Right back foot,0,0
 3,Snout/Vent,0,0
-4,Left front foot,512,396
-4,Right front foot,0,0
+3,two,0,0
+4,Left front foot,0,0
 4,Left back foot,0,0
 4,Right back foot,0,0
 4,Snout/Vent,0,0
-5,Left front foot,476,400
-5,Right front foot,0,0
+4,two,0,0
+5,Left front foot,0,0
 5,Left back foot,0,0
 5,Right back foot,0,0
 5,Snout/Vent,0,0
-6,Left front foot,472,406
-6,Right front foot,0,0
+5,two,0,0
+6,Left front foot,0,0
 6,Left back foot,0,0
 6,Right back foot,0,0
 6,Snout/Vent,0,0
-7,Left front foot,472,403
-7,Right front foot,0,0
+6,two,0,0
+7,Left front foot,0,0
 7,Left back foot,0,0
 7,Right back foot,0,0
 7,Snout/Vent,0,0
-8,Left front foot,475,400
-8,Right front foot,0,0
+7,two,0,0
+8,Left front foot,0,0
 8,Left back foot,0,0
 8,Right back foot,0,0
 8,Snout/Vent,0,0
-9,Left front foot,473,401
-9,Right front foot,0,0
+8,two,0,0
+9,Left front foot,0,0
 9,Left back foot,0,0
 9,Right back foot,0,0
 9,Snout/Vent,0,0
-10,Left front foot,475,401
-10,Right front foot,0,0
+9,two,0,0
+10,Left front foot,0,0
 10,Left back foot,0,0
 10,Right back foot,0,0
 10,Snout/Vent,0,0
-11,Left front foot,472,400
-11,Right front foot,0,0
+10,two,0,0
+11,Left front foot,0,0
 11,Left back foot,0,0
 11,Right back foot,0,0
 11,Snout/Vent,0,0
-12,Left front foot,472,401
-12,Right front foot,0,0
+11,two,0,0
+12,Left front foot,0,0
 12,Left back foot,0,0
 12,Right back foot,0,0
 12,Snout/Vent,0,0
+12,two,0,0

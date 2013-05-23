@@ -110,9 +110,12 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         if guess != None:
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess
-
+     
+    add = 0         # number of new point types added during cycle
+    delete = []     # indices of point types deleted during cycle
     #Give this result to the chooser to get the initial ground-truth point
-    chooser.choose(imstack,predict_point,predictor_name)
+    add, delete = chooser.choose(imstack,predict_point,predictor_name)
+    predict_point = update_numpy_array(predict_point,add,delete)
 
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
@@ -122,8 +125,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack)
         #Give this result to the chooser to get the "real" point
-        chooser.choose(imstack,predict_point,predictor_name)
-
+        add, delete = chooser.choose(imstack,predict_point,predictor_name)
+        predict_point = update_numpy_array(predict_point,add,delete)
         #Save points to file
         if argOutput != '': imstack.save_points(argOutput)
 
@@ -131,6 +134,30 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     chooser.teardown()
     for pred in predictor:
         pred.teardown()
+
+
+def update_numpy_array(n_array,add,delete):
+    if len(delete) != 0:
+        #Delete Point information in predict_point for each index provided.
+        temp = n_array.tolist()
+        new = []
+        for block in temp:
+            new_block = []
+            for i in range(len(block)):
+                if i not in delete:
+                    new_block.append(block[i])
+            new.append(new_block)
+        n_array = array(new)
+        
+    if add >= 1:
+        #Add n new Point Kinds to predict_point.
+        new = n_array.tolist()
+        for i in range(add):
+            for block in new:
+                block.append([0,0,0])
+        n_array = array(new)
+        
+    return n_array
 
 
 def find_subclasses(path,superclass):
