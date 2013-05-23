@@ -436,11 +436,15 @@ class BasicGui(Chooser):
         dialog_window = EditPointKinds(self.master,self.imstack.point_kind_list,
                                         'Edit Point Kinds')
         new_points, added, deleted = dialog_window.result
+        
+        self.imstack.deletePointKinds(deleted)
+        self.imstack.addPointKinds(added)
         self.imstack.get_point_kinds(List=new_points)
         self.pointlist.delete(0,END)
         self.fillPointkindList()
-        self.imstack.deletePointKinds(deleted)
-        self.imstack.addPointKinds(added)
+        print self.imstack.point_kinds
+        print self.imstack.point_kind_list
+        print self.imstack.point
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"
@@ -559,5 +563,5 @@ class EditPointKinds(tkSimpleDialog.Dialog):
     def apply(self):
         self.result = (self.listbox.get(0,END), 
                        self.num_added, 
-                       tuple(self.deleted_indices))
+                       self.deleted_indices)
 

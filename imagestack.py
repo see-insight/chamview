@@ -179,22 +179,23 @@ class ImageStack:
     def addPointKinds(self,n):
         '''Add n new Point Kinds to the image stack's numpy array of point information.'''
         temp_list = self.point.tolist()
-        for frame in temp_list:
-            frame.append([0,0])
+        for i in range(n):
+            for frame in temp_list:
+                frame.append([0,0])
         self.point = array(temp_list)
         
-    def deletePointKinds(self,*args):
+    def deletePointKinds(self,indices):
         '''Delete Point information for the image stack's numpy array of point 
         information for each index provided.'''
-        temp_list = self.point.tolist()
-        for index in args:
-            if index < len(temp_list):
-                temp_list[index] = -1
-        temp_list2 = []
-        for point in temp_list:
-            if point != -1:
-                temp_list2.append(point)
-        self.point = array(temp_list2)
+        temp = self.point.tolist()
+        new_point = []
+        for frame in temp:
+            new_frame = []
+            for i in range(len(frame)):
+                if i not in indices:
+                    new_frame.append(frame[i])
+            new_point.append(new_frame)
+        self.point = array(new_point)
         
     def clearFrame(self):
         pass
