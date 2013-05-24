@@ -9,7 +9,7 @@ class Accuracy(Chooser):
     Usage: ./chamview.py -c Accuracy -d <image directory> -p <ground truth file>
     """
 
-    def setup(self):
+    def setup(self):     
         
         #Debugging purposes
         print 'Running setup in Accuracy'
