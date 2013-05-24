@@ -4,7 +4,7 @@ from Tkinter import *
 import tkMessageBox
 import ttk
 from PIL import Image, ImageTk
-import tkSimpleDialog
+import basicgui_supportclasses as support
 
 
 class BasicGui(Chooser):
@@ -162,7 +162,7 @@ class BasicGui(Chooser):
         self.stat_frame = Frame(self.frameR)
         self.stat_frame.pack(fill=X)
         #Status Bar
-        self.temporary_statusbar = StatusBar(self.stat_frame)
+        self.temporary_statusbar = support.StatusBar(self.stat_frame)
         self.temporary_statusbar.pack(fill=X)
         self.format = 'Point Kind: %s\t\tCursor Position: X: %5.1d\tY: %5.1d\t'
         self.temporary_statusbar.set(self.format, 'TEMP', 0, 0)
@@ -433,7 +433,8 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
-        dialog_window = EditPointKinds(self.master,self.imstack.point_kind_list,
+        print self.imstack.point_kind_list
+        dialog_window = support.EditPointKinds(self.master,self.imstack.point_kind_list,
                                         'Edit Point Kinds')
         new_points, self.added, self.deleted = dialog_window.result
         
@@ -442,6 +443,7 @@ class BasicGui(Chooser):
         self.imstack.get_point_kinds(List=new_points)
         self.pointlist.delete(0,END)
         self.fillPointkindList()
+        print self.imstack.point_kind_list
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"
@@ -454,20 +456,7 @@ class BasicGui(Chooser):
                 x = -1 #-1 corresponds to human input
         self.master.quit()
         self.drawCanvas()
-
-    def showHelp(self,event=''):
-        #Shows basic usage information in a popup window
-        message = ''
-        message += 'Previous/next image\t\ta/d\n'
-        message += 'Previous/next image\t\tL/R arrow\n'
-        message += 'Choose point kind\t\t1-9\n'
-        message += 'Choose point kind\t\tU/D arrow\n'
-        message += 'Calculate predictions\t\ts\n'
-        message += 'Toggle predictions\t\th\n'
-        message += 'Cycle chosen prediction\tz/x\n'
-        message += 'Delete selected point\t\t<Del>\n'
-        tkMessageBox.showinfo("Chamview Help",message)
-
+        
     def cycleSelectedPrediction(self,event=''):
         #Cycle through the predicted points to choose one as the next prediction
         if not self.madePointkindList: return
@@ -485,80 +474,19 @@ class BasicGui(Chooser):
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
 
-####################################
 
-class StatusBar(Frame):
-    def __init__(self, master):
-        Frame.__init__(self, master)
-        self.label = Label(self, bd=1, relief=GROOVE)
-        self.label.pack(fill=X)
-        
-    def set(self, format, *args):
-        self.label.config(text=format % args)
-        self.label.update_idletasks()
-        
-    def clear(self):
-        self.label.config(text='')
-        self.label.update_idletasks()
-        
+    def showHelp(self,event=''):
+        #Shows basic usage information in a popup window
+        message = ''
+        message += 'Previous/next image\t\ta/d\n'
+        message += 'Previous/next image\t\tL/R arrow\n'
+        message += 'Choose point kind\t\t1-9\n'
+        message += 'Choose point kind\t\tU/D arrow\n'
+        message += 'Calculate predictions\t\ts\n'
+        message += 'Toggle predictions\t\th\n'
+        message += 'Cycle chosen prediction\tz/x\n'
+        message += 'Delete selected point\t\t<Del>\n'
+        tkMessageBox.showinfo("Chamview Help",message)
 
-class EditPointKinds(tkSimpleDialog.Dialog):
-    def __init__(self, parent, pointlist=[], title=None):
-        self.currentpoints = pointlist
-        self.num_added = 0
-        self.deleted_indices = []
-        tkSimpleDialog.Dialog.__init__(self,parent,title)
-        
-    def body(self, master):
-        # create dialog body.  return widget that should have
-        # initial focus.
-        self.topframe = Frame(master)
-        self.topframe.grid(padx=15,pady=15)
-        self.listbox = Listbox(self.topframe,width=45,relief=SUNKEN)
-        self.listbox.pack(fill=BOTH)
-        for kind in self.currentpoints:
-            self.listbox.insert(END,kind)
-        self.listbox.bind('<<ListboxSelect>>',self.highlight)
-        
-        self.bottomframe = Frame(master,height=70,width=295)
-        self.bottomframe.grid(row=1,padx=15,pady=15)
-        self.ptkind = StringVar()
-        self.entry = Entry(self.bottomframe,textvariable=self.ptkind,
-                    width=35,relief=SUNKEN)
-        self.ptkind.set('Type entry here')
-        self.entry.pack(side=LEFT,fill=Y)
-        self.add = Button(self.bottomframe,text='Add',command=self.add)
-        self.add.pack(side=LEFT,fill=Y)
-        self.delete = Button(self.bottomframe,text='Delete',command=self.delete)
-        self.delete.pack(side=LEFT,fill=Y)
-        
-    def highlight(self,event=''):
-        #Set the listbox's selection
-        try:
-            self.point = int(self.listbox.curselection()[0])
-        except IndexError:
-            pass
-        self.listbox.selection_set(self.point)
-        self.listbox.see(self.point)
-        self.listbox.activate(self.point)
-        
-    def add(self,event=''):
-        self.listbox.select_clear(ACTIVE)
-        self.listbox.insert(END,self.ptkind.get())
-        self.point = self.listbox.size()-1
-        self.listbox.selection_set(self.point)
-        self.listbox.see(self.point)
-        self.listbox.activate(self.point)
-        self.num_added += 1
-        
-    def delete(self,event=''):
-        original_index = self.currentpoints.index(self.listbox.get(ACTIVE))
-        if original_index < len(self.currentpoints):
-            self.deleted_indices.append(original_index)
-        self.listbox.delete(ACTIVE) 
-        
-    def apply(self):
-        self.result = (self.listbox.get(0,END), 
-                       self.num_added, 
-                       self.deleted_indices)
+
 

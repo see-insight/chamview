@@ -1,800 +1,800 @@
-0,Left front foot,990,196
+0,Left front foot,584,374
 0,Right front foot,0,0
 0,Left back foot,0,0
-0,Right back foot,0,0
 0,Snout/Vent,0,0
+0,Type entry here,0,0
 1,Left front foot,0,0
 1,Right front foot,0,0
 1,Left back foot,0,0
-1,Right back foot,0,0
 1,Snout/Vent,0,0
+1,Type entry here,0,0
 2,Left front foot,0,0
 2,Right front foot,0,0
 2,Left back foot,0,0
-2,Right back foot,0,0
 2,Snout/Vent,0,0
+2,Type entry here,0,0
 3,Left front foot,0,0
 3,Right front foot,0,0
 3,Left back foot,0,0
-3,Right back foot,0,0
 3,Snout/Vent,0,0
+3,Type entry here,0,0
 4,Left front foot,0,0
 4,Right front foot,0,0
 4,Left back foot,0,0
-4,Right back foot,0,0
 4,Snout/Vent,0,0
+4,Type entry here,0,0
 5,Left front foot,0,0
 5,Right front foot,0,0
 5,Left back foot,0,0
-5,Right back foot,0,0
 5,Snout/Vent,0,0
+5,Type entry here,0,0
 6,Left front foot,0,0
 6,Right front foot,0,0
 6,Left back foot,0,0
-6,Right back foot,0,0
 6,Snout/Vent,0,0
+6,Type entry here,0,0
 7,Left front foot,0,0
 7,Right front foot,0,0
 7,Left back foot,0,0
-7,Right back foot,0,0
 7,Snout/Vent,0,0
+7,Type entry here,0,0
 8,Left front foot,0,0
 8,Right front foot,0,0
 8,Left back foot,0,0
-8,Right back foot,0,0
 8,Snout/Vent,0,0
+8,Type entry here,0,0
 9,Left front foot,0,0
 9,Right front foot,0,0
 9,Left back foot,0,0
-9,Right back foot,0,0
 9,Snout/Vent,0,0
+9,Type entry here,0,0
 10,Left front foot,0,0
 10,Right front foot,0,0
 10,Left back foot,0,0
-10,Right back foot,0,0
 10,Snout/Vent,0,0
+10,Type entry here,0,0
 11,Left front foot,0,0
 11,Right front foot,0,0
 11,Left back foot,0,0
-11,Right back foot,0,0
 11,Snout/Vent,0,0
+11,Type entry here,0,0
 12,Left front foot,0,0
 12,Right front foot,0,0
 12,Left back foot,0,0
-12,Right back foot,0,0
 12,Snout/Vent,0,0
+12,Type entry here,0,0
 13,Left front foot,0,0
 13,Right front foot,0,0
 13,Left back foot,0,0
-13,Right back foot,0,0
 13,Snout/Vent,0,0
+13,Type entry here,0,0
 14,Left front foot,0,0
 14,Right front foot,0,0
 14,Left back foot,0,0
-14,Right back foot,0,0
 14,Snout/Vent,0,0
+14,Type entry here,0,0
 15,Left front foot,0,0
 15,Right front foot,0,0
 15,Left back foot,0,0
-15,Right back foot,0,0
 15,Snout/Vent,0,0
+15,Type entry here,0,0
 16,Left front foot,0,0
 16,Right front foot,0,0
 16,Left back foot,0,0
-16,Right back foot,0,0
 16,Snout/Vent,0,0
+16,Type entry here,0,0
 17,Left front foot,0,0
 17,Right front foot,0,0
 17,Left back foot,0,0
-17,Right back foot,0,0
 17,Snout/Vent,0,0
+17,Type entry here,0,0
 18,Left front foot,0,0
 18,Right front foot,0,0
 18,Left back foot,0,0
-18,Right back foot,0,0
 18,Snout/Vent,0,0
+18,Type entry here,0,0
 19,Left front foot,0,0
 19,Right front foot,0,0
 19,Left back foot,0,0
-19,Right back foot,0,0
 19,Snout/Vent,0,0
+19,Type entry here,0,0
 20,Left front foot,0,0
 20,Right front foot,0,0
 20,Left back foot,0,0
-20,Right back foot,0,0
 20,Snout/Vent,0,0
+20,Type entry here,0,0
 21,Left front foot,0,0
 21,Right front foot,0,0
 21,Left back foot,0,0
-21,Right back foot,0,0
 21,Snout/Vent,0,0
+21,Type entry here,0,0
 22,Left front foot,0,0
 22,Right front foot,0,0
 22,Left back foot,0,0
-22,Right back foot,0,0
 22,Snout/Vent,0,0
+22,Type entry here,0,0
 23,Left front foot,0,0
 23,Right front foot,0,0
 23,Left back foot,0,0
-23,Right back foot,0,0
 23,Snout/Vent,0,0
+23,Type entry here,0,0
 24,Left front foot,0,0
 24,Right front foot,0,0
 24,Left back foot,0,0
-24,Right back foot,0,0
 24,Snout/Vent,0,0
+24,Type entry here,0,0
 25,Left front foot,0,0
 25,Right front foot,0,0
 25,Left back foot,0,0
-25,Right back foot,0,0
 25,Snout/Vent,0,0
+25,Type entry here,0,0
 26,Left front foot,0,0
 26,Right front foot,0,0
 26,Left back foot,0,0
-26,Right back foot,0,0
 26,Snout/Vent,0,0
+26,Type entry here,0,0
 27,Left front foot,0,0
 27,Right front foot,0,0
 27,Left back foot,0,0
-27,Right back foot,0,0
 27,Snout/Vent,0,0
+27,Type entry here,0,0
 28,Left front foot,0,0
 28,Right front foot,0,0
 28,Left back foot,0,0
-28,Right back foot,0,0
 28,Snout/Vent,0,0
+28,Type entry here,0,0
 29,Left front foot,0,0
 29,Right front foot,0,0
 29,Left back foot,0,0
-29,Right back foot,0,0
 29,Snout/Vent,0,0
+29,Type entry here,0,0
 30,Left front foot,0,0
 30,Right front foot,0,0
 30,Left back foot,0,0
-30,Right back foot,0,0
 30,Snout/Vent,0,0
+30,Type entry here,0,0
 31,Left front foot,0,0
 31,Right front foot,0,0
 31,Left back foot,0,0
-31,Right back foot,0,0
 31,Snout/Vent,0,0
+31,Type entry here,0,0
 32,Left front foot,0,0
 32,Right front foot,0,0
 32,Left back foot,0,0
-32,Right back foot,0,0
 32,Snout/Vent,0,0
+32,Type entry here,0,0
 33,Left front foot,0,0
 33,Right front foot,0,0
 33,Left back foot,0,0
-33,Right back foot,0,0
 33,Snout/Vent,0,0
+33,Type entry here,0,0
 34,Left front foot,0,0
 34,Right front foot,0,0
 34,Left back foot,0,0
-34,Right back foot,0,0
 34,Snout/Vent,0,0
+34,Type entry here,0,0
 35,Left front foot,0,0
 35,Right front foot,0,0
 35,Left back foot,0,0
-35,Right back foot,0,0
 35,Snout/Vent,0,0
+35,Type entry here,0,0
 36,Left front foot,0,0
 36,Right front foot,0,0
 36,Left back foot,0,0
-36,Right back foot,0,0
 36,Snout/Vent,0,0
+36,Type entry here,0,0
 37,Left front foot,0,0
 37,Right front foot,0,0
 37,Left back foot,0,0
-37,Right back foot,0,0
 37,Snout/Vent,0,0
+37,Type entry here,0,0
 38,Left front foot,0,0
 38,Right front foot,0,0
 38,Left back foot,0,0
-38,Right back foot,0,0
 38,Snout/Vent,0,0
+38,Type entry here,0,0
 39,Left front foot,0,0
 39,Right front foot,0,0
 39,Left back foot,0,0
-39,Right back foot,0,0
 39,Snout/Vent,0,0
+39,Type entry here,0,0
 40,Left front foot,0,0
 40,Right front foot,0,0
 40,Left back foot,0,0
-40,Right back foot,0,0
 40,Snout/Vent,0,0
+40,Type entry here,0,0
 41,Left front foot,0,0
 41,Right front foot,0,0
 41,Left back foot,0,0
-41,Right back foot,0,0
 41,Snout/Vent,0,0
+41,Type entry here,0,0
 42,Left front foot,0,0
 42,Right front foot,0,0
 42,Left back foot,0,0
-42,Right back foot,0,0
 42,Snout/Vent,0,0
+42,Type entry here,0,0
 43,Left front foot,0,0
 43,Right front foot,0,0
 43,Left back foot,0,0
-43,Right back foot,0,0
 43,Snout/Vent,0,0
+43,Type entry here,0,0
 44,Left front foot,0,0
 44,Right front foot,0,0
 44,Left back foot,0,0
-44,Right back foot,0,0
 44,Snout/Vent,0,0
+44,Type entry here,0,0
 45,Left front foot,0,0
 45,Right front foot,0,0
 45,Left back foot,0,0
-45,Right back foot,0,0
 45,Snout/Vent,0,0
+45,Type entry here,0,0
 46,Left front foot,0,0
 46,Right front foot,0,0
 46,Left back foot,0,0
-46,Right back foot,0,0
 46,Snout/Vent,0,0
+46,Type entry here,0,0
 47,Left front foot,0,0
 47,Right front foot,0,0
 47,Left back foot,0,0
-47,Right back foot,0,0
 47,Snout/Vent,0,0
+47,Type entry here,0,0
 48,Left front foot,0,0
 48,Right front foot,0,0
 48,Left back foot,0,0
-48,Right back foot,0,0
 48,Snout/Vent,0,0
+48,Type entry here,0,0
 49,Left front foot,0,0
 49,Right front foot,0,0
 49,Left back foot,0,0
-49,Right back foot,0,0
 49,Snout/Vent,0,0
+49,Type entry here,0,0
 50,Left front foot,0,0
 50,Right front foot,0,0
 50,Left back foot,0,0
-50,Right back foot,0,0
 50,Snout/Vent,0,0
+50,Type entry here,0,0
 51,Left front foot,0,0
 51,Right front foot,0,0
 51,Left back foot,0,0
-51,Right back foot,0,0
 51,Snout/Vent,0,0
+51,Type entry here,0,0
 52,Left front foot,0,0
 52,Right front foot,0,0
 52,Left back foot,0,0
-52,Right back foot,0,0
 52,Snout/Vent,0,0
+52,Type entry here,0,0
 53,Left front foot,0,0
 53,Right front foot,0,0
 53,Left back foot,0,0
-53,Right back foot,0,0
 53,Snout/Vent,0,0
+53,Type entry here,0,0
 54,Left front foot,0,0
 54,Right front foot,0,0
 54,Left back foot,0,0
-54,Right back foot,0,0
 54,Snout/Vent,0,0
+54,Type entry here,0,0
 55,Left front foot,0,0
 55,Right front foot,0,0
 55,Left back foot,0,0
-55,Right back foot,0,0
 55,Snout/Vent,0,0
+55,Type entry here,0,0
 56,Left front foot,0,0
 56,Right front foot,0,0
 56,Left back foot,0,0
-56,Right back foot,0,0
 56,Snout/Vent,0,0
+56,Type entry here,0,0
 57,Left front foot,0,0
 57,Right front foot,0,0
 57,Left back foot,0,0
-57,Right back foot,0,0
 57,Snout/Vent,0,0
+57,Type entry here,0,0
 58,Left front foot,0,0
 58,Right front foot,0,0
 58,Left back foot,0,0
-58,Right back foot,0,0
 58,Snout/Vent,0,0
+58,Type entry here,0,0
 59,Left front foot,0,0
 59,Right front foot,0,0
 59,Left back foot,0,0
-59,Right back foot,0,0
 59,Snout/Vent,0,0
+59,Type entry here,0,0
 60,Left front foot,0,0
 60,Right front foot,0,0
 60,Left back foot,0,0
-60,Right back foot,0,0
 60,Snout/Vent,0,0
+60,Type entry here,0,0
 61,Left front foot,0,0
 61,Right front foot,0,0
 61,Left back foot,0,0
-61,Right back foot,0,0
 61,Snout/Vent,0,0
+61,Type entry here,0,0
 62,Left front foot,0,0
 62,Right front foot,0,0
 62,Left back foot,0,0
-62,Right back foot,0,0
 62,Snout/Vent,0,0
+62,Type entry here,0,0
 63,Left front foot,0,0
 63,Right front foot,0,0
 63,Left back foot,0,0
-63,Right back foot,0,0
 63,Snout/Vent,0,0
+63,Type entry here,0,0
 64,Left front foot,0,0
 64,Right front foot,0,0
 64,Left back foot,0,0
-64,Right back foot,0,0
 64,Snout/Vent,0,0
+64,Type entry here,0,0
 65,Left front foot,0,0
 65,Right front foot,0,0
 65,Left back foot,0,0
-65,Right back foot,0,0
 65,Snout/Vent,0,0
+65,Type entry here,0,0
 66,Left front foot,0,0
 66,Right front foot,0,0
 66,Left back foot,0,0
-66,Right back foot,0,0
 66,Snout/Vent,0,0
+66,Type entry here,0,0
 67,Left front foot,0,0
 67,Right front foot,0,0
 67,Left back foot,0,0
-67,Right back foot,0,0
 67,Snout/Vent,0,0
+67,Type entry here,0,0
 68,Left front foot,0,0
 68,Right front foot,0,0
 68,Left back foot,0,0
-68,Right back foot,0,0
 68,Snout/Vent,0,0
+68,Type entry here,0,0
 69,Left front foot,0,0
 69,Right front foot,0,0
 69,Left back foot,0,0
-69,Right back foot,0,0
 69,Snout/Vent,0,0
+69,Type entry here,0,0
 70,Left front foot,0,0
 70,Right front foot,0,0
 70,Left back foot,0,0
-70,Right back foot,0,0
 70,Snout/Vent,0,0
+70,Type entry here,0,0
 71,Left front foot,0,0
 71,Right front foot,0,0
 71,Left back foot,0,0
-71,Right back foot,0,0
 71,Snout/Vent,0,0
+71,Type entry here,0,0
 72,Left front foot,0,0
 72,Right front foot,0,0
 72,Left back foot,0,0
-72,Right back foot,0,0
 72,Snout/Vent,0,0
+72,Type entry here,0,0
 73,Left front foot,0,0
 73,Right front foot,0,0
 73,Left back foot,0,0
-73,Right back foot,0,0
 73,Snout/Vent,0,0
+73,Type entry here,0,0
 74,Left front foot,0,0
 74,Right front foot,0,0
 74,Left back foot,0,0
-74,Right back foot,0,0
 74,Snout/Vent,0,0
+74,Type entry here,0,0
 75,Left front foot,0,0
 75,Right front foot,0,0
 75,Left back foot,0,0
-75,Right back foot,0,0
 75,Snout/Vent,0,0
+75,Type entry here,0,0
 76,Left front foot,0,0
 76,Right front foot,0,0
 76,Left back foot,0,0
-76,Right back foot,0,0
 76,Snout/Vent,0,0
+76,Type entry here,0,0
 77,Left front foot,0,0
 77,Right front foot,0,0
 77,Left back foot,0,0
-77,Right back foot,0,0
 77,Snout/Vent,0,0
+77,Type entry here,0,0
 78,Left front foot,0,0
 78,Right front foot,0,0
 78,Left back foot,0,0
-78,Right back foot,0,0
 78,Snout/Vent,0,0
+78,Type entry here,0,0
 79,Left front foot,0,0
 79,Right front foot,0,0
 79,Left back foot,0,0
-79,Right back foot,0,0
 79,Snout/Vent,0,0
+79,Type entry here,0,0
 80,Left front foot,0,0
 80,Right front foot,0,0
 80,Left back foot,0,0
-80,Right back foot,0,0
 80,Snout/Vent,0,0
+80,Type entry here,0,0
 81,Left front foot,0,0
 81,Right front foot,0,0
 81,Left back foot,0,0
-81,Right back foot,0,0
 81,Snout/Vent,0,0
+81,Type entry here,0,0
 82,Left front foot,0,0
 82,Right front foot,0,0
 82,Left back foot,0,0
-82,Right back foot,0,0
 82,Snout/Vent,0,0
+82,Type entry here,0,0
 83,Left front foot,0,0
 83,Right front foot,0,0
 83,Left back foot,0,0
-83,Right back foot,0,0
 83,Snout/Vent,0,0
+83,Type entry here,0,0
 84,Left front foot,0,0
 84,Right front foot,0,0
 84,Left back foot,0,0
-84,Right back foot,0,0
 84,Snout/Vent,0,0
+84,Type entry here,0,0
 85,Left front foot,0,0
 85,Right front foot,0,0
 85,Left back foot,0,0
-85,Right back foot,0,0
 85,Snout/Vent,0,0
+85,Type entry here,0,0
 86,Left front foot,0,0
 86,Right front foot,0,0
 86,Left back foot,0,0
-86,Right back foot,0,0
 86,Snout/Vent,0,0
+86,Type entry here,0,0
 87,Left front foot,0,0
 87,Right front foot,0,0
 87,Left back foot,0,0
-87,Right back foot,0,0
 87,Snout/Vent,0,0
+87,Type entry here,0,0
 88,Left front foot,0,0
 88,Right front foot,0,0
 88,Left back foot,0,0
-88,Right back foot,0,0
 88,Snout/Vent,0,0
+88,Type entry here,0,0
 89,Left front foot,0,0
 89,Right front foot,0,0
 89,Left back foot,0,0
-89,Right back foot,0,0
 89,Snout/Vent,0,0
+89,Type entry here,0,0
 90,Left front foot,0,0
 90,Right front foot,0,0
 90,Left back foot,0,0
-90,Right back foot,0,0
 90,Snout/Vent,0,0
+90,Type entry here,0,0
 91,Left front foot,0,0
 91,Right front foot,0,0
 91,Left back foot,0,0
-91,Right back foot,0,0
 91,Snout/Vent,0,0
+91,Type entry here,0,0
 92,Left front foot,0,0
 92,Right front foot,0,0
 92,Left back foot,0,0
-92,Right back foot,0,0
 92,Snout/Vent,0,0
+92,Type entry here,0,0
 93,Left front foot,0,0
 93,Right front foot,0,0
 93,Left back foot,0,0
-93,Right back foot,0,0
 93,Snout/Vent,0,0
+93,Type entry here,0,0
 94,Left front foot,0,0
 94,Right front foot,0,0
 94,Left back foot,0,0
-94,Right back foot,0,0
 94,Snout/Vent,0,0
+94,Type entry here,0,0
 95,Left front foot,0,0
 95,Right front foot,0,0
 95,Left back foot,0,0
-95,Right back foot,0,0
 95,Snout/Vent,0,0
+95,Type entry here,0,0
 96,Left front foot,0,0
 96,Right front foot,0,0
 96,Left back foot,0,0
-96,Right back foot,0,0
 96,Snout/Vent,0,0
+96,Type entry here,0,0
 97,Left front foot,0,0
 97,Right front foot,0,0
 97,Left back foot,0,0
-97,Right back foot,0,0
 97,Snout/Vent,0,0
+97,Type entry here,0,0
 98,Left front foot,0,0
 98,Right front foot,0,0
 98,Left back foot,0,0
-98,Right back foot,0,0
 98,Snout/Vent,0,0
+98,Type entry here,0,0
 99,Left front foot,0,0
 99,Right front foot,0,0
 99,Left back foot,0,0
-99,Right back foot,0,0
 99,Snout/Vent,0,0
+99,Type entry here,0,0
 100,Left front foot,0,0
 100,Right front foot,0,0
 100,Left back foot,0,0
-100,Right back foot,0,0
 100,Snout/Vent,0,0
+100,Type entry here,0,0
 101,Left front foot,0,0
 101,Right front foot,0,0
 101,Left back foot,0,0
-101,Right back foot,0,0
 101,Snout/Vent,0,0
+101,Type entry here,0,0
 102,Left front foot,0,0
 102,Right front foot,0,0
 102,Left back foot,0,0
-102,Right back foot,0,0
 102,Snout/Vent,0,0
+102,Type entry here,0,0
 103,Left front foot,0,0
 103,Right front foot,0,0
 103,Left back foot,0,0
-103,Right back foot,0,0
 103,Snout/Vent,0,0
+103,Type entry here,0,0
 104,Left front foot,0,0
 104,Right front foot,0,0
 104,Left back foot,0,0
-104,Right back foot,0,0
 104,Snout/Vent,0,0
+104,Type entry here,0,0
 105,Left front foot,0,0
 105,Right front foot,0,0
 105,Left back foot,0,0
-105,Right back foot,0,0
 105,Snout/Vent,0,0
+105,Type entry here,0,0
 106,Left front foot,0,0
 106,Right front foot,0,0
 106,Left back foot,0,0
-106,Right back foot,0,0
 106,Snout/Vent,0,0
+106,Type entry here,0,0
 107,Left front foot,0,0
 107,Right front foot,0,0
 107,Left back foot,0,0
-107,Right back foot,0,0
 107,Snout/Vent,0,0
+107,Type entry here,0,0
 108,Left front foot,0,0
 108,Right front foot,0,0
 108,Left back foot,0,0
-108,Right back foot,0,0
 108,Snout/Vent,0,0
+108,Type entry here,0,0
 109,Left front foot,0,0
 109,Right front foot,0,0
 109,Left back foot,0,0
-109,Right back foot,0,0
 109,Snout/Vent,0,0
+109,Type entry here,0,0
 110,Left front foot,0,0
 110,Right front foot,0,0
 110,Left back foot,0,0
-110,Right back foot,0,0
 110,Snout/Vent,0,0
+110,Type entry here,0,0
 111,Left front foot,0,0
 111,Right front foot,0,0
 111,Left back foot,0,0
-111,Right back foot,0,0
 111,Snout/Vent,0,0
+111,Type entry here,0,0
 112,Left front foot,0,0
 112,Right front foot,0,0
 112,Left back foot,0,0
-112,Right back foot,0,0
 112,Snout/Vent,0,0
+112,Type entry here,0,0
 113,Left front foot,0,0
 113,Right front foot,0,0
 113,Left back foot,0,0
-113,Right back foot,0,0
 113,Snout/Vent,0,0
+113,Type entry here,0,0
 114,Left front foot,0,0
 114,Right front foot,0,0
 114,Left back foot,0,0
-114,Right back foot,0,0
 114,Snout/Vent,0,0
+114,Type entry here,0,0
 115,Left front foot,0,0
 115,Right front foot,0,0
 115,Left back foot,0,0
-115,Right back foot,0,0
 115,Snout/Vent,0,0
+115,Type entry here,0,0
 116,Left front foot,0,0
 116,Right front foot,0,0
 116,Left back foot,0,0
-116,Right back foot,0,0
 116,Snout/Vent,0,0
+116,Type entry here,0,0
 117,Left front foot,0,0
 117,Right front foot,0,0
 117,Left back foot,0,0
-117,Right back foot,0,0
 117,Snout/Vent,0,0
+117,Type entry here,0,0
 118,Left front foot,0,0
 118,Right front foot,0,0
 118,Left back foot,0,0
-118,Right back foot,0,0
 118,Snout/Vent,0,0
+118,Type entry here,0,0
 119,Left front foot,0,0
 119,Right front foot,0,0
 119,Left back foot,0,0
-119,Right back foot,0,0
 119,Snout/Vent,0,0
+119,Type entry here,0,0
 120,Left front foot,0,0
 120,Right front foot,0,0
 120,Left back foot,0,0
-120,Right back foot,0,0
 120,Snout/Vent,0,0
+120,Type entry here,0,0
 121,Left front foot,0,0
 121,Right front foot,0,0
 121,Left back foot,0,0
-121,Right back foot,0,0
 121,Snout/Vent,0,0
+121,Type entry here,0,0
 122,Left front foot,0,0
 122,Right front foot,0,0
 122,Left back foot,0,0
-122,Right back foot,0,0
 122,Snout/Vent,0,0
+122,Type entry here,0,0
 123,Left front foot,0,0
 123,Right front foot,0,0
 123,Left back foot,0,0
-123,Right back foot,0,0
 123,Snout/Vent,0,0
+123,Type entry here,0,0
 124,Left front foot,0,0
 124,Right front foot,0,0
 124,Left back foot,0,0
-124,Right back foot,0,0
 124,Snout/Vent,0,0
+124,Type entry here,0,0
 125,Left front foot,0,0
 125,Right front foot,0,0
 125,Left back foot,0,0
-125,Right back foot,0,0
 125,Snout/Vent,0,0
+125,Type entry here,0,0
 126,Left front foot,0,0
 126,Right front foot,0,0
 126,Left back foot,0,0
-126,Right back foot,0,0
 126,Snout/Vent,0,0
+126,Type entry here,0,0
 127,Left front foot,0,0
 127,Right front foot,0,0
 127,Left back foot,0,0
-127,Right back foot,0,0
 127,Snout/Vent,0,0
+127,Type entry here,0,0
 128,Left front foot,0,0
 128,Right front foot,0,0
 128,Left back foot,0,0
-128,Right back foot,0,0
 128,Snout/Vent,0,0
+128,Type entry here,0,0
 129,Left front foot,0,0
 129,Right front foot,0,0
 129,Left back foot,0,0
-129,Right back foot,0,0
 129,Snout/Vent,0,0
+129,Type entry here,0,0
 130,Left front foot,0,0
 130,Right front foot,0,0
 130,Left back foot,0,0
-130,Right back foot,0,0
 130,Snout/Vent,0,0
+130,Type entry here,0,0
 131,Left front foot,0,0
 131,Right front foot,0,0
 131,Left back foot,0,0
-131,Right back foot,0,0
 131,Snout/Vent,0,0
+131,Type entry here,0,0
 132,Left front foot,0,0
 132,Right front foot,0,0
 132,Left back foot,0,0
-132,Right back foot,0,0
 132,Snout/Vent,0,0
+132,Type entry here,0,0
 133,Left front foot,0,0
 133,Right front foot,0,0
 133,Left back foot,0,0
-133,Right back foot,0,0
 133,Snout/Vent,0,0
+133,Type entry here,0,0
 134,Left front foot,0,0
 134,Right front foot,0,0
 134,Left back foot,0,0
-134,Right back foot,0,0
 134,Snout/Vent,0,0
+134,Type entry here,0,0
 135,Left front foot,0,0
 135,Right front foot,0,0
 135,Left back foot,0,0
-135,Right back foot,0,0
 135,Snout/Vent,0,0
+135,Type entry here,0,0
 136,Left front foot,0,0
 136,Right front foot,0,0
 136,Left back foot,0,0
-136,Right back foot,0,0
 136,Snout/Vent,0,0
+136,Type entry here,0,0
 137,Left front foot,0,0
 137,Right front foot,0,0
 137,Left back foot,0,0
-137,Right back foot,0,0
 137,Snout/Vent,0,0
+137,Type entry here,0,0
 138,Left front foot,0,0
 138,Right front foot,0,0
 138,Left back foot,0,0
-138,Right back foot,0,0
 138,Snout/Vent,0,0
+138,Type entry here,0,0
 139,Left front foot,0,0
 139,Right front foot,0,0
 139,Left back foot,0,0
-139,Right back foot,0,0
 139,Snout/Vent,0,0
+139,Type entry here,0,0
 140,Left front foot,0,0
 140,Right front foot,0,0
 140,Left back foot,0,0
-140,Right back foot,0,0
 140,Snout/Vent,0,0
+140,Type entry here,0,0
 141,Left front foot,0,0
 141,Right front foot,0,0
 141,Left back foot,0,0
-141,Right back foot,0,0
 141,Snout/Vent,0,0
+141,Type entry here,0,0
 142,Left front foot,0,0
 142,Right front foot,0,0
 142,Left back foot,0,0
-142,Right back foot,0,0
 142,Snout/Vent,0,0
+142,Type entry here,0,0
 143,Left front foot,0,0
 143,Right front foot,0,0
 143,Left back foot,0,0
-143,Right back foot,0,0
 143,Snout/Vent,0,0
+143,Type entry here,0,0
 144,Left front foot,0,0
 144,Right front foot,0,0
 144,Left back foot,0,0
-144,Right back foot,0,0
 144,Snout/Vent,0,0
+144,Type entry here,0,0
 145,Left front foot,0,0
 145,Right front foot,0,0
 145,Left back foot,0,0
-145,Right back foot,0,0
 145,Snout/Vent,0,0
+145,Type entry here,0,0
 146,Left front foot,0,0
 146,Right front foot,0,0
 146,Left back foot,0,0
-146,Right back foot,0,0
 146,Snout/Vent,0,0
+146,Type entry here,0,0
 147,Left front foot,0,0
 147,Right front foot,0,0
 147,Left back foot,0,0
-147,Right back foot,0,0
 147,Snout/Vent,0,0
+147,Type entry here,0,0
 148,Left front foot,0,0
 148,Right front foot,0,0
 148,Left back foot,0,0
-148,Right back foot,0,0
 148,Snout/Vent,0,0
+148,Type entry here,0,0
 149,Left front foot,0,0
 149,Right front foot,0,0
 149,Left back foot,0,0
-149,Right back foot,0,0
 149,Snout/Vent,0,0
+149,Type entry here,0,0
 150,Left front foot,0,0
 150,Right front foot,0,0
 150,Left back foot,0,0
-150,Right back foot,0,0
 150,Snout/Vent,0,0
+150,Type entry here,0,0
 151,Left front foot,0,0
 151,Right front foot,0,0
 151,Left back foot,0,0
-151,Right back foot,0,0
 151,Snout/Vent,0,0
+151,Type entry here,0,0
 152,Left front foot,0,0
 152,Right front foot,0,0
 152,Left back foot,0,0
-152,Right back foot,0,0
 152,Snout/Vent,0,0
+152,Type entry here,0,0
 153,Left front foot,0,0
 153,Right front foot,0,0
 153,Left back foot,0,0
-153,Right back foot,0,0
 153,Snout/Vent,0,0
+153,Type entry here,0,0
 154,Left front foot,0,0
 154,Right front foot,0,0
 154,Left back foot,0,0
-154,Right back foot,0,0
 154,Snout/Vent,0,0
+154,Type entry here,0,0
 155,Left front foot,0,0
 155,Right front foot,0,0
 155,Left back foot,0,0
-155,Right back foot,0,0
 155,Snout/Vent,0,0
+155,Type entry here,0,0
 156,Left front foot,0,0
 156,Right front foot,0,0
 156,Left back foot,0,0
-156,Right back foot,0,0
 156,Snout/Vent,0,0
+156,Type entry here,0,0
 157,Left front foot,0,0
 157,Right front foot,0,0
 157,Left back foot,0,0
-157,Right back foot,0,0
 157,Snout/Vent,0,0
+157,Type entry here,0,0
 158,Left front foot,0,0
 158,Right front foot,0,0
 158,Left back foot,0,0
-158,Right back foot,0,0
 158,Snout/Vent,0,0
+158,Type entry here,0,0
 159,Left front foot,0,0
 159,Right front foot,0,0
 159,Left back foot,0,0
-159,Right back foot,0,0
 159,Snout/Vent,0,0
+159,Type entry here,0,0
