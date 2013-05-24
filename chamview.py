@@ -26,7 +26,7 @@ import dircache
 import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
-from grammar import Grammar 
+from grammar import Grammar
 
 
 class Usage(Exception):
@@ -110,7 +110,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         if guess != None:
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess
-     
+
     add = 0         # number of new point types added during cycle
     delete = []     # indices of point types deleted during cycle
     #Give this result to the chooser to get the initial ground-truth point
@@ -148,7 +148,7 @@ def update_numpy_array(n_array,add,delete):
                     new_block.append(block[i])
             new.append(new_block)
         n_array = array(new)
-        
+
     if add >= 1:
         #Add n new Point Kinds to predict_point.
         new = n_array.tolist()
@@ -156,7 +156,7 @@ def update_numpy_array(n_array,add,delete):
             for block in new:
                 block.append([0,0,0])
         n_array = array(new)
-        
+
     return n_array
 
 

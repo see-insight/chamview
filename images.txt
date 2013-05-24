@@ -1,24 +1,20 @@
-0,Right front foot,174,139
+0,Left front foot,0,0
+0,Right front foot,0,0
 0,Left back foot,0,0
 0,Right back foot,0,0
 0,Snout/Vent,0,0
-0,one,0,0
-0,two,0,0
+1,Left front foot,0,0
 1,Right front foot,0,0
 1,Left back foot,0,0
-1,Right back foot,0,0
+1,Right back foot,302,213
 1,Snout/Vent,0,0
-1,one,0,0
-1,two,0,0
+2,Left front foot,0,0
 2,Right front foot,0,0
 2,Left back foot,0,0
 2,Right back foot,0,0
 2,Snout/Vent,0,0
-2,one,0,0
-2,two,0,0
+3,Left front foot,0,0
 3,Right front foot,0,0
 3,Left back foot,0,0
 3,Right back foot,0,0
 3,Snout/Vent,0,0
-3,one,0,0
-3,two,0,0
