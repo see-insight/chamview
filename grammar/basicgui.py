@@ -63,13 +63,26 @@ class BasicGui(Chooser):
             if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.pointlist.selection_set(0)
         #Fill the list of predictor choices
-        for i in range(0,self.imstack.point_kinds):
-            self.selectedPrediction.append(-1) #-1 corresponds to human input
+        self.updateSelectedPredList()
     
     def fillPredictorList(self):
         self.madePredictorList = True
         for n in self.predictor_name:
             self.predlist.insert(END,n)
+            
+    def updateSelectedPredList(self,add=0,deleted=[]):
+        '''Update list of which predictors are currently used for which point type
+        after the number of point types has been changed.'''
+        #-1 corresponds to human input, other nums are the index for a predictor
+        #in predictor_name and predicted arrays
+        if add < 1 and deleted == []:
+            for i in range(0,self.imstack.point_kinds):
+                self.selectedPrediction.append(-1)
+        else:
+            for index in deleted:
+                del self.selectedPrediction[index]
+            for n in range(add):
+                self.selectedPrediction.append(-1)
 
     def createGui(self):
         #Set up application window
@@ -164,8 +177,8 @@ class BasicGui(Chooser):
         #Status Bar
         self.temporary_statusbar = support.StatusBar(self.stat_frame)
         self.temporary_statusbar.pack(fill=X)
-        self.format = 'Point Kind: %s\t\tCursor Position: X: %5.1d\tY: %5.1d\t'
-        self.temporary_statusbar.set(self.format, 'TEMP', 0, 0)
+        self.format = 'Image: %s\t\tPoint Kind: %s\t\tCursor Position: X: %5.1d\tY: %5.1d\t'
+        self.temporary_statusbar.set(self.format, 'None', 'TEMP', 0, 0)
         #frame counter Frame
         self.fframe = Frame(self.frameR)
         self.fframe.pack()
@@ -306,8 +319,9 @@ class BasicGui(Chooser):
         if self.photo == None:
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
-        #Set the title of the window to the current image filename
-        self.master.title(self.imstack.name_current)
+        #Update status bar
+        self.temporary_statusbar.set(self.format, self.imstack.name_current,
+                            self.imstack.point_kind_list[self.pointKind], 0, 0)
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for
         if(self.imstack.current_frame == self.predictedFrame):
@@ -433,7 +447,6 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
-        print self.imstack.point_kind_list
         dialog_window = support.EditPointKinds(self.master,self.imstack.point_kind_list,
                                         'Edit Point Kinds')
         new_points, self.added, self.deleted = dialog_window.result
@@ -443,7 +456,8 @@ class BasicGui(Chooser):
         self.imstack.get_point_kinds(List=new_points)
         self.pointlist.delete(0,END)
         self.fillPointkindList()
-        print self.imstack.point_kind_list
+        self.updateSelectedPredList(self.added,self.deleted)
+        self.master.quit()
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"

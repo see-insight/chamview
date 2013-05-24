@@ -109,16 +109,17 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         guess = predictor[i].setup(imstack)
         if guess != None:
             for j in range(0,imstack.point_kinds):
-                predict_point[i,j] = guess
+                predict_point[i][j] = guess
      
     add = 0         # number of new point types added during cycle
     delete = []     # indices of point types deleted during cycle
     #Give this result to the chooser to get the initial ground-truth point
     add, delete = chooser.choose(imstack,predict_point,predictor_name)
-    predict_point = update_numpy_array(predict_point,add,delete)
+    predict_point = update_point_array(predict_point,add,delete)
 
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
+        print predict_point
         #Preprocess the ImageStack image
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
         #Give each predictor the current image stack and get a prediction back
@@ -126,7 +127,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
             predict_point[i] = predictor[i].predict(imstack)
         #Give this result to the chooser to get the "real" point
         add, delete = chooser.choose(imstack,predict_point,predictor_name)
-        predict_point = update_numpy_array(predict_point,add,delete)
+        predict_point = update_point_array(predict_point,add,delete)
         #Save points to file
         if argOutput != '': imstack.save_points(argOutput)
 
@@ -136,8 +137,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         pred.teardown()
 
 
-def update_numpy_array(n_array,add,delete):
-    if len(delete) != 0:
+def update_point_array(n_array,add,delete):
+    if delete != []:
         #Delete Point information in predict_point for each index provided.
         temp = n_array.tolist()
         new = []
