@@ -9,13 +9,21 @@ class Accuracy(Chooser):
     Usage: ./chamview.py -c Accuracy -d <image directory> -p <ground truth file>
     """
 
-    def setup(self):
+    def setup(self):     
+        
+        #Debugging purposes
+        print 'Running setup in Accuracy'
+        
         self.x = [] #Frame number
         self.y = [] #Error from ground-truth
         self.name = [] #Name of predictor
         self.filledLists = False
 
     def teardown(self):
+        
+        #Debugging purposes
+        print 'Running teardown in Accuracy'
+        
         #Go through each predictor
         for i in range(0,len(self.name)):
             #Save data to file
@@ -32,6 +40,10 @@ class Accuracy(Chooser):
         show()
 
     def choose(self,stack,predicted,predictor_name):
+        
+        #Debugging purposes
+        print 'Running choose in Accuracy'
+        
         print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
