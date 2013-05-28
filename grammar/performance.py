@@ -11,9 +11,6 @@ from pylab import *
 
 class Performance(Chooser):
     
-    #Testing if performance file works
-    print 'Hello- YOU ARE RUNNING THE PERFORMANCE CLASS'
-    
     """Can be used to find the difference between each Predictor and ground-truth
     points. Outputs the difference (in pixels) to file and displays a graph. Only
     uses the first pointkind on file.
