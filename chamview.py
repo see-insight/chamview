@@ -97,8 +97,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
 
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
-    #predictor= [predictor[1]]
-    #predictor_name= [predictor_name[1]]
+    predictor= [predictor[1]]
+    predictor_name= [predictor_name[1]]
 
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
@@ -110,19 +110,19 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         if guess != None:
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess  #ASK ABOUT [i,j] SYNTAX
-    print 'predictor:', predictor
-    print 'predict_point:\n', predict_point
+#    print 'predictor:', predictor
+#    print 'predict_point:\n', predict_point
 
     #Give this result to the chooser to get the initial ground-truth point
-    print 'call chooser'
+#    print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
-    print 'exit chooser'
+#    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
-    print 'predictor:', predictor
-    print 'predict_point:\n', predict_point
+#    print 'predictor:', predictor
+#    print 'predict_point:\n', predict_point
 
-    print 'ENTER loop'
+#    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Preprocess the ImageStack image
@@ -131,16 +131,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack)
         #Give this result to the chooser to get the "real" point
-        print 'call chooser'
+#        print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-        print 'exit chooser'
+#        print 'exit chooser'
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
-        print 'predictor:', predictor
-        print 'predict_point:\n', predict_point
+#        print 'predictor:', predictor
+#        print 'predict_point:\n', predict_point
         #Save points to file
-        if argOutput != '': imstack.save_points(argOutput)
-    print 'EXIT loop'
+    if argOutput != '': imstack.save_points(argOutput)
+#    print 'EXIT loop'
 
     #Clear out any Chooser or Predictor data
     chooser.teardown()

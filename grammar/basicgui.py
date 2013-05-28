@@ -163,7 +163,7 @@ class BasicGui(Chooser):
         #Predictors Label and edit button
         self.pd_label = Label(self.frameL,text='Predictors',height=3,anchor=S)
         self.pd_label.grid(row=5,column=1)
-        self.pd_edit = Button(self.frameL,text='Edit',command=self.predictorsOnOff)
+        self.pd_edit = Button(self.frameL,text='Info',command=self.predictorsInfo)
         self.pd_edit.grid(row=5,column=2,sticky=S)
         #Listbox used to show predictors
         self.predlist= Listbox(self.frameL,width=15,height=10)
@@ -184,8 +184,8 @@ class BasicGui(Chooser):
         #Status Bar
         self.temporary_statusbar = support.StatusBar(self.stat_frame)
         self.temporary_statusbar.pack(fill=X)
-        self.format = 'Image: %s\t\tPoint Kind: %s\t\tCursor Position: X: %5.1d\tY: %5.1d\t'
-        self.temporary_statusbar.set(self.format, 'None', 'TEMP', 0, 0)
+        self.format = 'Image: %s\t\tPoint Kind: %s\t\tPoint Position: X: %5.1d\tY: %5.1d\t'
+        self.temporary_statusbar.set(self.format, 'none', 'default', 0, 0)
         #frame counter Frame
         self.fframe = Frame(self.frameR)
         self.fframe.pack()
@@ -328,7 +328,9 @@ class BasicGui(Chooser):
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
         #Update status bar
         self.temporary_statusbar.set(self.format, self.imstack.name_current,
-                            self.imstack.point_kind_list[self.pointKind], 0, 0)
+                            self.imstack.point_kind_list[self.pointKind], 
+                            self.imstack.point[self.imstack.current_frame,self.pointKind,0],
+                            self.imstack.point[self.imstack.current_frame,self.pointKind,1])
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for
         if(self.imstack.current_frame == self.predictedFrame):
@@ -477,8 +479,8 @@ class BasicGui(Chooser):
 #        print 'selectedPrediction:', self.selectedPrediction
         self.master.quit() 
         
-    def predictorsOnOff(self,event=''):
-        print "Window to turn Predictors on/off"
+    def predictorsInfo(self,event=''):
+        print "Window displaying information about predictors"
         
     def togglePredictions(self,event=''):
         #Turn the drawing of predicted points on or off

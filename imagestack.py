@@ -8,7 +8,7 @@ class ImageStack:
 
     """    #---- Instance variables ----
     #point             row,column of each point kind in a given frame. Format is
-    #                  a numpy array [frame,point kind,row/column]
+    #                  a numpy array [frame,point kind,column/row]
     #point_kind_list[] list of string labels associated with each point kind
     #point_kinds       number of point kinds is use
     #img_list[]        list of paths to image files to load and use as frames
