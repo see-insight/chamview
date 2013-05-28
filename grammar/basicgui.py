@@ -24,12 +24,14 @@ class BasicGui(Chooser):
         self.pointKind = 0
         self.added = 0      # number of new point types added during cycle
         self.deleted = []   # indices of point types deleted during cycle
+        self.editedPointKinds = False
         #Choosing a prediction to use
         self.showPredictions = True
         self.selectedPrediction = []
         #Intitialize GUI, but don't show it yet
         self.madePointkindList = False
         self.madePredictorList = False
+        self.filledSelectedPredList = False
         self.createGui()
         self.createKeyBindings()
 
@@ -46,12 +48,14 @@ class BasicGui(Chooser):
         #Fill the pointlist with point kinds available for use if it hasn't been
         if not self.madePointkindList:self.fillPointkindList()
         if not self.madePredictorList:self.fillPredictorList()
-
+        if self.editedPointKinds:
+            self.added = 0
+            self.deleted = []
+            self.editedPointKinds = False
         #Draw new frame and predictions
         self.drawCanvas()
         #Show the window and get user input
         self.master.mainloop()
-        return self.added, self.deleted
 
     def fillPointkindList(self):
         #We don't have to fill the list again after this
@@ -61,9 +65,11 @@ class BasicGui(Chooser):
         for i in range(0,self.imstack.point_kinds):
             self.pointlist.insert(END,self.imstack.point_kind_list[i])
             if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
+        self.pointKind = 0
+        self.pointlist.selection_clear(0,END)
         self.pointlist.selection_set(0)
         #Fill the list of predictor choices
-        self.updateSelectedPredList()
+        if not self.filledSelectedPredList: self.updateSelectedPredList()
     
     def fillPredictorList(self):
         self.madePredictorList = True
@@ -75,7 +81,8 @@ class BasicGui(Chooser):
         after the number of point types has been changed.'''
         #-1 corresponds to human input, other nums are the index for a predictor
         #in predictor_name and predicted arrays
-        if add < 1 and deleted == []:
+        if not self.filledSelectedPredList:
+            self.filledSelectedPredList = True   # only need to do this once
             for i in range(0,self.imstack.point_kinds):
                 self.selectedPrediction.append(-1)
         else:
@@ -447,17 +454,28 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
+#        print "added:", self.added, '\tdeleted:', self.deleted
+#        print self.imstack.point
+#        print self.imstack.point_kinds, self.imstack.point_kind_list
+#        print 'selectedPrediction:', self.selectedPrediction
+        self.editedPointKinds = True    #used to tell implementors if the point kinds were edited
+        self.added = 0
+        self.deleted = []
         dialog_window = support.EditPointKinds(self.master,self.imstack.point_kind_list,
                                         'Edit Point Kinds')
         new_points, self.added, self.deleted = dialog_window.result
         
         self.imstack.deletePointKinds(self.deleted)
         self.imstack.addPointKinds(self.added)
+#        print "added:", self.added, '\tdeleted:', self.deleted
+#        print self.imstack.point
         self.imstack.get_point_kinds(List=new_points)
+#        print self.imstack.point_kinds, self.imstack.point_kind_list
         self.pointlist.delete(0,END)
         self.fillPointkindList()
         self.updateSelectedPredList(self.added,self.deleted)
-        self.master.quit()
+#        print 'selectedPrediction:', self.selectedPrediction
+        self.master.quit() 
         
     def predictorsOnOff(self,event=''):
         print "Window to turn Predictors on/off"
