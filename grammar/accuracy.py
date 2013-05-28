@@ -67,7 +67,7 @@ class Accuracy(Chooser):
             print 'y: ', self.y    
             #---------------------------------------------------------------------
 
-        #Print name for debugging purposes-------------------------
+        #Print name for debugging purposes-------------------------------------
         print 'self.name: ', self.name
         #--------------------------------------------------------------------- 
                
@@ -76,17 +76,20 @@ class Accuracy(Chooser):
             #Get distance between predicted and ground truth for pointkind 0
             dx = predicted[i,0,0] - stack.point[stack.current_frame,0,0]
             dy = predicted[i,0,1] - stack.point[stack.current_frame,0,1]
+            
+            #Print name for debugging purposes-------------------------------------
+            print 'dx: ', dx
+            print 'dy: ', dy
+            #--------------------------------------------------------------------- 
+            
             dist = (dx**2 + dy**2)**0.5
             self.y[i][stack.current_frame] = dist
+            
+            
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
         stack.next()
         self.numImagesTested += 1
-        
-        #Print current and total frames for debugging purposes--------------------
-        print 'numImagesTested: ', self.numImagesTested
-        print 'total frames: ', stack.total_frames
-        #-------------------------------------------------------------------------
         
         if self.numImagesTested == stack.total_frames: stack.exit = True
 
