@@ -62,6 +62,8 @@ class BasicGui(Chooser):
         for i in range(0,self.imstack.point_kinds):
             self.pointlist.insert(END,self.imstack.point_kind_list[i])
             if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
+        self.pointKind = 0
+        self.pointlist.selection_clear(0,END)
         self.pointlist.selection_set(0)
         #Fill the list of predictor choices
         if not self.filledSelectedPredList: self.updateSelectedPredList()
