@@ -118,7 +118,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     chooser.choose(imstack,predict_point,predictor_name)
     print 'exit chooser'
     if chooser.editedPointKinds:    
-        update_point_array(predict_point,chooser.added,chooser.deleted)
+        predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
     print 'predictor:', predictor
     print 'predict_point:\n', predict_point
 
@@ -135,7 +135,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         chooser.choose(imstack,predict_point,predictor_name)
         print 'exit chooser'
         if chooser.editedPointKinds:    
-            update_point_array(predict_point,chooser.added,chooser.deleted)
+            predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
         print 'predictor:', predictor
         print 'predict_point:\n', predict_point
         #Save points to file
@@ -149,7 +149,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
 
 
 def update_point_array(n_array,add,delete):
-    print add, delete
     if delete != []:
         #Delete Point information in predict_point for each index provided.
         temp = n_array.tolist()
@@ -161,7 +160,6 @@ def update_point_array(n_array,add,delete):
                     new_block.append(block[i])
             new.append(new_block)
         n_array = array(new)
-
     if add >= 1:
         #Add n new Point Kinds to predict_point.
         new = n_array.tolist()
@@ -169,6 +167,7 @@ def update_point_array(n_array,add,delete):
             for block in new:
                 block.append([0,0,0])
         n_array = array(new)
+    return n_array
 
 
 def find_subclasses(path,superclass):
