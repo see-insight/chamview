@@ -1,7 +1,7 @@
-0,Left front foot,250,156
-0,Right front foot,270,157
-0,Left back foot,203,180
-0,Right back foot,153,205
+0,Left front foot,0,0
+0,Right front foot,0,0
+0,Left back foot,0,0
+0,Right back foot,0,0
 0,Snout/Vent,0,0
 1,Left front foot,0,0
 1,Right front foot,0,0

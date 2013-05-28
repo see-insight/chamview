@@ -18,6 +18,10 @@ class Accuracy(Chooser):
         self.y = [] #Error from ground-truth
         self.name = [] #Name of predictor
         self.filledLists = False
+        self.numImagesTested = 0 #Keeps track of the number of images tested
+        
+        #Variable used to match with chamview.py requirements
+        self.editedPointKinds = False
 
     def teardown(self):
         
@@ -77,7 +81,12 @@ class Accuracy(Chooser):
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
         stack.next()
-        if stack.current_frame == stack.total_frames: stack.exit = True
+        self.numImagesTested += 1
         
-        return 0, []
+        #Print current and total frames for debugging purposes--------------------
+        print 'numImagesTested: ', self.numImagesTested
+        print 'total frames: ', stack.total_frames
+        #-------------------------------------------------------------------------
+        
+        if self.numImagesTested == stack.total_frames: stack.exit = True
 
