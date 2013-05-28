@@ -41,18 +41,32 @@ class Accuracy(Chooser):
 
     def choose(self,stack,predicted,predictor_name):
         
-        #Debugging purposes
+        #Debugging purposes--------------------------------------------------------
         print 'Running choose in Accuracy'
+        #--------------------------------------------------------------------------
         
         print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
+            
             self.filledLists = True
+            
             for name in predictor_name:
                 self.name.append(name)
+                          
             for i in range(0,len(self.name)):
                 self.x.append(arange(0,stack.total_frames,1))
                 self.y.append(zeros(stack.total_frames))
+                
+            #Print arrays for debugging purposes-------------------------
+            print 'x: ', self.x
+            print 'y: ', self.y    
+            #---------------------------------------------------------------------
+
+        #Print name for debugging purposes-------------------------
+        print 'self.name: ', self.name
+        #--------------------------------------------------------------------- 
+               
         #Get the accuracy of each predictor
         for i in range(0,len(self.name)):
             #Get distance between predicted and ground truth for pointkind 0
@@ -64,4 +78,6 @@ class Accuracy(Chooser):
         #that means that we're out of images)
         stack.next()
         if stack.current_frame == stack.total_frames: stack.exit = True
+        
+        return 0, []
 
