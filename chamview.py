@@ -110,26 +110,37 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         if guess != None:
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess  #ASK ABOUT [i,j] SYNTAX
+#    print 'predictor:', predictor
+#    print 'predict_point:\n', predict_point
 
     add = 0         # number of new point types added during cycle
     delete = []     # indices of point types deleted during cycle
     #Give this result to the chooser to get the initial ground-truth point
+    print 'call chooser'
     add, delete = chooser.choose(imstack,predict_point,predictor_name)
+    print 'exit chooser'
     predict_point = update_point_array(predict_point,add,delete)
+#    print 'predictor:', predictor
+#    print 'predict_point:\n', predict_point
 
+    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
-        print predict_point
         #Preprocess the ImageStack image
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
         #Give each predictor the current image stack and get a prediction back
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack)
         #Give this result to the chooser to get the "real" point
+        print 'call chooser'
         add, delete = chooser.choose(imstack,predict_point,predictor_name)
+        print 'exit chooser'
         predict_point = update_point_array(predict_point,add,delete)
+#        print 'predictor:', predictor
+#        print 'predict_point:\n', predict_point
         #Save points to file
         if argOutput != '': imstack.save_points(argOutput)
+    print 'EXIT loop'
 
     #Clear out any Chooser or Predictor data
     chooser.teardown()
