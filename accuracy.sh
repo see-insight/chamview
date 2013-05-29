@@ -1,2 +1,2 @@
 #!/bin/bash 
-./chamview.py -c Accuracy -d ./images/ -p output_points.txt
+./chamview.py -c Accuracy -d ./images/ -p images.txt
