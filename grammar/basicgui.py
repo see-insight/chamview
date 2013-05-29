@@ -273,14 +273,14 @@ class BasicGui(Chooser):
         self.pointlist.selection_clear(self.pointKind)
         self.pointKind = self.pointKind+1
         if self.pointKind > self.imstack.point_kinds-1:
-            self.pointKind = self.imstack.point_kinds-1
+            self.pointKind = 0
         self.updatePointKind()
 
     def decPointKind(self,event=''):
         self.pointlist.selection_clear(self.pointKind)
         self.pointKind = (self.pointKind-1)
         if self.pointKind < 0:
-            self.pointKind = 0
+            self.pointKind = self.imstack.point_kinds-1
         self.updatePointKind()
 
     def updatePointKind(self):
@@ -291,17 +291,22 @@ class BasicGui(Chooser):
         self.master.quit()
     
     def createKeyBindings(self):
-        #self.master.bind_all('t',self.decPointKind)
-        #self.master.bind_all('b',self.incPointKind)
+        self.master.bind_all('<Down>',self.incPointKind)
+        self.master.bind_all('<Up>',self.decPointKind)
+        self.master.bind_all('<s>',self.incPointKind)
+        self.master.bind_all('<w>',self.decPointKind)
         self.master.bind_all('<Left>',self.prev)
         self.master.bind_all('<Right>',self.next)
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
-        self.master.bind_all('<h>',self.togglePredictions)
+        self.master.bind_all('<Shift-p>',self.togglePredictions)
         self.master.bind_all('<q>',self.cycleSelectedPrediction)
         self.master.bind_all('<e>',self.cycleSelectedPrediction)
+        self.master.bind_all('<Button-3>',self.cycleSelectedPrediction)
         self.master.bind_all('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
+
+#****** Canvas and Point Drawing ******
 
     def onClick(self,event):
         '''Set the current pointkind's position in the current frame to the mouse
@@ -397,6 +402,8 @@ class BasicGui(Chooser):
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
             else:
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
+
+#****** Button functions ******
 
     def quit(self,event=''):
         '''Exit ChamView's main loop and destroy the GUI window'''
@@ -505,13 +512,14 @@ class BasicGui(Chooser):
         
     def cycleSelectedPrediction(self,event=''):
         '''Cycle through the predicted points to choose one to save as the point.'''
+        print event
         if not self.madePointkindList: return
         self.predlist.selection_clear(0,END)
         if(event.char=='q'):
             self.selectedPrediction[self.pointKind] -= 1
             if self.selectedPrediction[self.pointKind] < -1:
                 self.selectedPrediction[self.pointKind] = len(self.predicted)-1
-        elif(event.char=='e'):
+        elif(event.char=='e' or event.num==3):
             self.selectedPrediction[self.pointKind] += 1
             if self.selectedPrediction[self.pointKind] > len(self.predicted)-1:
                 self.selectedPrediction[self.pointKind] = -1
