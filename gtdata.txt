@@ -1,0 +1,20 @@
+0,Left front foot,231,12
+0,Right front foot,568,458
+0,Left back foot,410,259
+0,Right back foot,582,302
+0,Snout/Vent,698,205
+1,Left front foot,150,250
+1,Right front foot,189,152
+1,Left back foot,120,170
+1,Right back foot,522,360
+1,Snout/Vent,569,488
+2,Left front foot,487,500
+2,Right front foot,263,255
+2,Left back foot,188,152
+2,Right back foot,188,455
+2,Snout/Vent,100,250
+3,Left front foot,844,532
+3,Right front foot,788,988
+3,Left back foot,855,422
+3,Right back foot,158,942
+3,Snout/Vent,204,231
