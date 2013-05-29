@@ -93,7 +93,6 @@ class Kinematic(Predictor):
 			
 		else:
 			print 'YOU NEED AT LEAST 3 FRAMES OF POINTS TO PREDICT'
-			print '\n'
 			print ' GO TO FRAME 4 AND THEN PRESS PREDICT!!! '
 		
 
