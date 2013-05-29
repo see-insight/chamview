@@ -85,7 +85,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     imstack.load_img()
 
     #Load point kind and point position files
-    imstack.get_point_kinds(argPKind)
+    imstack._get_point_kinds(argPKind)
     if argPPos != '': imstack.load_points(argPPos)
 
     #Load the Chooser subclass instance
@@ -97,8 +97,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
 
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
-    predictor= [predictor[1]]
-    predictor_name= [predictor_name[1]]
+    #predictor= [predictor[1]]
+    #predictor_name= [predictor_name[1]]
 
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)

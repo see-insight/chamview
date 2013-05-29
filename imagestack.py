@@ -72,7 +72,7 @@ class ImageStack:
             self.single_img = True
         self.point = zeros((self.total_frames,self.point_kinds,2))
 
-    def get_point_kinds(self,filename='',List=[]):
+    def _get_point_kinds(self,filename='',List=[]):
         #Creates a list of valid point kinds read in from a file or a list of
         #string names of point kinds. Each line of the file should have a point 
         #kind (i.e. Left back foot) with any additional information separated by 
@@ -122,15 +122,12 @@ class ImageStack:
             self.point_kind_list.append(line_list[1])
         file_in.close()
 
-    def load_points(self,filename=''):
+    def load_points(self,filename):
         #Loads previous point data in from a file. Each line should be in the
         #format frame,point label,row,column. If the input file is legacy from
         #the old Chamview, it will be loaded appropriately
-        if filename == '': filename = 'images.txt'
         self.point = zeros((self.total_frames,self.point_kinds,2))
-        if os.path.exists(filename) == False: 
-            print 'RETURN!!!'
-            return
+        if os.path.exists(filename) == False: return
         file_in = open(filename)
         
         for line in file_in:
