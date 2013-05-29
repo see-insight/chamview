@@ -122,12 +122,12 @@ class BasicGui(Chooser):
         #Annotation frame
         self.aframe = Frame(self.frameL)
         self.aframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=15)
-        #Predict button
-        self.button_pred = Button(self.aframe,text='Predict',command=self.predict)
-        self.button_pred.grid(row=0,column=0,sticky=E)
         #Delete button
         self.button_del = Button(self.aframe,text='Delete',command=self.delete)
-        self.button_del.grid(row=0,column=1,sticky=W)
+        self.button_del.grid(row=0,column=0,sticky=E)
+        #Clear Point Kind button
+        self.button_clearp = Button(self.aframe,text='Clear Point',command=self.clearPointKind)
+        self.button_clearp.grid(row=0,column=1,sticky=W)
         #Clear Frame button
         self.button_clearf = Button(self.aframe,
                         text='Clear Frame',command=self.clearFrame)
@@ -439,12 +439,19 @@ class BasicGui(Chooser):
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
-        
+   
+    def clearPointKind(self,event=''):
+        for frame in self.imstack.point:
+            frame[self.pointKind] *= 0
+        self.drawCanvas()
+      
     def clearFrame(self,event=''):
-        print "Clear Frame"
+        self.imstack.point[self.imstack.current_frame] *= 0
+        self.drawCanvas()
         
     def clearAll(self,event=''):
-        print "Clear All"
+        self.imstack.point *= 0
+        self.drawCanvas()
         
     def new(self,event=''):
         print "New"
