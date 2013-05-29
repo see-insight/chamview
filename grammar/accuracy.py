@@ -2,6 +2,7 @@ from Grammar import Chooser
 import os
 from pylab import *
 import matplotlib.pyplot as plt
+import math
 
 class Accuracy(Chooser):
     """Can be used to find the difference between each Predictor and ground-truth
@@ -29,14 +30,6 @@ class Accuracy(Chooser):
         
         #Debugging purposes-------------------------------------------------------
         print 'Running teardown in Accuracy'
-        
-        '''plt.plot(x, x)
-        plt.plot(x, 2 * x)
-        plt.plot(x, 3 * x)
-        plt.plot(x, 4 * x)
-        plt.legend(['y = x', 'y = 2x', 'y = 3x', 'y = 4x'], loc='upper left')
-        plt.show()'''
-        
         #-------------------------------------------------------------------------
         
         #Go through each predictor
@@ -54,6 +47,10 @@ class Accuracy(Chooser):
             #ylabel('Error (pixels)')
             #title(self.name[i])
             plt.plot(self.x[i],self.z[i])
+            
+        title('Accuracy on Prediction')
+        xlabel('Frame')
+        ylabel('Accuracy')
         plt.legend(self.name)
         plt.show()
 
@@ -90,7 +87,12 @@ class Accuracy(Chooser):
                 self.y[pred][stack.current_frame] += dist
             
             #Compute the accuracy of predictor pred in current frame
-            self.z[pred][stack.current_frame] = 1 / self.y[pred][stack.current_frame]
+            
+            if math.isnan(self.y[pred][stack.current_frame]):
+                #Case when error is nan, then make it zero
+                self.z[pred][stack.current_frame] = 0
+            else:
+                self.z[pred][stack.current_frame] = 1 / self.y[pred][stack.current_frame]
             
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
@@ -98,17 +100,15 @@ class Accuracy(Chooser):
         self.numImagesTested += 1
         
         if self.numImagesTested == stack.total_frames: stack.exit = True
-        
-        #Print arrays for debugging purposes-------------------------
-        print 'x: ', self.x
-        print 'y: ', self.y    
-        print 'z: ', self.z
-        #---------------------------------------------------------------------
 
         #Print name for debugging purposes-------------------------------------
         print 'self.name: ', self.name
         print 'Current image: ', stack.current_frame
         print 'Predicted Points for current image\n', predicted
         print 'Ground truth data for current image\n', stack.point[stack.current_frame]
+    
+        print 'x:\n', self.x
+        print 'y:\n', self.y    
+        print 'z:\n', self.z        
         #--------------------------------------------------------------------- 
 
