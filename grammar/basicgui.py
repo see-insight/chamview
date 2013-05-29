@@ -58,13 +58,14 @@ class BasicGui(Chooser):
         self.master.mainloop()
 
     def fillPointkindList(self):
+        '''List each point kind in the point kind Listbox'''
         #We don't have to fill the list again after this
         self.madePointkindList = True
         #For every point kind in our imagestack, create an entry in the list
         #and bind the first 9 to the number keys on the keyboard
         for i in range(0,self.imstack.point_kinds):
             self.pointlist.insert(END,self.imstack.point_kind_list[i])
-            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
+#            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.pointKind = 0
         self.pointlist.selection_clear(0,END)
         self.pointlist.selection_set(0)
@@ -72,6 +73,7 @@ class BasicGui(Chooser):
         if not self.filledSelectedPredList: self.updateSelectedPredList()
     
     def fillPredictorList(self):
+        '''List each available predictor in the predictor Listbox'''
         self.madePredictorList = True
         for n in self.predictor_name:
             self.predlist.insert(END,n)
@@ -92,6 +94,7 @@ class BasicGui(Chooser):
                 self.selectedPrediction.append(-1)
 
     def createGui(self):
+        '''Create Tkinter GUI environment for chamview'''
         #Set up application window
         self.master.title('Tkinter GUI Chooser')
         self.master.protocol('WM_DELETE_WINDOW',self.quit)
@@ -124,18 +127,18 @@ class BasicGui(Chooser):
         self.aframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=15)
         #Delete button
         self.button_del = Button(self.aframe,text='Delete',command=self.delete)
-        self.button_del.grid(row=0,column=0,sticky=E)
+        self.button_del.grid(row=0,column=0,sticky='WE')
         #Clear Point Kind button
         self.button_clearp = Button(self.aframe,text='Clear Point',command=self.clearPointKind)
-        self.button_clearp.grid(row=0,column=1,sticky=W)
+        self.button_clearp.grid(row=0,column=1,sticky='WE')
         #Clear Frame button
         self.button_clearf = Button(self.aframe,
                         text='Clear Frame',command=self.clearFrame)
-        self.button_clearf.grid(row=1,column=0,sticky=E)
+        self.button_clearf.grid(row=1,column=0,sticky='WE')
         #Clear All button
         self.button_cleara = Button(self.aframe,
                         text='Clear All',command=self.clearAll)
-        self.button_cleara.grid(row=1,column=1,sticky=W)
+        self.button_cleara.grid(row=1,column=1,sticky='WE')
         #Save and Help frame
         self.shframe = Frame(self.frameL)
         self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=10)
@@ -294,16 +297,15 @@ class BasicGui(Chooser):
         self.master.bind_all('<Right>',self.next)
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
-        self.master.bind_all('<s>',self.predict)
         self.master.bind_all('<h>',self.togglePredictions)
-        self.master.bind_all('<z>',self.cycleSelectedPrediction)
-        self.master.bind_all('<x>',self.cycleSelectedPrediction)
+        self.master.bind_all('<q>',self.cycleSelectedPrediction)
+        self.master.bind_all('<e>',self.cycleSelectedPrediction)
         self.master.bind_all('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
 
     def onClick(self,event):
-        #Set the current pointkind's position in the current frame to the mouse
-        #position and redraw it
+        '''Set the current pointkind's position in the current frame to the mouse
+        position and redraw it.'''
         mouseX,mouseY = event.x/self.scale,event.y/self.scale
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = mouseX
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = mouseY
@@ -334,6 +336,7 @@ class BasicGui(Chooser):
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for
         if(self.imstack.current_frame == self.predictedFrame):
+            print 'drawPredictions'
             self.drawPredictions()
         #Draw the selected point for every point kind in this frame
         self.drawPoints()
@@ -377,10 +380,12 @@ class BasicGui(Chooser):
             else:
                 self.predlist.selection_set(cnt)
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
+        print self.selectedPrediction[self.pointKind]
+        print self.predicted
 
     def drawPoints(self):
-        #Draw the selected points in this frame. The current pointkind is in red
-        #and the other pointkinds are in green
+        '''Draw the selected points in this frame. The current pointkind is in red
+        and the other pointkinds are in green.'''
         rad = BasicGui.circle_radius
         for i in range(0,self.imstack.point_kinds):
             x = self.imstack.point[self.imstack.current_frame,i,0] * self.scale
@@ -394,31 +399,33 @@ class BasicGui(Chooser):
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
     def quit(self,event=''):
-        #Exit ChamView's main loop and destroy the GUI window
+        '''Exit ChamView's main loop and destroy the GUI window'''
         self.imstack.exit = True
         self.master.quit()
 
     def prev(self,event=''):
-        #Move the frame back by one and draw the correct image and points
+        '''Move the frame back by one and draw the correct image and points.'''
         self.imstack.prev()
         #if self.imstack.current_frame < 0:
         #    self.imstack.set_frame(0)
         #else:
         self.updatePhoto()
         self.drawCanvas()
+        self.predict()
 
     def next(self,event=''):
-        #Move the frame forward by one and draw the correct image and points
+        '''Move the frame forward by one and draw the correct image and points.'''
         self.imstack.next()
         #self.imif self.imstack.current_frame > self.imstack.total_frames-1:
         #    self.imstack.set_frame(self.imstack.total_frames-1)
         #else:
         self.updatePhoto()
         self.drawCanvas()
+        self.predict()
         
     def navigate(self,n,event=''):
-        #Move n frames away from current frame, 0 is the first frame in the
-        #image stack, -1 is the last frame
+        '''Move n frames away from current frame, 0 is the first frame in the
+        #image stack, -1 is the last frame.'''
         if n == 0:
             self.imstack.set_frame(0)
         elif n == -1:
@@ -426,30 +433,34 @@ class BasicGui(Chooser):
         else:
             self.imstack.advance_frame(n)
         self.updatePhoto()
-        self.drawCanvas()              
+        self.drawCanvas()
+        self.predict()
 
     def predict(self,event=''):
-        #Exit TKinter's update loop to control is given back to ChamView. After
+        #Exit TKinter's update loop, control is given back to ChamView. After
         #a prediction is made, choose() will be called and the window appears
         self.master.quit()
         
     def delete(self,event=''):
-        #Reset the clicked point if it's selected as active
+        '''Reset the clicked point if it's selected as active'''
         if self.selectedPrediction[self.pointKind] == -1:
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
    
     def clearPointKind(self,event=''):
+        '''Clear the selected point kind from all frames.'''
         for frame in self.imstack.point:
             frame[self.pointKind] *= 0
         self.drawCanvas()
       
     def clearFrame(self,event=''):
+        '''Clear all points on the current frame.'''
         self.imstack.point[self.imstack.current_frame] *= 0
         self.drawCanvas()
         
     def clearAll(self,event=''):
+        '''Clear all points from all frames.'''
         self.imstack.point *= 0
         self.drawCanvas()
         
@@ -463,10 +474,7 @@ class BasicGui(Chooser):
         print "Save As"
         
     def pointKindEdit(self,event=''):
-#        print "added:", self.added, '\tdeleted:', self.deleted
-#        print self.imstack.point
-#        print self.imstack.point_kinds, self.imstack.point_kind_list
-#        print 'selectedPrediction:', self.selectedPrediction
+        '''Window where the user can add and remove point kinds.'''
         self.editedPointKinds = True    #used to tell implementors if the point kinds were edited
         self.added = 0
         self.deleted = []
@@ -476,21 +484,18 @@ class BasicGui(Chooser):
         
         self.imstack.deletePointKinds(self.deleted)
         self.imstack.addPointKinds(self.added)
-#        print "added:", self.added, '\tdeleted:', self.deleted
-#        print self.imstack.point
         self.imstack.get_point_kinds(List=new_points)
-#        print self.imstack.point_kinds, self.imstack.point_kind_list
         self.pointlist.delete(0,END)
         self.fillPointkindList()
         self.updateSelectedPredList(self.added,self.deleted)
-#        print 'selectedPrediction:', self.selectedPrediction
         self.master.quit() 
         
     def predictorsInfo(self,event=''):
+        '''Window displaying accuracy info about each predictor.'''
         print "Window displaying information about predictors"
         
     def togglePredictions(self,event=''):
-        #Turn the drawing of predicted points on or off
+        '''Turn the drawing of predicted points on or off.'''
         self.showPredictions = not self.showPredictions
         if not self.showPredictions:
             for x in self.selectedPrediction:
@@ -499,13 +504,14 @@ class BasicGui(Chooser):
         self.drawCanvas()
         
     def cycleSelectedPrediction(self,event=''):
-        #Cycle through the predicted points to choose one as the next prediction
+        '''Cycle through the predicted points to choose one to save as the point.'''
         if not self.madePointkindList: return
-        if(event.char=='z'):
+        self.predlist.selection_clear(0,END)
+        if(event.char=='q'):
             self.selectedPrediction[self.pointKind] -= 1
             if self.selectedPrediction[self.pointKind] < -1:
                 self.selectedPrediction[self.pointKind] = len(self.predicted)-1
-        elif(event.char=='x'):
+        elif(event.char=='e'):
             self.selectedPrediction[self.pointKind] += 1
             if self.selectedPrediction[self.pointKind] > len(self.predicted)-1:
                 self.selectedPrediction[self.pointKind] = -1
@@ -513,19 +519,22 @@ class BasicGui(Chooser):
         if self.selectedPrediction[self.pointKind] == -1:
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
+        else:
+            self.predlist.selection_set(self.selectedPrediction[self.pointKind])
+            self.predlist.see(self.selectedPrediction[self.pointKind])
+            self.predlist.activate(self.selectedPrediction[self.pointKind])
         self.drawCanvas()
 
 
     def showHelp(self,event=''):
         #Shows basic usage information in a popup window
         message = ''
-        message += 'Previous/next image\t\ta/d\n'
-        message += 'Previous/next image\t\tL/R arrow\n'
-        message += 'Choose point kind\t\t1-9\n'
-        message += 'Choose point kind\t\tU/D arrow\n'
-        message += 'Calculate predictions\t\ts\n'
+        message += 'Previous/next image\t\ta/d or L/R arrow\n'
+#        message += 'Choose point kind\t\t1-9\n'
+        message += 'Choose point kind\t\ts/w or U/D arrow\n'
+#        message += 'Calculate predictions\t\ts\n'
         message += 'Toggle predictions\t\th\n'
-        message += 'Cycle chosen prediction\tz/x\n'
+        message += 'Cycle chosen prediction\tq/e\n'
         message += 'Delete selected point\t\t<Del>\n'
         tkMessageBox.showinfo("Chamview Help",message)
 
