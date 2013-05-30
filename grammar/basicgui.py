@@ -349,10 +349,6 @@ class BasicGui(Chooser):
     def togglePredictions(self,event=''):
         '''Turn the drawing of predicted points on or off.'''
         self.showPredictions = not self.showPredictions
-#        if not self.showPredictions:
-#            for x in self.selectedPredictions:
-#                x = -1 #-1 corresponds to human input
-#        self.drawCanvas()
         self.update_points()
         self.end_update_loop()
         
@@ -392,7 +388,6 @@ class BasicGui(Chooser):
         self.activePoint[0] = -1 #-1 corresponds to human choice
         self.activePoint[1] = mouseX
         self.activePoint[2] = mouseY
-#        self.drawCanvas()
         self.update_points()
         self.end_update_loop()
 
