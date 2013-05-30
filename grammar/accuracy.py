@@ -87,7 +87,7 @@ class Accuracy(Chooser):
         
         if self.numImagesTested == stack.total_frames: stack.exit = True
 
-        #Print name for debugging purposes-------------------------------------
+        #Print name for debugging purposes--------------------------------------
         print 'self.name: ', self.name
         print 'Current image: ', stack.current_frame
         print 'Predicted Points for current image\n', predicted
@@ -96,5 +96,4 @@ class Accuracy(Chooser):
         print 'x:\n', self.x
         print 'y:\n', self.y    
         print 'z:\n', self.z      
-        #--------------------------------------------------------------------- 
-
+        #-----------------------------------------------------------------------
