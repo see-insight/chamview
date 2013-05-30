@@ -70,7 +70,7 @@ class Accuracy(Chooser):
                 dy = predicted[pred,pKind,1] - stack.point[stack.current_frame,pKind,1]
             
                 dist = (dx**2 + dy**2)**0.5
-                self.y[pred][stack.current_frame] += dist
+                self.y[pred][stack.current_frame] += dist / stack.point_kinds
             
             #Compute the accuracy of predictor pred in current frame
             
@@ -86,14 +86,3 @@ class Accuracy(Chooser):
         self.numImagesTested += 1
         
         if self.numImagesTested == stack.total_frames: stack.exit = True
-
-        #Print name for debugging purposes--------------------------------------
-        print 'self.name: ', self.name
-        print 'Current image: ', stack.current_frame
-        print 'Predicted Points for current image\n', predicted
-        print 'Ground truth data for current image\n', stack.point[stack.current_frame]
-    
-        print 'x:\n', self.x
-        print 'y:\n', self.y    
-        print 'z:\n', self.z      
-        #-----------------------------------------------------------------------
