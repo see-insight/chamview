@@ -138,7 +138,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         #Give this result to the chooser to get the "real" point
 #        print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-        print 'imstack.point:\n', imstack.point
+#        print 'imstack.point:\n', imstack.point
 #        print 'exit chooser'
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
