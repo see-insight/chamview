@@ -177,6 +177,10 @@ class ImageStack:
             self.point[frame,kind_index,1] = column
         file_in.close()
         
+    def point_empty(self, frame, point_kind):
+        return (self.point[frame,point_kind,0] == 0 and 
+                    self.point[frame,point_kind,1] == 0)
+        
     def addPointKinds(self,n):
         '''Add n new Point Kinds to the image stack's numpy array of point information.'''
         temp_list = self.point.tolist()

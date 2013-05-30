@@ -73,10 +73,14 @@ class BasicGui(Chooser):
             self.added = 0
             self.deleted = []
             self.editedPointKinds = False
-        print self.imstack.current_frame
+    
+        #set activePoint[]
         self.activePoint[0] = self.selectedPredictions[self.pointKind]
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
+        
+        print self.activePoint
+        
         #Draw new frame and predictions
         self.drawCanvas()
         #Show the window and get user input
@@ -391,6 +395,12 @@ class BasicGui(Chooser):
         self.update()
 
     def drawCanvas(self):
+        if (self.selectedPredictions[self.pointKind] != -1 and
+        self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
+            x = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,0]
+            y = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,1]
+            self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
+            self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
         #Clear out any existing points
         self.canvas.delete('all')
         #If the photo hasn't been set yet then do so
@@ -404,9 +414,8 @@ class BasicGui(Chooser):
 #                            self.imstack.point[self.imstack.current_frame,self.pointKind,1])
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for and there is no point selected
-        if(self.imstack.current_frame == self.predictedFrame and
-        self.imstack.point[self.imstack.current_frame,self.pointKind,0] == 0 and
-        self.imstack.point[self.imstack.current_frame,self.pointKind,1] == 0):
+        if (self.imstack.current_frame == self.predictedFrame and
+        self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
             self.drawPredictions()
         #Draw the selected point for every point kind in this frame
         self.drawPoints()
