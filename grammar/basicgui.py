@@ -8,6 +8,26 @@ import basicgui_supportclasses as support
 
 
 class BasicGui(Chooser):
+    
+    '''----- Instance Variables ----
+    master                |
+    imstack               |
+    predicted             |
+    predictor_name        |
+    currentFrame          |
+    totalFrame            |
+    photo                 |
+    pointKind             |
+    added                 |
+    deleted[]             |
+    editedPointKinds      |
+    showPredictions       |
+    selectedPredictions[] |
+    activePrediction[]    |
+    madePointkindList     |
+    madePredictorList     |
+    filledSelectedPredList|
+    '''
 
     #Size of circles drawn onscreen
     circle_radius = 3
@@ -24,10 +44,11 @@ class BasicGui(Chooser):
         self.pointKind = 0
         self.added = 0      # number of new point types added during cycle
         self.deleted = []   # indices of point types deleted during cycle
-        self.editedPointKinds = False
+        self.editedPointKinds = False   # true if point kinds were edited in the update loop
         #Choosing a prediction to use
-        self.showPredictions = True
-        self.selectedPrediction = []
+        self.showPredictions = True     # yes or no to automatically show point predictions
+        self.selectedPredictions = []    # store where point came from last frame for each point kind (-1:user, 0 to # of predictors: predictor index)
+        self.activePrediction = [-1,0,0] # [predictor index, x, y] of selected predictor (to be stored in imstack.point if frame/point type is changed)
         #Intitialize GUI, but don't show it yet
         self.madePointkindList = False
         self.madePredictorList = False
@@ -274,12 +295,12 @@ class BasicGui(Chooser):
         if not self.filledSelectedPredList:
             self.filledSelectedPredList = True   # only need to do this once
             for i in range(0,self.imstack.point_kinds):
-                self.selectedPrediction.append(-1)
+                self.selectedPredictions.append(-1)
         else:
             for index in deleted:
-                del self.selectedPrediction[index]
+                del self.selectedPredictions[index]
             for n in range(add):
-                self.selectedPrediction.append(-1)
+                self.selectedPredictions.append(-1)
                 
     def predictorsInfo(self,event=''):
         '''Window displaying accuracy info about each predictor.'''
@@ -297,9 +318,9 @@ class BasicGui(Chooser):
         self.master.bind_all('<a>',self.prev)
         self.master.bind_all('<d>',self.next)
         self.master.bind_all('<Shift-p>',self.togglePredictions)
-        self.master.bind_all('<q>',self.cycleSelectedPrediction)
-        self.master.bind_all('<e>',self.cycleSelectedPrediction)
-        self.master.bind_all('<Button-3>',self.cycleSelectedPrediction)
+        self.master.bind_all('<q>',self.cyclePredictions)
+        self.master.bind_all('<e>',self.cyclePredictions)
+        self.master.bind_all('<Button-3>',self.cyclePredictions)
         self.master.bind_all('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
 
@@ -321,32 +342,31 @@ class BasicGui(Chooser):
         '''Turn the drawing of predicted points on or off.'''
         self.showPredictions = not self.showPredictions
 #        if not self.showPredictions:
-#            for x in self.selectedPrediction:
+#            for x in self.selectedPredictions:
 #                x = -1 #-1 corresponds to human input
         self.master.quit()
         self.drawCanvas()
         
-    def cycleSelectedPrediction(self,event=''):
+    def cyclePredictions(self,event=''):
         '''Cycle through the predicted points to choose one to save as the point.'''
-        print event
         if not self.madePointkindList: return
         self.predlist.select_clear(0,END)
         if(event.char=='q'):
-            self.selectedPrediction[self.pointKind] -= 1
-            if self.selectedPrediction[self.pointKind] < -1:
-                self.selectedPrediction[self.pointKind] = len(self.predicted)-1
+            self.selectedPredictions[self.pointKind] -= 1
+            if self.selectedPredictions[self.pointKind] < -1:
+                self.selectedPredictions[self.pointKind] = len(self.predicted)-1
         elif(event.char=='e' or event.num==3):
-            self.selectedPrediction[self.pointKind] += 1
-            if self.selectedPrediction[self.pointKind] > len(self.predicted)-1:
-                self.selectedPrediction[self.pointKind] = -1
+            self.selectedPredictions[self.pointKind] += 1
+            if self.selectedPredictions[self.pointKind] > len(self.predicted)-1:
+                self.selectedPredictions[self.pointKind] = -1
         #Reset the clicked point if it's selected as active (MAY REPLACE W/ DELETE FUNC)
-        if self.selectedPrediction[self.pointKind] == -1:
+        if self.selectedPredictions[self.pointKind] == -1:
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         else:
-            self.predlist.select_set(self.selectedPrediction[self.pointKind])
-#            self.predlist.see(self.selectedPrediction[self.pointKind])
-            self.predlist.activate(self.selectedPrediction[self.pointKind])
+            self.predlist.select_set(self.selectedPredictions[self.pointKind])
+#            self.predlist.see(self.selectedPredictions[self.pointKind])
+            self.predlist.activate(self.selectedPredictions[self.pointKind])
         self.drawCanvas()
 
 #****** Canvas and Point Drawing ******
@@ -357,15 +377,15 @@ class BasicGui(Chooser):
         mouseX,mouseY = event.x/self.scale,event.y/self.scale
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = mouseX
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = mouseY
-        self.selectedPrediction[self.pointKind] = -1 #-1 corresponds to human choice
+        self.selectedPredictions[self.pointKind] = -1 #-1 corresponds to human choice
         self.master.quit()
         self.drawCanvas()
 
     def drawCanvas(self):
         #If we're using a predictor to set the selected point, then set it
-        if (self.selectedPrediction[self.pointKind] != -1 and 
+        if (self.selectedPredictions[self.pointKind] != -1 and 
                 self.imstack.current_frame == self.predictedFrame):
-            i = self.selectedPrediction[self.pointKind]
+            i = self.selectedPredictions[self.pointKind]
             x = self.predicted[i][self.pointKind,0]
             y = self.predicted[i][self.pointKind,1]
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
@@ -382,8 +402,10 @@ class BasicGui(Chooser):
                             self.imstack.point[self.imstack.current_frame,self.pointKind,0],
                             self.imstack.point[self.imstack.current_frame,self.pointKind,1])
         #Draw predictions of the current point kind in yellow if we're on the
-        #frame that the predictions are for
-        if(self.imstack.current_frame == self.predictedFrame):
+        #frame that the predictions are for and there is no point selected
+        if(self.imstack.current_frame == self.predictedFrame and
+        self.imstack.point[self.imstack.current_frame,self.pointKind,0] == 0 and
+        self.imstack.point[self.imstack.current_frame,self.pointKind,1] == 0):
             self.drawPredictions()
         #Draw the selected point for every point kind in this frame
         self.drawPoints()
@@ -416,10 +438,10 @@ class BasicGui(Chooser):
             y = pred[self.pointKind,1] * self.scale
             conf = pred[self.pointKind,2]
             color='yellow'
-            if self.selectedPrediction[self.pointKind] == -1:
+            if self.selectedPredictions[self.pointKind] == -1:
                     color='yellow'
             else:
-                if cnt == self.selectedPrediction[self.pointKind]: 
+                if cnt == self.selectedPredictions[self.pointKind]: 
                     color='blue'
             #If it didn't return a point, don't draw anything
             if x == 0 and y == 0 and conf == 0: 
@@ -428,7 +450,7 @@ class BasicGui(Chooser):
             else:
                 self.predlist.select_set(cnt)
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
-        print self.selectedPrediction[self.pointKind]
+        print self.selectedPredictions[self.pointKind]
         print self.predicted
 
     def drawPoints(self):
@@ -507,7 +529,7 @@ class BasicGui(Chooser):
         
     def delete(self,event=''):
         '''Reset the clicked point if it's selected as active'''
-        if self.selectedPrediction[self.pointKind] == -1:
+        if self.selectedPredictions[self.pointKind] == -1:
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
