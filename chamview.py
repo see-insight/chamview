@@ -97,11 +97,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
 
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
+<<<<<<< HEAD
     
     #Picking only some predictors for debugging purposes------------------------
     predictor= [predictor[0], predictor[1], predictor[3]]
     predictor_name= [predictor_name[0], predictor_name[1], predictor_name[3]]
     #---------------------------------------------------------------------------
+=======
+    del predictor[2:]
+    del predictor_name[2:]
+>>>>>>> 5dcc342d40636d1e3298a22f479f17e2f997f903
 
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
@@ -112,7 +117,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         guess = predictor[i].setup(imstack)
         if guess != None:
             for j in range(0,imstack.point_kinds):
-                predict_point[i,j] = guess  #ASK ABOUT [i,j] SYNTAX
+                predict_point[i,j] = guess
+
+    print imstack.point
 #    print 'predictor:', predictor
 #    print 'predict_point:\n', predict_point
 
@@ -136,6 +143,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         #Give this result to the chooser to get the "real" point
 #        print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
+        print imstack.point
 #        print 'exit chooser'
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)

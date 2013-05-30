@@ -2,8 +2,7 @@
 is computed
 Input: A stack of images, ground truth data, and a predictor
 Output: A list that shows the error of predictor
-Initially it computes the Euclidean distance between predicted points
-and ground truth data'''
+'''
 
 from Grammar import Chooser
 import os
@@ -12,8 +11,7 @@ from pylab import *
 class Performance(Chooser):
     
     """Can be used to find the difference between each Predictor and ground-truth
-    points. Outputs the difference (in pixels) to file and displays a graph. Only
-    uses the first pointkind on file.
+    points. Outputs the difference (in pixels) to file and displays a graph.
     Usage: ./chamview.py -c Performance -d <image directory> -p <ground truth file>
     
     """
