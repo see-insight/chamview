@@ -73,6 +73,7 @@ class BasicGui(Chooser):
             self.added = 0
             self.deleted = []
             self.editedPointKinds = False
+        print self.imstack.current_frame
         self.activePoint[0] = self.selectedPredictions[self.pointKind]
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
@@ -362,14 +363,19 @@ class BasicGui(Chooser):
             self.activePoint[0] += 1
             if self.activePoint[0] > len(self.predicted)-1:
                 self.activePoint[0] = -1
-        # store predicted coordinates in activePoint
-        self.activePoint[1] = self.predicted[self.activePoint[0]][self.pointKind,0]
-        self.activePoint[1] = self.predicted[self.activePoint[0]][self.pointKind,1]
+
         if self.activePoint[0] != -1:
+            # store predicted coordinates in activePoint
+            self.activePoint[1] = self.predicted[self.activePoint[0]][self.pointKind,0]
+            self.activePoint[2] = self.predicted[self.activePoint[0]][self.pointKind,1]
             self.predlist.select_set(self.activePoint[0])
 #            self.predlist.see(self.activePoint[0])
             self.predlist.activate(self.activePoint[0])
-        self.selectedPredictions[self.pointKind] = -1
+        else:
+            # no prediction or point data stored
+            self.activePoint[1] = 0
+            self.activePoint[2] = 0
+
         self.delete()   # clear saved data for point because predictions are being examined
 
 #****** Canvas and Point Drawing ******
@@ -533,10 +539,10 @@ class BasicGui(Chooser):
         self.master.quit()
         
     def delete(self,event=''):
-        '''Reset the clicked point if it's selected as active'''
-        if self.selectedPredictions[self.pointKind] == -1:
-            self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
-            self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
+        '''Reset the selected point.'''
+        self.selectedPredictions[self.pointKind] = -1
+        self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
+        self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.drawCanvas()
    
     def clearPointKind(self,event=''):
