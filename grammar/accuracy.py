@@ -13,10 +13,6 @@ class Accuracy(Chooser):
 
     def setup(self):     
         
-        #Debugging purposes-----------------------------------------------------
-        print 'Running setup in Accuracy'
-        #-----------------------------------------------------------------------
-        
         self.x = [] #Frame number
         self.y = [] #Error from ground-truth
         self.z = [] #Contains the accuracy(a number between 0 and 1)
@@ -28,11 +24,6 @@ class Accuracy(Chooser):
         self.editedPointKinds = False
 
     def teardown(self):
-        
-        #Debugging purposes-------------------------------------------------------
-        print 'Running teardown in Accuracy'
-        #-------------------------------------------------------------------------
-        
         #Go through each predictor
         for i in range(0,len(self.name)):
             
@@ -42,26 +33,20 @@ class Accuracy(Chooser):
                 fo.write(str(self.x[i][j]).zfill(4)+','+str(self.z[i][j])+'\n')
             fo.close()
             
-            #Plot the error vs frame graph
-            #figure()
-            #xlabel('Frames')
-            #ylabel('Error (pixels)')
-            #title(self.name[i])
+            #Plot the accuracy for current predictor
             plt.plot(self.x[i],self.z[i])
-            
+        
+        #Declare other features for graph
         title('Accuracy on Prediction')
         xlabel('Frame')
         ylabel('Accuracy')
         plt.legend(self.name)
         plt.show()
-
+        
     def choose(self,stack,predicted,predictor_name):
         
-        #Debugging purposes--------------------------------------------------------
-        print 'Running choose in Accuracy'
-        #--------------------------------------------------------------------------
+        print 'Current Frame:'+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         
-        print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
             
@@ -94,7 +79,7 @@ class Accuracy(Chooser):
                 self.z[pred][stack.current_frame] = 0
             else:
                 self.z[pred][stack.current_frame] = 1 / self.y[pred][stack.current_frame]
-            
+   
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
         stack.next()
@@ -110,6 +95,6 @@ class Accuracy(Chooser):
     
         print 'x:\n', self.x
         print 'y:\n', self.y    
-        print 'z:\n', self.z        
+        print 'z:\n', self.z      
         #--------------------------------------------------------------------- 
 
