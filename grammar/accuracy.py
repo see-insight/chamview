@@ -13,8 +13,9 @@ class Accuracy(Chooser):
 
     def setup(self):     
         
-        #Debugging purposes
+        #Debugging purposes-----------------------------------------------------
         print 'Running setup in Accuracy'
+        #-----------------------------------------------------------------------
         
         self.x = [] #Frame number
         self.y = [] #Error from ground-truth
