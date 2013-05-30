@@ -79,8 +79,6 @@ class BasicGui(Chooser):
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
         
-        print self.activePoint
-        
         #Draw new frame and predictions
         self.drawCanvas()
         #Show the window and get user input
@@ -466,9 +464,6 @@ class BasicGui(Chooser):
             else:
                 self.predlist.select_set(cnt)
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
-        print self.activePoint
-        print self.selectedPredictions[self.pointKind]
-        print self.predicted
 
     def drawPoints(self):
         '''Draw the selected points in this frame. The current pointkind is in red
@@ -550,6 +545,7 @@ class BasicGui(Chooser):
     def end_update_loop(self):
         '''Exit TKinter's update loop, control is given back to ChamView. 
         After a prediction is made, choose() will be called and the window appears'''
+        self.activePoint = [-1,0,0]
         self.master.quit()
         
     def delete(self,event=''):
