@@ -45,7 +45,7 @@ class Accuracy(Chooser):
         
     def choose(self,stack,predicted,predictor_name):
         
-        print 'Current Frame:'+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
+        #print 'Current Frame:'+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
