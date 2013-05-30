@@ -274,7 +274,8 @@ class BasicGui(Chooser):
         self.pointlist.select_set(self.pointKind)
         self.pointlist.see(self.pointKind)
         self.pointlist.activate(self.pointKind)
-        self.update()
+        self.update_points()
+        self.end_update_loop()
         
     def pointKindEdit(self,event=''):
         '''Window where the user can add and remove point kinds.'''
@@ -291,7 +292,8 @@ class BasicGui(Chooser):
         self.pointlist.delete(0,END)
         self.fillPointkindList()
         self.updateSelectedPredList(self.added,self.deleted)
-        self.update() 
+        self.update_points()
+        self.end_update_loop() 
 
 #****** Predictor List Functions ******
 
@@ -353,7 +355,8 @@ class BasicGui(Chooser):
 #            for x in self.selectedPredictions:
 #                x = -1 #-1 corresponds to human input
 #        self.drawCanvas()
-        self.update()
+        self.update_points()
+        self.end_update_loop()
         
     def cyclePredictions(self,event=''):
         '''Cycle through the predicted points to choose one to save as the point.'''
@@ -392,13 +395,16 @@ class BasicGui(Chooser):
         self.activePoint[1] = mouseX
         self.activePoint[2] = mouseY
 #        self.drawCanvas()
-        self.update()
+        self.update_points()
+        self.end_update_loop()
 
     def drawCanvas(self):
         if (self.selectedPredictions[self.pointKind] != -1 and
         self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
             x = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,0]
             y = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,1]
+            self.activePoint[1] = x
+            self.activePoint[2] = y
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
         #Clear out any existing points
@@ -483,27 +489,24 @@ class BasicGui(Chooser):
 
     def prev(self,event=''):
         '''Move the frame back by one and draw the correct image and points.'''
+        self.update_points()
         self.imstack.prev()
-        #if self.imstack.current_frame < 0:
-        #    self.imstack.set_frame(0)
-        #else:
         self.updatePhoto()
         self.drawCanvas()
-        self.update()
+        self.end_update_loop()
 
     def next(self,event=''):
         '''Move the frame forward by one and draw the correct image and points.'''
+        self.update_points()
         self.imstack.next()
-        #self.imif self.imstack.current_frame > self.imstack.total_frames-1:
-        #    self.imstack.set_frame(self.imstack.total_frames-1)
-        #else:
         self.updatePhoto()
         self.drawCanvas()
-        self.update()
+        self.end_update_loop()
         
     def navigate(self,n,event=''):
         '''Move n frames away from current frame, 0 is the first frame in the
         #image stack, -1 is the last frame.'''
+        self.update_points()
         if n == 0:
             self.imstack.set_frame(0)
         elif n == -1:
@@ -512,10 +515,11 @@ class BasicGui(Chooser):
             self.imstack.advance_frame(n)
         self.updatePhoto()
         self.drawCanvas()
-        self.update()
+        self.end_update_loop()
         
     def gotoFrame(self,event=''):
         '''Use frame count label to go to a specific frame.'''
+        self.update_points()
         try:
             frame=int(float(self.currentFrame.get())-1)
         except ValueError:
@@ -531,12 +535,10 @@ class BasicGui(Chooser):
         self.imstack.set_frame(frame)
         self.updatePhoto()
         self.drawCanvas()
-        self.update()
+        self.end_update_loop()
 
-    def update(self,event=''):
+    def update_points(self):
         '''Update self.imstack.point array.'''
-        #Then exit TKinter's update loop, control is given back to ChamView. 
-        #After a prediction is made, choose() will be called and the window appears
         i = self.activePoint[0]
         x = self.activePoint[1]
         y = self.activePoint[2]
@@ -544,7 +546,10 @@ class BasicGui(Chooser):
         self.selectedPredictions[self.pointKind] = i
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
-        
+    
+    def end_update_loop(self):
+        '''Exit TKinter's update loop, control is given back to ChamView. 
+        After a prediction is made, choose() will be called and the window appears'''
         self.master.quit()
         
     def delete(self,event=''):
@@ -593,7 +598,9 @@ class BasicGui(Chooser):
     def quit(self,event=''):
         '''Exit ChamView's main loop and destroy the GUI window'''
         self.imstack.exit = True
-        self.update()
+        self.update_points()
+        self.end_update_loop()
+        
 
 
 

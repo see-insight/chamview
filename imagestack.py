@@ -178,6 +178,8 @@ class ImageStack:
         file_in.close()
         
     def point_empty(self, frame, point_kind):
+        '''Return true if the x,y coordinates for the given point kind on the 
+        given frame are (0,0).'''
         return (self.point[frame,point_kind,0] == 0 and 
                     self.point[frame,point_kind,1] == 0)
         
