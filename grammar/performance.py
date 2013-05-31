@@ -4,6 +4,7 @@ import os
 from pylab import *
 import matplotlib.pyplot as plt
 from decimal import *
+from mpl_toolkits.mplot3d import axes3d
 #from mayavi.mlab import *
 
 '''This file implements classes where the performance of predictors
@@ -34,7 +35,7 @@ class Performance(Chooser):
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
         self.upperB = 16 #Max number of pixels that we care about for error
-        self.tpBound = 100 #Bound to split True Positives and False Negatives
+        self.tpBound = 15 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
         #Variables used to match with chamview.py requirements
@@ -56,12 +57,13 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Show results in text files and in graphs
-        #self.showErrorByFrame()
-        #self.showErrorByPointKind()
-        #self.showAccuracy()
-        #self.showAccuracyConfidence()
-        #self.showErrorEachPointK()
+        self.showErrorByFrame()
+        self.showErrorByPointKind()
+        self.showAccuracy()
+        self.showAccuracyConfidence()
+        self.showErrorEachPointK()
         self.showROC()
+        #self.showError3D()
         
         
 
@@ -144,7 +146,7 @@ class Performance(Chooser):
             for j in range(0,self.x[i].shape[0]):
                 fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             fo.close()
-            
+                        
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
             
@@ -386,7 +388,22 @@ class Performance(Chooser):
         ylabel('True Positive Rate')
         plt.legend(self.name)
         plt.show()          
-                        
+      
+    def showError3D(self):
+        
+        print 'Plot errors given image list and point kind'
+        
+        for i in range(0,len(self.y)):
+            
+            #Define arrays for x and y axis
+            xPlot = arange(0,len(self.y[0]),1)
+            yPlot = arange(0,len(self.y[0][0]),1)
+            
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            #X, Y, Z = axes3d.get_test_data(0.05)
+            ax.plot_wireframe(xPlot, yPlot, self.y[i], rstride=10, cstride=10)
+            plt.show()                  
 
     def computeErrorByFrame(self):
         
