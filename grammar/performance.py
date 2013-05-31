@@ -3,6 +3,7 @@ from Grammar import Chooser
 import os
 from pylab import *
 import matplotlib.pyplot as plt
+from decimal import *
 #from mayavi.mlab import *
 
 '''This file implements classes where the performance of predictors
@@ -33,6 +34,7 @@ class Performance(Chooser):
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
         self.upperB = 16 #Max number of pixels that we care about for error
+        self.tpBound = 100 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
         #Variables used to match with chamview.py requirements
@@ -54,11 +56,12 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Show results in text files and in graphs
-        self.showErrorByFrame()
-        self.showErrorByPointKind()
-        self.showAccuracy()
-        self.showAccuracyConfidence()
-        self.showErrorEachPointK()
+        #self.showErrorByFrame()
+        #self.showErrorByPointKind()
+        #self.showAccuracy()
+        #self.showAccuracyConfidence()
+        #self.showErrorEachPointK()
+        self.showROC()
         
         
 
@@ -313,6 +316,77 @@ class Performance(Chooser):
         ylabel('Accuracy * Confidence')
         plt.legend(self.name)
         plt.show()     
+        
+    def showROC(self):
+        
+        print 'Plot ROC curve to detect which predictors are better'
+        
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
+        
+        for pred in range(0,len(self.y)):
+            
+            numTP = 0
+            numFP = 0
+            
+            #Here we count the number of True positives and False positives
+            for frame in range(0,len(self.y[0])):
+                for pointK in range(0,len(self.y[0][0])):
+                    if self.y[pred][frame][pointK] <= self.tpBound:
+                        numTP += 1
+                    else:
+                        numFP += 1
+            
+            #Define the units for true positives and false positives
+            if numTP > 0:
+                tpUnit = 1 / Decimal(numTP) 
+            else:
+                tpUnit = 0.0000001
+            if numFP > 0:
+                fpUnit = 1 / Decimal(numFP)
+            else:
+                fpUnit = 0.0000001
+            
+            
+            #Debugging purposes-------------------------------------------------
+            print 'Predictor: ',pred
+            print 'numTP: ', numTP
+            print 'numFP: ', numFP
+            print 'tpUnit: ',tpUnit
+            print 'fpUnit: ', fpUnit
+            #-------------------------------------------------------------------
+            
+            #Define arrays that are our x and y axis
+            xPlot = arange(0,1 + fpUnit,fpUnit) 
+            yPlot = zeros(len(xPlot))
+            
+            #Define a variable that know what is the current TP rate
+            TPrate = 0
+            
+            itr = 0
+            #Here we compute the TPrate and FPrate and then plot it
+            for frame in range(0,len(self.y[0])):
+                for pointK in range(0,len(self.y[0][0])):
+                    if self.y[pred][frame][pointK] <= self.tpBound:
+                        #Add to True Positives
+                        TPrate += tpUnit
+                        yPlot[itr] = TPrate
+                    else:
+                        #Add to False Negatives
+                        itr += 1
+                        yPlot[itr] = TPrate
+            
+                        
+            #Plot the error in the subplot
+            plt.plot(xPlot, yPlot)
+            
+        title('ROC Curve')
+        xlabel('False Positive Rate')
+        ylabel('True Positive Rate')
+        plt.legend(self.name)
+        plt.show()          
+                        
 
     def computeErrorByFrame(self):
         
