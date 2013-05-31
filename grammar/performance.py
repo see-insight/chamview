@@ -1,78 +1,288 @@
-'''This file implements a class where the performance of predictors
-is computed
-Input: A stack of images, ground truth data, and a predictor
-Output: A list that shows the error of predictor
-Initially it computes the Euclidean distance between predicted points
-and ground truth data'''
-
+# -*- coding: utf-8 -*-
 from Grammar import Chooser
 import os
 from pylab import *
+import matplotlib.pyplot as plt
+
+'''This file implements classes where the performance of predictors
+is computed using different techniques.
+Input: A stack of images, ground truth data, and a predictor
+Output: A list and graphs that shows the performance of predictors
+'''
 
 class Performance(Chooser):
+    '''It is used to compute the error of predictions and ground-truth points. It
+    outpus the difference (in pixels) to file and displays a graph.
+    The error is according frames or according kind_point.
+    Usage: ./chamview.py -c Error -d <image directory> -p <ground truth file>
+    '''
     
-    #Testing if performance file works
-    print 'Hello- YOU ARE RUNNING THE PERFORMANCE CLASS'
-    
-    """Can be used to find the difference between each Predictor and ground-truth
-    points. Outputs the difference (in pixels) to file and displays a graph. Only
-    uses the first pointkind on file.
-    Usage: ./chamview.py -c Performance -d <image directory> -p <ground truth file>
-    
-    """
-
-    def setup(self):
-        print 'Running_setup_method_in_Performance'
-        '''
+    def setup(self):     
+        
         self.x = [] #Frame number
+        self.errorKindX = [] #Kind point number
         self.y = [] #Error from ground-truth
+        self.errorFrame = [] #Error compute by frame
+        self.confidence = [] #Multidimensional array that saves the confidence
+        
         self.name = [] #Name of predictor
+        
         self.filledLists = False
-        '''
+        self.numImagesTested = 0 #Keeps track of the number of images tested
+        self.className = 'Performance' #The name of this class
+        self.upperB = 16 #Max number of pixels that we care about for error
+        
+        #Variable used to match with chamview.py requirements
+        self.editedPointKinds = False
 
     def teardown(self):
-        print 'Running_teardown_method_in_Performance'
-        '''
-        #Go through each predictor
-        for i in range(0,len(self.name)):
-            #Save data to file
-            fo = open('accuracy_'+self.name[i]+'.txt','w')
-            for j in range(0,self.x[i].shape[0]):
-                fo.write(str(self.x[i][j]).zfill(4)+','+str(self.y[i][j])+'\n')
-            fo.close()
-            #Plot the error vs frame graph
-            figure()
-            xlabel('Frames')
-            ylabel('Error (pixels)')
-            title(self.name[i])
-            plot(self.x[i],self.y[i])
-        show()
-        '''
+        
+        #Print current informaction for debugging purposes----------------------
+        print 'self.name: ', self.name
+        print 'x:\n', self.x
+        print 'y:\n', self.y     
+        print 'errorKindX:\n', self.errorKindX   
+        #----------------------------------------------------------------------- 
+
+        #Compute the error by frame for each predictor to plot results in
+        #different ways
+        self.computeErrorByFrame()
+        
+        #Show results in text files and in graphs
+        self.showErrorByFrame(1)
+        self.showErrorByPointKind(2)
+        self.showAccuracy(3)
+        self.showAccuracyConfidence(4)
+        
+        
 
     def choose(self,stack,predicted,predictor_name):
-        
-        #Print something for debugging purposes
-        print 'Running_choose_method_in_Performance'
-        
-        
+    
+        #Print the frame number that we are working with
         print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
+        
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
+            
             self.filledLists = True
-            for name in predictor_name:
-                self.name.append(name)
+                    
+            self.name = predictor_name
+            
             for i in range(0,len(self.name)):
                 self.x.append(arange(0,stack.total_frames,1))
-                self.y.append(zeros(stack.total_frames))
+                self.errorKindX.append(arange(0,stack.point_kinds,1))
+
+            #A 3-dimensional array for error
+            #1.- predictor, 2.- frame, 3.- point kind
+            self.y = zeros((len(self.name), stack.total_frames, stack.point_kinds))
+            
+            #A 3-dimensional array for confidence in predictions
+            #1.- predictor, 2.- frame, 3.- point kind
+            self.confidence = zeros((len(self.name), stack.total_frames, stack.point_kinds))
+
         #Get the accuracy of each predictor
-        for i in range(0,len(self.name)):
-            #Get distance between predicted and ground truth for pointkind 0
-            dx = predicted[i,0,0] - stack.point[stack.current_frame,0,0]
-            dy = predicted[i,0,1] - stack.point[stack.current_frame,0,1]
-            dist = (dx**2 + dy**2)**0.5
-            self.y[i][stack.current_frame] = dist
+        for pred in range(0,len(self.name)):
+            
+            #Add the accuracy given for each pointkind
+            for pKind in range(0,stack.point_kinds):
+                
+                #Get distance between predicted and ground truth
+                dx = predicted[pred, pKind, 0] - stack.point[stack.current_frame,pKind,0]
+                dy = predicted[pred, pKind, 1] - stack.point[stack.current_frame,pKind,1]
+            
+                dist = (dx**2 + dy**2)**0.5
+                
+                #Add the distance error to the matrix y 
+                self.y[pred][stack.current_frame][pKind] = dist
+                #Add confidence of prediction
+                self.confidence[pred][stack.current_frame][pKind] = predicted[pred, pKind, 2]
+            
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
         stack.next()
-        if stack.current_frame == stack.total_frames: stack.exit = True
+        self.numImagesTested += 1
         
+        if self.numImagesTested == stack.total_frames: stack.exit = True
+        
+        #Printing information for debugging purposes----------------------------
+        print 'Current image: ', stack.current_frame
+        print 'Predicted Points for current image\n', predicted
+        print 'Ground truth data for current image\n', stack.point[stack.current_frame]
+        #-----------------------------------------------------------------------
+            
+    def showErrorByFrame(self, numFigure):
+        
+        print 'Plot graph of errors in predictors by frames'
+        
+        #Define a initial figure
+        plt.figure(numFigure)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            #Get the error by frame array at position i
+            yPlot = zeros(len(self.errorFrame[i]))
+            for j in range(0,len(yPlot)):            
+                yPlot[j] = self.errorFrame[i][j]
+            
+            #Cut error by a given upper bound
+            yPlot = self.cutArray(yPlot, self.upperB)
+            
+            #Save data to file
+            fo = open('Error_byFrame_'+self.name[i]+'.txt','w')
+            for j in range(0,self.x[i].shape[0]):
+                fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
+            fo.close()
+            
+            #Plot the error in the subplot
+            plt.plot(self.x[i],yPlot)
+            
+        title('Error on Prediction')
+        xlabel('Frame')
+        ylabel('Number of Pixels')
+        plt.legend(self.name)
+        plt.show()
+        
+    def showErrorByPointKind(self, numFigure):
+
+        print 'Plot graph of errors in predictors by point kinds'
+        
+        #Define a new figure
+        plt.figure(numFigure)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+        
+            #An array that contains the averages of errors by point kind
+            yPlot = zeros(len(self.y[i][0]))
+            
+            for pointK in range(0,len(yPlot)):
+                for frame in range(0,len(self.y[i])):
+                    yPlot[pointK] += sum(self.y[i][frame][pointK])
+            #Divide over the number of frames
+            yPlot = yPlot / len(self.y[i])  
+        
+        
+            #Cut error by a given upper bound
+            yPlot = self.cutArray(yPlot, self.upperB)    
+                                      
+            #Save data to file
+            fo = open('Error_byPointKind_'+self.name[i]+'.txt','w')
+            for j in range(0,self.errorKindX[i].shape[0]):
+                fo.write(str(self.errorKindX[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
+            fo.close()
+        
+            #Plot the error in the subplot
+            plt.plot(self.errorKindX[i],yPlot)
+            
+        title('Error on Prediction')
+        xlabel('Point Kind')
+        ylabel('Number of Pixels')
+        plt.legend(self.name)
+        
+        plt.show()
+        
+        
+    def showAccuracy(self, numFigure):
+        
+        print 'Plot graph for accuracy in predictors by frames'
+        
+        #Define a initial figure
+        plt.figure(numFigure)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            #Get the error by frame array at position i
+            yPlot = self.errorFrame[i]
+            
+            #Add one to the errors in order to get inverse
+            yPlot = yPlot + 1
+            #Take the inverse of the result
+            yPlot = yPlot ** -1
+            
+            #Save data to file
+            fo = open('Accuracy_byFrame_'+self.name[i]+'.txt','w')
+            for j in range(0,self.x[i].shape[0]):
+                fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
+            fo.close()
+            
+            #Plot the error in the subplot
+            plt.plot(self.x[i], yPlot)
+            
+        title('Accuracy on Prediction')
+        xlabel('Frame')
+        ylabel('Accuracy')
+        plt.legend(self.name)
+        plt.show()
+        
+    def showAccuracyConfidence(self, numFigure):
+        
+        print 'Plot graph for accuracy and confidence in predictors by frames'
+        
+        #Define a initial figure
+        plt.figure(numFigure)
+        
+        #Define a 3-dimensional array that will contain accuracy * Confidence
+        accConfidence = zeros((len(self.y), len(self.y[0]), len(self.y[0][0])))
+        
+        for pred in range(0,len(accConfidence)):
+            for frame in range(0,len(accConfidence[0])):
+                for pointK in range(0,len(accConfidence[0][0])):
+                    error = self.y[pred][frame][pointK]
+                    conf = self.confidence[pred][frame][pointK]
+                    accConfidence[pred][frame][pointK] = ((error+1)**-1)*conf
+        
+        #Define a 2-dimensional array that contains the average of accConfidence
+        #for each frame
+        yaccConf = zeros((len(self.y), len(self.y[0])))
+        for pred in range(0,len(yaccConf)):
+            for frame in range(0,len(yaccConf[0])):
+                yaccConf[pred][frame] = sum(accConfidence[pred][frame])
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            #Get the error by frame array at position i
+            yPlot = yaccConf[i]
+            
+            #Save data to file
+            fo = open('AccuracyandConfidence_byFrame_'+self.name[i]+'.txt','w')
+            for j in range(0,self.x[i].shape[0]):
+                fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
+            fo.close()
+            
+            #Plot the error in the subplot
+            plt.plot(self.x[i], yPlot)
+            
+        title('Accuracy and Confidence on Prediction')
+        xlabel('Frame')
+        ylabel('Accuracy * Confidence')
+        plt.legend(self.name)
+        plt.show()
+
+    def computeErrorByFrame(self):
+        
+        #Create a 2-dimensional array, predictors x frames
+        self.errorFrame = zeros((len(self.name), len(self.y[0])))
+        
+        for pred in range(0,len(self.errorFrame)):
+            for frame in range(0,len(self.errorFrame[0])):
+                self.errorFrame[pred][frame] = sum(self.y[pred][frame])
+        #Divide over the number of point kinds
+        self.errorFrame = self.errorFrame / len(self.y[0][0])  
+        
+        #Debugging purposes-----------------------------------------------------
+        print 'errorFrame:\n', self.errorFrame
+        #-----------------------------------------------------------------------
+
+    def cutArray(self, array, upperBound):
+        '''This method takes an array and every value greater than the upper
+        bound is changed to upper bound''' 
+        
+        for i in range(0,len(array)):
+            
+            if array[i] > upperBound:
+                array[i] = upperBound
+                
+        return array

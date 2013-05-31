@@ -73,7 +73,7 @@ class ImageStack:
             self.single_img = True
         self.point = zeros((self.total_frames,self.point_kinds,2))
 
-    def get_point_kinds(self,filename='',List=[]):
+    def _get_point_kinds(self,filename='',List=[]):
         #Creates a list of valid point kinds read in from a file or a list of
         #string names of point kinds. Each line of the file should have a point 
         #kind (i.e. Left back foot) with any additional information separated by 
@@ -130,6 +130,7 @@ class ImageStack:
         self.point = zeros((self.total_frames,self.point_kinds,2))
         if os.path.exists(filename) == False: return
         file_in = open(filename)
+        
         for line in file_in:
             #If it's an old point file, switch over to the legacy point loader
             if len(line.split(',')) == 1 and len(line.split(':')) == 6:
