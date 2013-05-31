@@ -422,10 +422,13 @@ class BasicGui(Chooser):
             self.updatePhoto()
         self.canvas.create_image((0,0),image=self.photo,anchor = NW)
         #Update status bar
-#        self.temporary_statusbar.set(self.format, self.imstack.name_current,
-#                            self.imstack.point_kind_list[self.pointKind], 
-#                            self.imstack.point[self.imstack.current_frame,self.pointKind,0],
-#                            self.imstack.point[self.imstack.current_frame,self.pointKind,1])
+        try:
+            self.temporary_statusbar.set(self.format, self.imstack.name_current,
+                            self.imstack.point_kind_list[self.pointKind], 
+                            self.activePoint[1], self.activePoint[2])
+        except TypeError:
+            self.temporary_statusbar.set(self.format, self.imstack.name_current,
+                            self.imstack.point_kind_list[self.pointKind],0,0)
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for and there is no point selected
         if (self.imstack.current_frame == self.predictedFrame and
