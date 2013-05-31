@@ -101,18 +101,6 @@ class Error(Chooser):
         print 'Predicted Points for current image\n', predicted
         print 'Ground truth data for current image\n', stack.point[stack.current_frame]
         #-----------------------------------------------------------------------
-
-        
-    def cutArray(self, array, upperBound):
-        '''This method takes an array and every value greater than the upper
-        bound is changed to upper bound''' 
-        
-        for i in range(0,len(array)):
-            
-            if array[i] > upperBound:
-                array[i] = upperBound
-                
-        return array
             
     def showErrorByFrame(self):
         print 'Showing graph of errors in predictors according to frames'
@@ -168,3 +156,14 @@ class Error(Chooser):
         plt.legend(self.name)
         
         plt.show()
+
+    def cutArray(self, array, upperBound):
+        '''This method takes an array and every value greater than the upper
+        bound is changed to upper bound''' 
+        
+        for i in range(0,len(array)):
+            
+            if array[i] > upperBound:
+                array[i] = upperBound
+                
+        return array
