@@ -34,8 +34,8 @@ class Performance(Chooser):
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
-        self.upperB = 16 #Max number of pixels that we care about for error
-        self.tpBound = 15 #Bound to split True Positives and False Negatives
+        self.upperB = 50 #Max number of pixels that we care about for error
+        self.tpBound = 5 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
         #Variables used to match with chamview.py requirements
@@ -57,13 +57,14 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Show results in text files and in graphs
-        self.showErrorByFrame()
-        self.showErrorByPointKind()
-        self.showAccuracy()
-        self.showAccuracyConfidence()
-        self.showErrorEachPointK()
-        self.showROC()
+        #self.showErrorByFrame()
+        #self.showErrorByPointKind()
+        #self.showAccuracy()
+        #self.showAccuracyConfidence()
+        #self.showErrorEachPointK()
+        #self.showROC()
         #self.showError3D()
+        self.showPercentageError()
         
         
 
@@ -120,7 +121,64 @@ class Performance(Chooser):
         print 'Predicted Points for current image\n', predicted
         print 'Ground truth data for current image\n', stack.point[stack.current_frame]
         #-----------------------------------------------------------------------
+     
             
+    def showPercentageError(self):
+        #Debugging purposes-----------------------------------------------------
+        print 'Plot graph of percentage of errors'
+        #-----------------------------------------------------------------------
+        
+        self.numPlots += 1
+        
+        #Define a initial figure
+        plt.figure(self.numPlots)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            #Define an array that will save all the errors por predictor i
+            errors = zeros(len(self.y[0]) * len(self.y[0][0]))
+            itr = 0;
+            
+            for frame in range(0,len(self.y[0])):
+                for pointK in range(0,len(self.y[0][0])):
+                    errors[itr] = self.y[i][frame][pointK]
+                    itr += 1
+            
+            errors.sort()
+            
+            #Debugging purposes-------------------------------------------------
+            print 'errors: ', errors
+            #Debugging purposes-------------------------------------------------
+            
+            yPlot = zeros(self.upperB)
+            xPlot = arange(0,self.upperB,1)
+            
+            #Define two variables that traverse errors and yPlot arrays
+            err = 0
+            e = 0
+            while e < len(errors) and err < len(yPlot):
+                if errors[e] <= err:
+                    e += 1
+                else:
+                    yPlot[err] = e
+                    err += 1
+                 
+            #Save data to file
+            fo = open('Percentage_of_Error'+self.name[i]+'.txt','w')
+            for j in range(0,xPlot.shape[0]):
+                fo.write(str(xPlot[j]).zfill(4)+','+str(yPlot[j])+'\n')
+            fo.close()
+                        
+            #Plot the error in the subplot
+            plt.plot(xPlot,yPlot)
+            
+        title('Percentage of Error')
+        xlabel('Error in Pixels')
+        ylabel('Percentage of Points')
+        plt.legend(self.name)
+        plt.show()              
+                                 
     def showErrorByFrame(self):
         
         print 'Plot graph of errors in predictors by frames'
@@ -344,11 +402,11 @@ class Performance(Chooser):
             if numTP > 0:
                 tpUnit = 1 / Decimal(numTP) 
             else:
-                tpUnit = 0.0000001
+                tpUnit = 0.0000001 ############################################
             if numFP > 0:
                 fpUnit = 1 / Decimal(numFP)
             else:
-                fpUnit = 0.0000001
+                fpUnit = 0.0000001 ############################################
             
             
             #Debugging purposes-------------------------------------------------
@@ -379,7 +437,11 @@ class Performance(Chooser):
                         itr += 1
                         yPlot[itr] = TPrate
             
-                        
+            
+            #Debugging purposes-------------------------------------------------
+            print 'yPlot: ', yPlot
+            #-------------------------------------------------------------------    
+                                    
             #Plot the error in the subplot
             plt.plot(xPlot, yPlot)
             
@@ -391,7 +453,7 @@ class Performance(Chooser):
       
     def showError3D(self):
         
-        print 'Plot errors given image list and point kind'
+        print 'Plot errors 3D given image list and point kind'
         
         for i in range(0,len(self.y)):
             
