@@ -3,6 +3,9 @@ from Grammar import Chooser
 import os
 from pylab import *
 import matplotlib.pyplot as plt
+from decimal import *
+from mpl_toolkits.mplot3d import axes3d
+#from mayavi.mlab import *
 
 '''This file implements classes where the performance of predictors
 is computed using different techniques.
@@ -26,14 +29,19 @@ class Performance(Chooser):
         self.confidence = [] #Multidimensional array that saves the confidence
         
         self.name = [] #Name of predictor
+        self.pointKList = [] #Name of the point kinds
         
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
-        self.upperB = 16 #Max number of pixels that we care about for error
+        self.upperB = 50 #Max number of pixels that we care about for error
+        self.tpBound = 5 #Bound to split True Positives and False Negatives
+        self.numPlots = 0 #Determine the number of plots showed
         
-        #Variable used to match with chamview.py requirements
+        #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
+        self.activePoint = -1
+        self.selectedPredictions = []
 
     def teardown(self):
         
@@ -49,10 +57,14 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Show results in text files and in graphs
-        self.showErrorByFrame(1)
-        self.showErrorByPointKind(2)
-        self.showAccuracy(3)
-        self.showAccuracyConfidence(4)
+        #self.showErrorByFrame()
+        #self.showErrorByPointKind()
+        #self.showAccuracy()
+        #self.showAccuracyConfidence()
+        #self.showErrorEachPointK()
+        #self.showROC()
+        #self.showError3D()
+        self.showPercentageError()
         
         
 
@@ -63,14 +75,14 @@ class Performance(Chooser):
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
-            
             self.filledLists = True
                     
             self.name = predictor_name
+            self.pointKList = stack.point_kind_list
             
             for i in range(0,len(self.name)):
                 self.x.append(arange(0,stack.total_frames,1))
-                self.errorKindX.append(arange(0,stack.point_kinds,1))
+                self.errorKindX.append(arange(0,stack.point_kinds,1) + 1)
 
             #A 3-dimensional array for error
             #1.- predictor, 2.- frame, 3.- point kind
@@ -109,13 +121,74 @@ class Performance(Chooser):
         print 'Predicted Points for current image\n', predicted
         print 'Ground truth data for current image\n', stack.point[stack.current_frame]
         #-----------------------------------------------------------------------
+     
             
-    def showErrorByFrame(self, numFigure):
+    def showPercentageError(self):
+        #Debugging purposes-----------------------------------------------------
+        print 'Plot graph of percentage of errors'
+        #-----------------------------------------------------------------------
+        
+        self.numPlots += 1
+        
+        #Define a initial figure
+        plt.figure(self.numPlots)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            #Define an array that will save all the errors por predictor i
+            errors = zeros(len(self.y[0]) * len(self.y[0][0]))
+            itr = 0;
+            
+            for frame in range(0,len(self.y[0])):
+                for pointK in range(0,len(self.y[0][0])):
+                    errors[itr] = self.y[i][frame][pointK]
+                    itr += 1
+            
+            errors.sort()
+            
+            #Debugging purposes-------------------------------------------------
+            print 'errors: ', errors
+            #Debugging purposes-------------------------------------------------
+            
+            yPlot = zeros(self.upperB)
+            xPlot = arange(0,self.upperB,1)
+            
+            #Define two variables that traverse errors and yPlot arrays
+            err = 0
+            e = 0
+            while e < len(errors) and err < len(yPlot):
+                if errors[e] <= err:
+                    e += 1
+                else:
+                    yPlot[err] = e
+                    err += 1
+                 
+            yPlot = yPlot * 100 / len(errors)
+            
+            #Save data to file
+            fo = open('Percentage_of_Error'+self.name[i]+'.txt','w')
+            for j in range(0,xPlot.shape[0]):
+                fo.write(str(xPlot[j]).zfill(4)+','+str(yPlot[j])+'\n')
+            fo.close()
+                        
+            #Plot the error in the subplot
+            plt.plot(xPlot,yPlot)
+            
+        title('Percentage of Error')
+        xlabel('Error in Pixels')
+        ylabel('Percentage of Points')
+        plt.legend(self.name)
+        plt.show()              
+                                 
+    def showErrorByFrame(self):
         
         print 'Plot graph of errors in predictors by frames'
         
+        self.numPlots += 1
+        
         #Define a initial figure
-        plt.figure(numFigure)
+        plt.figure(self.numPlots)
         
         #Go through each predictor
         for i in range(0,len(self.name)):
@@ -133,7 +206,7 @@ class Performance(Chooser):
             for j in range(0,self.x[i].shape[0]):
                 fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             fo.close()
-            
+                        
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
             
@@ -143,12 +216,14 @@ class Performance(Chooser):
         plt.legend(self.name)
         plt.show()
         
-    def showErrorByPointKind(self, numFigure):
+    def showErrorByPointKind(self):
 
         print 'Plot graph of errors in predictors by point kinds'
         
+        self.numPlots += 1
+        
         #Define a new figure
-        plt.figure(numFigure)
+        plt.figure(self.numPlots)
         
         #Go through each predictor
         for i in range(0,len(self.name)):
@@ -181,14 +256,55 @@ class Performance(Chooser):
         plt.legend(self.name)
         
         plt.show()
+
+    def showErrorEachPointK(self):
         
+        print 'Plot graphs with error of predictors for each kind point'        
         
-    def showAccuracy(self, numFigure):
+        #Go through each point kind
+        for pointK in range(0, len(self.y[0][0])):
+            
+            self.numPlots += 1
+            #Define a new figure
+            plt.figure(self.numPlots)
+            
+            
+            #Go through each predictor
+            for i in range(0,len(self.name)):
+        
+                #Get the error by frame array at position i
+                yPlot = zeros(len(self.y[i]))
+                for frame in range(0,len(yPlot)):            
+                    yPlot[frame] = self.y[i][frame][pointK]
+            
+                #Cut error by a given upper bound
+                yPlot = self.cutArray(yPlot, self.upperB)
+            
+                '''#Save data to file
+                fo = open('Error_byFrame_pointK_'+str(pointK+1)+'_'+self.name[i]+'.txt','w')
+                for j in range(0,self.x[i].shape[0]):
+                    fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
+                fo.close()'''
+            
+                #Plot the error in the subplot
+                plt.plot(self.x[i],yPlot)
+            
+            title('Error on ' + self.pointKList[pointK])
+            xlabel('Frame')
+            ylabel('Number of Pixels')
+            plt.legend(self.name)
+        
+            plt.show()
+            
+        
+    def showAccuracy(self):
         
         print 'Plot graph for accuracy in predictors by frames'
         
+        self.numPlots += 1
+        
         #Define a initial figure
-        plt.figure(numFigure)
+        plt.figure(self.numPlots)
         
         #Go through each predictor
         for i in range(0,len(self.name)):
@@ -201,11 +317,11 @@ class Performance(Chooser):
             #Take the inverse of the result
             yPlot = yPlot ** -1
             
-            #Save data to file
+            '''#Save data to file
             fo = open('Accuracy_byFrame_'+self.name[i]+'.txt','w')
             for j in range(0,self.x[i].shape[0]):
                 fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()
+            fo.close()'''
             
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot)
@@ -216,12 +332,14 @@ class Performance(Chooser):
         plt.legend(self.name)
         plt.show()
         
-    def showAccuracyConfidence(self, numFigure):
+    def showAccuracyConfidence(self):
         
         print 'Plot graph for accuracy and confidence in predictors by frames'
         
+        self.numPlots += 1
+        
         #Define a initial figure
-        plt.figure(numFigure)
+        plt.figure(self.numPlots)
         
         #Define a 3-dimensional array that will contain accuracy * Confidence
         accConfidence = zeros((len(self.y), len(self.y[0]), len(self.y[0][0])))
@@ -246,11 +364,11 @@ class Performance(Chooser):
             #Get the error by frame array at position i
             yPlot = yaccConf[i]
             
-            #Save data to file
+            '''#Save data to file
             fo = open('AccuracyandConfidence_byFrame_'+self.name[i]+'.txt','w')
             for j in range(0,self.x[i].shape[0]):
                 fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()
+            fo.close()'''
             
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot)
@@ -259,7 +377,97 @@ class Performance(Chooser):
         xlabel('Frame')
         ylabel('Accuracy * Confidence')
         plt.legend(self.name)
-        plt.show()
+        plt.show()     
+        
+    def showROC(self):
+        
+        print 'Plot ROC curve to detect which predictors are better'
+        
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
+        
+        for pred in range(0,len(self.y)):
+            
+            numTP = 0
+            numFP = 0
+            
+            #Here we count the number of True positives and False positives
+            for frame in range(0,len(self.y[0])):
+                for pointK in range(0,len(self.y[0][0])):
+                    if self.y[pred][frame][pointK] <= self.tpBound:
+                        numTP += 1
+                    else:
+                        numFP += 1
+            
+            #Define the units for true positives and false positives
+            if numTP > 0:
+                tpUnit = 1 / Decimal(numTP) 
+            else:
+                tpUnit = 0.0000001 ############################################
+            if numFP > 0:
+                fpUnit = 1 / Decimal(numFP)
+            else:
+                fpUnit = 0.0000001 ############################################
+            
+            
+            #Debugging purposes-------------------------------------------------
+            print 'Predictor: ',pred
+            print 'numTP: ', numTP
+            print 'numFP: ', numFP
+            print 'tpUnit: ',tpUnit
+            print 'fpUnit: ', fpUnit
+            #-------------------------------------------------------------------
+            
+            #Define arrays that are our x and y axis
+            xPlot = arange(0,1 + fpUnit,fpUnit) 
+            yPlot = zeros(len(xPlot))
+            
+            #Define a variable that know what is the current TP rate
+            TPrate = 0
+            
+            itr = 0
+            #Here we compute the TPrate and FPrate and then plot it
+            for frame in range(0,len(self.y[0])):
+                for pointK in range(0,len(self.y[0][0])):
+                    if self.y[pred][frame][pointK] <= self.tpBound:
+                        #Add to True Positives
+                        TPrate += tpUnit
+                        yPlot[itr] = TPrate
+                    else:
+                        #Add to False Negatives
+                        itr += 1
+                        yPlot[itr] = TPrate
+            
+            
+            #Debugging purposes-------------------------------------------------
+            print 'yPlot: ', yPlot
+            #-------------------------------------------------------------------    
+                                    
+            #Plot the error in the subplot
+            plt.plot(xPlot, yPlot)
+            
+        title('ROC Curve')
+        xlabel('False Positive Rate')
+        ylabel('True Positive Rate')
+        plt.legend(self.name)
+        plt.show()          
+      
+    def showError3D(self):
+        
+        print 'Plot errors 3D given image list and point kind'
+        
+        for i in range(0,len(self.y)):
+            
+            #Define arrays for x and y axis
+            xPlot = arange(0,len(self.y[0]),1)
+            yPlot = arange(0,len(self.y[0][0]),1)
+            
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            #X, Y, Z = axes3d.get_test_data(0.05)
+            ax.plot_wireframe(xPlot, yPlot, self.y[i], rstride=10, cstride=10)
+            plt.show()                  
 
     def computeErrorByFrame(self):
         
@@ -275,7 +483,7 @@ class Performance(Chooser):
         #Debugging purposes-----------------------------------------------------
         print 'errorFrame:\n', self.errorFrame
         #-----------------------------------------------------------------------
-
+        
     def cutArray(self, array, upperBound):
         '''This method takes an array and every value greater than the upper
         bound is changed to upper bound''' 
