@@ -259,6 +259,7 @@ class BasicGui(Chooser):
 #****** Point Kind Functions ******
 
     def setPointKind(self,event=''):
+        self.update_points()
         self.pointlist.select_clear(self.pointKind)
         if event.char == '??':
             #User clicked on the pointlist
@@ -276,8 +277,6 @@ class BasicGui(Chooser):
         self.pointlist.select_set(self.pointKind)
         self.pointlist.see(self.pointKind)
         self.pointlist.activate(self.pointKind)
-        self.update_points()
-        print 'updatePointKind'
         self.end_update_loop()
         
     def pointKindEdit(self,event=''):
@@ -312,7 +311,7 @@ class BasicGui(Chooser):
                 self.selectedPredictions.append(-1)
         else:
             for index in deleted:
-                del self.selectedPredictions[index]
+                self.selectedPredictions.pop(index)
             for n in range(add):
                 self.selectedPredictions.append(-1)
                 
@@ -420,7 +419,7 @@ class BasicGui(Chooser):
         #If the photo hasn't been set yet then do so
         if self.photo == None:
             self.updatePhoto()
-        self.canvas.create_image((0,0),image=self.photo,anchor = NW)
+        self.canvas.create_image(0,0,image=self.photo,anchor=NW)
         #Update status bar
         try:
             self.temporary_statusbar.set(self.format, self.imstack.name_current,
@@ -467,9 +466,11 @@ class BasicGui(Chooser):
             color='yellow'
             if self.activePoint[0] == -1:
                     color='yellow'
-            else:
-                if cnt == self.activePoint[0]: 
-                    color='blue'
+            elif cnt == self.activePoint[0]: 
+                color='blue'
+            elif (x == self.imstack.point[self.imstack.current_frame,self.pointKind,0] and
+            y == self.imstack.point[self.imstack.current_frame,self.pointKind,1]):
+                color='magenta'
             #If it didn't return a point, don't draw anything
             if x == 0 and y == 0 and conf == 0: 
                 self.predlist.select_clear(cnt)
@@ -586,8 +587,8 @@ class BasicGui(Chooser):
         '''Clear all points on the current frame.'''
         self.imstack.point[self.imstack.current_frame] *= 0
         # reset Point source history
-        for pred_kind in self.selectedPredictions:
-            pred_kind = -1
+        for i in range(len(self.selectedPredictions)):
+            self.selectedPredictions[i] = -1
         self.activePoint[0] = -1
         self.activePoint[1] = self.activePoint[2] = 0
         self.drawCanvas()
@@ -596,8 +597,8 @@ class BasicGui(Chooser):
         '''Clear all points from all frames.'''
         self.imstack.point *= 0
         # reset Point source history
-        for pred_kind in self.selectedPredictions:
-            pred_kind = -1
+        for i in range(len(self.selectedPredictions)):
+            self.selectedPredictions[i] = -1
         self.activePoint[0] = -1
         self.activePoint[1] = self.activePoint[2] = 0
         self.drawCanvas()
