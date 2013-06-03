@@ -164,6 +164,8 @@ class Performance(Chooser):
                     yPlot[err] = e
                     err += 1
                  
+            yPlot = yPlot * 100 / len(errors)
+            
             #Save data to file
             fo = open('Percentage_of_Error'+self.name[i]+'.txt','w')
             for j in range(0,xPlot.shape[0]):
