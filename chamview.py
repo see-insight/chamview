@@ -23,6 +23,7 @@ import sys
 import getopt
 import imp
 import dircache
+import timeit
 import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
@@ -78,6 +79,11 @@ def main(argc,argv):
 
 
 def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
+    
+    #Compute the time since beginning to the end--------------------------------
+    start = timeit.default_timer()
+    #---------------------------------------------------------------------------
+    
     #Load images into memory
     imstack = ImageStack(argDir)
     if imstack.total_frames == 0:
@@ -164,7 +170,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     chooser.teardown()
     for pred in predictor:
         pred.teardown()
-
+        
+    #Print general information--------------------------------------------------
+    end = timeit.default_timer()
+    print 'The total running time for chamview is of: ', end - start, ' seconds'
+    #---------------------------------------------------------------------------
 
 def update_point_array(n_array,add,delete):
     if delete != []:
