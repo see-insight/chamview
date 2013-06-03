@@ -166,6 +166,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     if argOutput != '': imstack.save_points(argOutput)
     print 'EXIT loop'
 
+    #Compute the number of points modified and frames modified
+    pointsModified = imstack.pointsModified()
+    framesModified = imstack.framesModified()
+  
     #Clear out any Chooser or Predictor data
     chooser.teardown()
     for pred in predictor:
@@ -173,7 +177,13 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
         
     #Print general information--------------------------------------------------
     end = timeit.default_timer()
-    print 'The total running time for chamview is of: ', end - start, ' seconds'
+    totalTime = end - start
+    print '--------------------------------------------------------------------'
+    print 'The total running time for chamview is of: ', totalTime, ' s'
+    print 'Number of Points Modified: ', pointsModified
+    print 'Time / point = ', totalTime / pointsModified, ' s'
+    print 'Number of Frames Modified: ', framesModified
+    print 'Time / frame = ', totalTime / framesModified, ' s'
     #---------------------------------------------------------------------------
 
 def update_point_array(n_array,add,delete):
