@@ -163,7 +163,8 @@ class Performance(Chooser):
                 else:
                     yPlot[err] = e
                     err += 1
-                 
+            
+            #Compute percentage of points
             yPlot = yPlot * 100 / len(errors)
             
             #Save data to file
