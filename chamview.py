@@ -10,10 +10,9 @@ Usage options:
     -k --pkind   Point kind file. Default is (defaultPointKinds.txt)
     -p --ppos    Previously saved output file. Default is (none)
 
-Example:
-
-    >>> print "hello world"
-    hello world
+Example: 
+    
+    $ chamview.py -d ./images/Chameleon -o ./points
 
 """
 
@@ -48,9 +47,10 @@ def main(argc,argv):
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                      'hd:c:i:o:k:p:s',
+                                      'hd:c:i:o:k:p:sw:',
                                       ['help','dir=','chooser=','prep=',
-                                      'output=','pkind=','ppos=','inspect='])
+                                      'output=','pkind=','ppos=',
+                                      'inspect','inspectout='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -72,6 +72,9 @@ def main(argc,argv):
                 argPPos = arg
             elif opt in ('-s', '--inspect'):
                 argSysInspector = True
+            elif opt in ('-w', '--inspectout'):
+                argSysInspector = arg
+                
         if argOutput == '':
             argOutput = argDir+'.txt'
         run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
@@ -203,7 +206,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
                       'TIME/FRAME': timePerFrame}
                       
         inspector = SI.SystemInspector(attributes,attr_names)
-        inspector.write_to_file()
+        try:
+            inspector.write_to_file(argSysInspector)
+        except TypeError:
+            inspector.write_to_file()
         
     #Clear out any Chooser or Predictor data
     chooser.teardown()
