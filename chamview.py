@@ -73,7 +73,7 @@ def main(argc,argv):
                 argSysInspector = arg
         if argOutput == '':
             argOutput = argDir+'.txt'
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos, argSysInspector)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -81,11 +81,10 @@ def main(argc,argv):
         return 2
 
 
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos, argSysInspector):
     
-    #Compute the time since beginning to the end--------------------------------
+    #Start timer if argSysInspector
     if argSysInspector: start = timeit.default_timer()
-    #---------------------------------------------------------------------------
     
     #Load images into memory
     imstack = ImageStack(argDir)
@@ -199,7 +198,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
                       
         inspector = SystemInspector(dictionary)
         inspector.write_to_file(argSysInspector)
-        
+    
+     
     #Clear out any Chooser or Predictor data
     chooser.teardown()
     for pred in predictor:
