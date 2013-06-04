@@ -84,7 +84,7 @@ def main(argc,argv):
 def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     
     #Compute the time since beginning to the end--------------------------------
-    start = timeit.default_timer()
+    if argSysInspector: start = timeit.default_timer()
     #---------------------------------------------------------------------------
     
     #Load images into memory
@@ -168,22 +168,38 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     #Save points to file
     if argOutput != '': imstack.save_points(argOutput)
     print 'EXIT loop'
+    
+    #Run System Inspector
+    if argSysInspector : 
+        
+         #Stop timer and compute total time
+        end = timeit.default_timer()
+        totalTime = end - start
 
-    #Compute the number of points modified and frames modified
-    pointsModified = imstack.pointsModified()
-    framesModified = imstack.framesModified()
-  
-    #Print general information--------------------------------------------------
-    end = timeit.default_timer()
-    totalTime = end - start
-    print '--------------------------------------------------------------------'
-    print 'The total running time for chamview is of: ', totalTime, ' s'
-    print 'Number of Points Modified: ', pointsModified
-#    print 'Time / point = ', totalTime / pointsModified, ' s'
-    print 'Number of Frames Modified: ', framesModified
-#    print 'Time / frame = ', totalTime / framesModified, ' s'
-    #---------------------------------------------------------------------------
-  
+        #Compute the number of points modified and frames modified
+        pointsModified = imstack.pointsModified()
+        framesModified = imstack.framesModified()
+        try:
+            timePerPoint = totalTime / pointsModified
+            timePerFrame = totalTime / framesModified
+        except ZeroDivisionError:
+            timePerPoint = 'N/A'
+            timePerFrame = 'N/A'
+        
+        dictionary = {'CHOOSER':argChooser,
+                      'PREPROCESSOR':argPreproc,
+                      'PREDICTORS':predictor_name,
+                      'TOTAL_POINTS':imstack.total_frames * imstack.point_kinds,
+                      'TOTAL_FRAMES':imstack.total_frames,
+                      'TOTAL_TIME':totalTime,
+                      'POINTS_MODIFIED':pointsModified,
+                      'FRAMES_MODIFIED':framesModified,
+                      'TIME/POINT': timePerPoint,
+                      'TIME/FRAME': timePerFrame}
+                      
+        inspector = SystemInspector(dictionary)
+        inspector.write_to_file(argSysInspector)
+        
     #Clear out any Chooser or Predictor data
     chooser.teardown()
     for pred in predictor:
