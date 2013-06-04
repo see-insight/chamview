@@ -28,6 +28,7 @@ import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
 from grammar import Grammar
+import SystemInspector as SI
 
 
 class Usage(Exception):
@@ -43,7 +44,7 @@ def main(argc,argv):
     argOutput = ''
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
-    argSysInspector = ''
+    argSysInspector = False
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
@@ -70,10 +71,10 @@ def main(argc,argv):
             elif opt in ('-p', '--ppos'):
                 argPPos = arg
             elif opt in ('-s', '--inspect'):
-                argSysInspector = arg
+                argSysInspector = True
         if argOutput == '':
             argOutput = argDir+'.txt'
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -186,7 +187,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
             timePerPoint = 'N/A'
             timePerFrame = 'N/A'
         
-        dictionary = {'CHOOSER': argChooser,
+        attr_names = ['CHOOSER','PREPROCESSOR','PREDICTORS','IMAGE_DIRECTORY',
+                      'TOTAL_POINTS','POINTS_MODIFIED','TOTAL_FRAMES',
+                      'FRAMES_MODIFIED','TOTAL_TIME','TIME/POINT','TIME/FRAME']
+        attributes = {'CHOOSER': argChooser,
                       'PREPROCESSOR': argPreproc,
                       'PREDICTORS': predictor_name,
                       'IMAGE_DIRECTORY': argDir,
@@ -198,8 +202,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
                       'TIME/POINT': timePerPoint,
                       'TIME/FRAME': timePerFrame}
                       
-        inspector = SystemInspector(dictionary)
-        inspector.write_to_file(argSysInspector)
+        inspector = SI.SystemInspector(attributes,attr_names)
+        inspector.write_to_file()
         
     #Clear out any Chooser or Predictor data
     chooser.teardown()

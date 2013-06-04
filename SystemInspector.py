@@ -14,27 +14,32 @@ import subprocess
 
 class SystemInspector:
     
-    def __init__(self,extra_attributes):
+    def __init__(self,extra_attributes={},extra_attr_names=[]):
+        self.attr_names = ['PLATFORM','PYTHON_VERSION','INSTALLED_PYTHON_MODULES']
         self.attributes = {}
         self.add_attribute('PLATFORM', sys.platform)
         self.add_attribute('PYTHON_VERSION', sys.version)
         if os.path.isdir('.git'):
+            self.attr_names.append('GIT_HASH')
             self.add_attribute('GIT_HASH', subprocess.check_output(
             ['git', 'log', '--pretty=format:"%H"', '-n', '1']))
         if os.path.isdir('.svn'):
+            self.attr_names.append('SUBVERSION')
             self.add_attribute('SUBVERSION', True)
         if os.path.isdir('.hg'):
+            self.attr_names.append('MERCURIAL')
             self.add_attribute('MERCURIAL', True)
         self.add_attribute('INSTALLED_PYTHON_MODULES', sys.modules.keys())
-        for key, value in extra_attributes:
-            self.add_attribute(key,value)
+        for attr in extra_attr_names:
+            self.attr_names.append(attr)
+            self.add_attribute(attr,extra_attributes[attr])
         
     def add_attribute(self,key,value):
         self.attributes[key] = value
             
     def write_to_file(self,filename='system_info.txt'):
         fout = open(filename, 'w')
-        for attr in self.attributes:
+        for attr in self.attr_names:
             st = attr + ': ' + str(self.attributes[attr]) + '\n'
             fout.write(st)
         fout.close()
