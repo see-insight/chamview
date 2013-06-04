@@ -311,7 +311,7 @@ class BasicGui(Chooser):
                 self.selectedPredictions.append(-1)
         else:
             for index in deleted:
-                self.selectedPredictions.pop(index)
+                del self.selectedPredictions[index]
             for n in range(add):
                 self.selectedPredictions.append(-1)
                 
