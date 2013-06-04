@@ -57,14 +57,14 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Show results in text files and in graphs
-        #self.showErrorByFrame()
-        #self.showErrorByPointKind()
-        #self.showAccuracy()
-        #self.showAccuracyConfidence()
-        #self.showErrorEachPointK()
-        #self.showROC()
-        #self.showError3D()
+        self.showErrorByFrame()
+        self.showErrorByPointKind()
+        self.showAccuracy()
+        self.showAccuracyConfidence()
+        self.showErrorEachPointK()
+        self.showROC()
         self.showPercentageError()
+        #self.showError3D()
         
         
 
