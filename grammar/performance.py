@@ -46,10 +46,10 @@ class Performance(Chooser):
     def teardown(self):
         
         #Print current informaction for debugging purposes----------------------
-        print 'self.name: ', self.name
-        print 'x:\n', self.x
-        print 'y:\n', self.y     
-        print 'errorKindX:\n', self.errorKindX   
+        #print 'self.name: ', self.name
+        #print 'x:\n', self.x
+        #print 'y:\n', self.y     
+        #print 'errorKindX:\n', self.errorKindX   
         #----------------------------------------------------------------------- 
 
         #Compute the error by frame for each predictor to plot results in
@@ -71,7 +71,7 @@ class Performance(Chooser):
     def choose(self,stack,predicted,predictor_name):
     
         #Print the frame number that we are working with
-        print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
+        #print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
@@ -117,15 +117,15 @@ class Performance(Chooser):
         if self.numImagesTested == stack.total_frames: stack.exit = True
         
         #Printing information for debugging purposes----------------------------
-        print 'Current image: ', stack.current_frame
-        print 'Predicted Points for current image\n', predicted
-        print 'Ground truth data for current image\n', stack.point[stack.current_frame]
+        #print 'Current image: ', stack.current_frame
+        #print 'Predicted Points for current image\n', predicted
+        #print 'Ground truth data for current image\n', stack.point[stack.current_frame]
         #-----------------------------------------------------------------------
      
             
     def showPercentageError(self):
         #Debugging purposes-----------------------------------------------------
-        print 'Plot graph of percentage of errors'
+        #print 'Plot graph of percentage of errors'
         #-----------------------------------------------------------------------
         
         self.numPlots += 1
@@ -148,7 +148,7 @@ class Performance(Chooser):
             errors.sort()
             
             #Debugging purposes-------------------------------------------------
-            print 'errors: ', errors
+            #print 'errors: ', errors
             #Debugging purposes-------------------------------------------------
             
             yPlot = zeros(self.upperB)
@@ -184,7 +184,7 @@ class Performance(Chooser):
                                  
     def showErrorByFrame(self):
         
-        print 'Plot graph of errors in predictors by frames'
+        #print 'Plot graph of errors in predictors by frames'
         
         self.numPlots += 1
         
@@ -219,7 +219,7 @@ class Performance(Chooser):
         
     def showErrorByPointKind(self):
 
-        print 'Plot graph of errors in predictors by point kinds'
+        #print 'Plot graph of errors in predictors by point kinds'
         
         self.numPlots += 1
         
@@ -260,7 +260,7 @@ class Performance(Chooser):
 
     def showErrorEachPointK(self):
         
-        print 'Plot graphs with error of predictors for each kind point'        
+        #print 'Plot graphs with error of predictors for each kind point'        
         
         #Go through each point kind
         for pointK in range(0, len(self.y[0][0])):
@@ -300,7 +300,7 @@ class Performance(Chooser):
         
     def showAccuracy(self):
         
-        print 'Plot graph for accuracy in predictors by frames'
+        #print 'Plot graph for accuracy in predictors by frames'
         
         self.numPlots += 1
         
@@ -335,7 +335,7 @@ class Performance(Chooser):
         
     def showAccuracyConfidence(self):
         
-        print 'Plot graph for accuracy and confidence in predictors by frames'
+        #print 'Plot graph for accuracy and confidence in predictors by frames'
         
         self.numPlots += 1
         
@@ -382,7 +382,7 @@ class Performance(Chooser):
         
     def showROC(self):
         
-        print 'Plot ROC curve to detect which predictors are better'
+        #print 'Plot ROC curve to detect which predictors are better'
         
         self.numPlots += 1
         #Define a new figure
@@ -413,11 +413,11 @@ class Performance(Chooser):
             
             
             #Debugging purposes-------------------------------------------------
-            print 'Predictor: ',pred
-            print 'numTP: ', numTP
-            print 'numFP: ', numFP
-            print 'tpUnit: ',tpUnit
-            print 'fpUnit: ', fpUnit
+            #print 'Predictor: ',pred
+            #print 'numTP: ', numTP
+            #print 'numFP: ', numFP
+            #print 'tpUnit: ',tpUnit
+            #print 'fpUnit: ', fpUnit
             #-------------------------------------------------------------------
             
             #Define arrays that are our x and y axis
@@ -442,7 +442,7 @@ class Performance(Chooser):
             
             
             #Debugging purposes-------------------------------------------------
-            print 'yPlot: ', yPlot
+            #print 'yPlot: ', yPlot
             #-------------------------------------------------------------------    
                                     
             #Plot the error in the subplot
@@ -456,7 +456,7 @@ class Performance(Chooser):
       
     def showError3D(self):
         
-        print 'Plot errors 3D given image list and point kind'
+        #print 'Plot errors 3D given image list and point kind'
         
         for i in range(0,len(self.y)):
             
