@@ -145,13 +145,20 @@ class ImageStack:
                 kind_index = self.point_kind_list.index(kind)
             except ValueError:
                 kind_index = -1
-            row = int(line_list[2])
+            column = int(line_list[2])
             if line_list[3].endswith('\n'): line_list[3] = line_list[3][0:-1]
-            column = int(line_list[3])
+            row = int(line_list[3])
+            try:
+                if line_list[4].endswith('\n'): line_list[4] = line_list[4][0:-1]
+                point_source = int(line_list[4])
+            except IndexError:
+                point_source = -1 
             if frame > self.total_frames - 1 or frame < 0: continue
             if kind_index > self.point_kinds - 1 or kind_index == -1: continue
-            self.point[frame,kind_index,0] = row
-            self.point[frame,kind_index,1] = column
+            if point_source < -1: continue
+            self.point[frame,kind_index,0] = column
+            self.point[frame,kind_index,1] = row
+            self.point[frame,kind_index,2] = point_source
         file_in.close()
 
     def load_points_legacy(self,filename):
