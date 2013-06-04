@@ -81,7 +81,7 @@ def main(argc,argv):
         return 2
 
 
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector):
     
     #Compute the time since beginning to the end--------------------------------
     if argSysInspector: start = timeit.default_timer()
@@ -186,14 +186,15 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
             timePerPoint = 'N/A'
             timePerFrame = 'N/A'
         
-        dictionary = {'CHOOSER':argChooser,
-                      'PREPROCESSOR':argPreproc,
-                      'PREDICTORS':predictor_name,
-                      'TOTAL_POINTS':imstack.total_frames * imstack.point_kinds,
-                      'TOTAL_FRAMES':imstack.total_frames,
-                      'TOTAL_TIME':totalTime,
-                      'POINTS_MODIFIED':pointsModified,
-                      'FRAMES_MODIFIED':framesModified,
+        dictionary = {'CHOOSER': argChooser,
+                      'PREPROCESSOR': argPreproc,
+                      'PREDICTORS': predictor_name,
+                      'IMAGE_DIRECTORY': argDir,
+                      'TOTAL_POINTS': imstack.total_frames * imstack.point_kinds,
+                      'POINTS_MODIFIED': pointsModified,
+                      'TOTAL_FRAMES': imstack.total_frames,
+                      'FRAMES_MODIFIED': framesModified,
+                      'TOTAL_TIME': totalTime,
                       'TIME/POINT': timePerPoint,
                       'TIME/FRAME': timePerFrame}
                       
