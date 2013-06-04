@@ -34,7 +34,7 @@ class Performance(Chooser):
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
-        self.upperB = 50 #Max number of pixels that we care about for error
+        self.upperB = 500 #Max number of pixels that we care about for error
         self.tpBound = 5 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
@@ -60,7 +60,7 @@ class Performance(Chooser):
         self.showErrorByFrame()
         self.showErrorByPointKind()
         self.showAccuracy()
-        self.showAccuracyConfidence()
+        #self.showAccuracyConfidence()
         self.showErrorEachPointK()
         self.showROC()
         self.showPercentageError()
@@ -124,9 +124,6 @@ class Performance(Chooser):
      
             
     def showPercentageError(self):
-        #Debugging purposes-----------------------------------------------------
-        #print 'Plot graph of percentage of errors'
-        #-----------------------------------------------------------------------
         
         self.numPlots += 1
         
@@ -136,7 +133,7 @@ class Performance(Chooser):
         #Go through each predictor
         for i in range(0,len(self.name)):
             
-            #Define an array that will save all the errors por predictor i
+            #Define an array that will save the errors for predictor i
             errors = zeros(len(self.y[0]) * len(self.y[0][0]))
             itr = 0;
             
@@ -145,6 +142,7 @@ class Performance(Chooser):
                     errors[itr] = self.y[i][frame][pointK]
                     itr += 1
             
+            #Sort errors array
             errors.sort()
             
             #Debugging purposes-------------------------------------------------
