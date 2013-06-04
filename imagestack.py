@@ -2,6 +2,7 @@ import os
 import dircache
 from PIL import Image
 from numpy import *
+from decimal import *
 
 
 class ImageStack:
@@ -275,4 +276,16 @@ class ImageStack:
     def prev(self):
         #Backs the frame up by one
         self.advance_frame(-1)
-
+        
+    #Method that computes the number of points predicted given numpy array point
+    def pointsModified(self):        
+        count = 0
+        for frame in range(0,self.total_frames):
+            for kind_index in range(0,self.point_kinds):
+                if self.point[frame][kind_index][0] > 0 or self.point[frame][kind_index][1] >0:
+                    count += 1
+        return count
+        
+    #Method that computes the number of frames modified
+    def framesModified(self):
+        return (self.pointsModified() + 0.0) / self.point_kinds
