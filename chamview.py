@@ -98,7 +98,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     imstack.load_img()
 
     #Load point kind and point position files
-    imstack._get_point_kinds(argPKind)
+    imstack.get_point_kinds(argPKind)
     if argPPos != '': imstack.load_points(argPPos)
 
     #Load the Chooser subclass instance

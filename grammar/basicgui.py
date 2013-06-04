@@ -284,13 +284,10 @@ class BasicGui(Chooser):
         self.editedPointKinds = True    #used to tell implementors if the point kinds were edited
         self.added = 0
         self.deleted = []
-        dialog_window = support.EditPointKinds(self.master,self.imstack.point_kind_list,
+        dialog_window = support.EditPointKinds(self.master,self.imstack,
                                         'Edit Point Kinds')
         new_points, self.added, self.deleted = dialog_window.result
         
-        self.imstack.deletePointKinds(self.deleted)
-        self.imstack.addPointKinds(self.added)
-        self.imstack.get_point_kinds(List=new_points)
         self.pointlist.delete(0,END)
         self.fillPointkindList()
         self.updateSelectedPredList(self.added,self.deleted)
@@ -322,19 +319,19 @@ class BasicGui(Chooser):
 #****** Key Bindings ******
 
     def createKeyBindings(self):
-        self.master.bind_all('<Down>',self.incPointKind)
-        self.master.bind_all('<Up>',self.decPointKind)
-        self.master.bind_all('<s>',self.incPointKind)
-        self.master.bind_all('<w>',self.decPointKind)
-        self.master.bind_all('<Left>',self.prev)
-        self.master.bind_all('<Right>',self.next)
-        self.master.bind_all('<a>',self.prev)
-        self.master.bind_all('<d>',self.next)
-        self.master.bind_all('<Shift-p>',self.togglePredictions)
-        self.master.bind_all('<q>',self.cyclePredictions)
-        self.master.bind_all('<e>',self.cyclePredictions)
-        self.master.bind_all('<Button-3>',self.cyclePredictions)
-        self.master.bind_all('<Delete>',self.delete)
+        self.master.bind('<Down>',self.incPointKind)
+        self.master.bind('<Up>',self.decPointKind)
+        self.master.bind('<s>',self.incPointKind)
+        self.master.bind('<w>',self.decPointKind)
+        self.master.bind('<Left>',self.prev)
+        self.master.bind('<Right>',self.next)
+        self.master.bind('<a>',self.prev)
+        self.master.bind('<d>',self.next)
+        self.master.bind('<Shift-p>',self.togglePredictions)
+        self.master.bind('<q>',self.cyclePredictions)
+        self.master.bind('<e>',self.cyclePredictions)
+        self.master.bind('<Button-3>',self.cyclePredictions)
+        self.master.bind('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
 
     def incPointKind(self,event=''):
