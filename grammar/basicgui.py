@@ -337,6 +337,7 @@ class BasicGui(Chooser):
         self.canvas.bind("<Button-1>",self.onClick)
 
     def incPointKind(self,event=''):
+        self.update_points()
         self.pointlist.select_clear(self.pointKind)
         self.pointKind = self.pointKind+1
         if self.pointKind > self.imstack.point_kinds-1:
@@ -344,6 +345,7 @@ class BasicGui(Chooser):
         self.updatePointKind()
 
     def decPointKind(self,event=''):
+        self.update_points()
         self.pointlist.select_clear(self.pointKind)
         self.pointKind = (self.pointKind-1)
         if self.pointKind < 0:
