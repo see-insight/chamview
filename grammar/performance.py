@@ -481,10 +481,6 @@ class Performance(Chooser):
         #Divide over the number of point kinds
         self.errorFrame = self.errorFrame / len(self.y[0][0])  
         
-        #Debugging purposes-----------------------------------------------------
-        print 'errorFrame:\n', self.errorFrame
-        #-----------------------------------------------------------------------
-        
     def cutArray(self, array, upperBound):
         '''This method takes an array and every value greater than the upper
         bound is changed to upper bound''' 
