@@ -21,8 +21,8 @@ class SystemInspector:
         self.add_attribute('PYTHON_VERSION', sys.version)
         if os.path.isdir('.git'):
             self.attr_names.append('GIT_HASH')
-            self.add_attribute('GIT_HASH', subprocess.check_output(
-            ['git', 'log', '--pretty=format:"%H"', '-n', '1']))
+            git_hash = subprocess.check_output(['git', 'log', '--pretty=format:"%H"', '-n', '1'])
+            self.add_attribute('GIT_HASH', git_hash.strip('"'))
         if os.path.isdir('.svn'):
             self.attr_names.append('SUBVERSION')
             self.add_attribute('SUBVERSION', True)
