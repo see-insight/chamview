@@ -43,12 +43,13 @@ def main(argc,argv):
     argOutput = ''
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
+    argSysInspector = ''
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                      'hd:c:i:o:k:p:',
+                                      'hd:c:i:o:k:p:s',
                                       ['help','dir=','chooser=','prep=',
-                                      'output=','pkind=','ppos='])
+                                      'output=','pkind=','ppos=','inspect='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -68,6 +69,8 @@ def main(argc,argv):
                 argPKind = arg
             elif opt in ('-p', '--ppos'):
                 argPPos = arg
+            elif opt in ('-s', '--inspect'):
+                argSysInspector = arg
         if argOutput == '':
             argOutput = argDir+'.txt'
         run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos)
@@ -162,7 +165,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     print '\n###### FINAL VARIABLE VALUES ######\n'
     print_var_info()
 
-        #Save points to file
+    #Save points to file
     if argOutput != '': imstack.save_points(argOutput)
     print 'EXIT loop'
 
@@ -170,11 +173,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     pointsModified = imstack.pointsModified()
     framesModified = imstack.framesModified()
   
-    #Clear out any Chooser or Predictor data
-    chooser.teardown()
-    for pred in predictor:
-        pred.teardown()
-        
     #Print general information--------------------------------------------------
     end = timeit.default_timer()
     totalTime = end - start
@@ -185,6 +183,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     print 'Number of Frames Modified: ', framesModified
     print 'Time / frame = ', totalTime / framesModified, ' s'
     #---------------------------------------------------------------------------
+  
+    #Clear out any Chooser or Predictor data
+    chooser.teardown()
+    for pred in predictor:
+        pred.teardown()
 
 def update_point_array(n_array,add,delete):
     if delete != []:
