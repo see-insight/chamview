@@ -14,34 +14,32 @@ import subprocess
 
 class SystemInspector:
     
-    def __init__(self,command):
+    def __init__(self,extra_attributes):
         self.attributes = {}
-        self.command = command
-        self.attributes['PLATFORM'] = sys.platform
-        self.attributes['PYTHON_VERSION'] = sys.version
+        self.add_attribute('PLATFORM', sys.platform)
+        self.add_attribute('PYTHON_VERSION', sys.version)
         if os.path.isdir('.git'):
-            self.attributes['GIT_HASH'] = subprocess.check_output(['git', 'describe'])
+            self.add_attribute('GIT_HASH', subprocess.check_output(
+            ['git', 'log', '--pretty=format:"%H"', '-n', '1']))
         if os.path.isdir('.svn'):
-            self.attributes['SUBVERSION'] = True
+            self.add_attribute('SUBVERSION', True)
         if os.path.isdir('.hg'):
-            self.attributes['MERCURIAL'] = True
-        self.attributes['INSTALLED_PYTHON_MODULES'] = sys.modules.keys()
+            self.add_attribute('MERCURIAL', True)
+        self.add_attribute('INSTALLED_PYTHON_MODULES', sys.modules.keys())
+        for key, value in extra_attributes:
+            self.add_attribute(key,value)
         
-    def call_command(self):
-        self.attribute['EXIT_STATUS'] = subprocess.call(self.command.split())
+    def add_attribute(self,key,value):
+        self.attributes[key] = value
             
     def write_to_file(self,filename='system_info.txt'):
-        fout = open(filename, 'a')
+        fout = open(filename, 'w')
         for attr in self.attributes:
             st = attr + ': ' + str(self.attributes[attr]) + '\n'
             fout.write(st)
         fout.close()
         
-if __name__ == '__main__':
-    args = sys.argv[sys.argv.index('SystemInspector.py')+1:]
-    args = ' '.join(args)
-    inspector = SystemInspector(args)
-    inspector.call_command()
-    inspector.write_to_file()
+    
+    
     
     
