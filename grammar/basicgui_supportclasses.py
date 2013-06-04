@@ -1,5 +1,6 @@
 # class to create simple entry oriented Dialog Windows
 
+import os
 from Tkinter import *
 
 
@@ -107,8 +108,9 @@ class Dialog(Toplevel):
 
 class EditPointKinds(Dialog):
     
-    def __init__(self, parent, pointlist=[], title=None):
-        self.currentpoints = pointlist
+    def __init__(self, parent, imstack, title=None):
+        self.stack = imstack
+        self.currentpoints = self.stack.point_kind_list
         self.num_added = 0
         self.deleted_indices = []
         self.result = (self.currentpoints,self.num_added,self.deleted_indices)
@@ -118,12 +120,18 @@ class EditPointKinds(Dialog):
         # create dialog body.  return widget that should have
         # initial focus.
         self.topframe = Frame(master)
-        self.topframe.grid(padx=15,pady=15)
+        self.topframe.grid(row=0,padx=15,pady=15)
         self.listbox = Listbox(self.topframe,width=45,relief=SUNKEN)
         self.listbox.pack(fill=BOTH)
         for kind in self.currentpoints:
             self.listbox.insert(END,kind)
         self.listbox.bind('<<ListboxSelect>>',self.highlight)
+        self.default = Button(self.topframe, text="Default", width=10, 
+                                command=self.revert_to_default)
+        self.default.pack(side=LEFT,padx=5, pady=5)
+        self.maked = Button(self.topframe, text="Make Default", width=10, 
+                                command=self.set_as_default)
+        self.maked.pack(side=LEFT, padx=5, pady=5)
         
         self.bottomframe = Frame(master,height=70,width=295)
         self.bottomframe.grid(row=1,padx=15,pady=15)
@@ -147,6 +155,22 @@ class EditPointKinds(Dialog):
         self.listbox.see(self.point)
         self.listbox.activate(self.point)
         
+    def revert_to_default(self,event=''):
+        self.deleted_indices = range(len(self.currentpoints))
+        self.stack.get_point_kinds()
+        self.num_added = self.stack.point_kinds
+        self.listbox.delete(0,END)
+        for kind in self.stack.point_kind_list:
+            self.listbox.insert(END,kind)
+        self.ok()
+        
+    def set_as_default(self,event=''):
+        if os.path.exists('defaultPointKinds.txt') == False: return
+        file_out = open('defaultPointKinds.txt', 'w')
+        for point_kind in self.listbox.get(0,END):
+            file_out.write(point_kind + '\n')
+        file_out.close()
+        
     def add(self,event=''):
         self.listbox.select_clear(ACTIVE)
         self.listbox.insert(END,self.ptkind.get())
@@ -162,7 +186,13 @@ class EditPointKinds(Dialog):
             self.deleted_indices.append(original_index)
         except ValueError:
             self.num_added -= 1
-        self.listbox.delete(ACTIVE) 
+        self.listbox.delete(ACTIVE)
+        
+    def ok(self,event=None):
+        self.stack.deletePointKinds(self.deleted_indices)
+        self.stack.addPointKinds(self.num_added)
+        self.stack.get_point_kinds(List=self.listbox.get(0,END))
+        Dialog.ok(self)
         
     def apply(self):
         self.result = (self.listbox.get(0,END), 

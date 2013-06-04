@@ -74,7 +74,7 @@ class ImageStack:
             self.single_img = True
         self.point = zeros((self.total_frames,self.point_kinds,2))
 
-    def _get_point_kinds(self,filename='',List=[]):
+    def get_point_kinds(self,filename='',List=[]):
         #Creates a list of valid point kinds read in from a file or a list of
         #string names of point kinds. Each line of the file should have a point 
         #kind (i.e. Left back foot) with any additional information separated by 
