@@ -112,8 +112,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     predictor,predictor_name = vocab.getPredictors()
     
     #Picking only some predictors for debugging purposes------------------------
-    predictor= [predictor[3], predictor[0]]
-    predictor_name= [predictor_name[3], predictor_name[0]]
+    predictor= [predictor[3], predictor[0], predictor[2]]
+    predictor_name= [predictor_name[3], predictor_name[0], predictor_name[2]]
     #---------------------------------------------------------------------------
 
     #Preprocess the ImageStack image
