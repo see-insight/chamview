@@ -160,6 +160,8 @@ class EditPointKinds(Dialog):
         self.stack.get_point_kinds()
         self.num_added = self.stack.point_kinds
         self.listbox.delete(0,END)
+        for kind in self.stack.point_kind_list:
+            self.listbox.insert(END,kind)
         self.ok()
         
     def set_as_default(self,event=''):
