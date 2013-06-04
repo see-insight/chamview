@@ -181,9 +181,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos):
     print '--------------------------------------------------------------------'
     print 'The total running time for chamview is of: ', totalTime, ' s'
     print 'Number of Points Modified: ', pointsModified
-    print 'Time / point = ', totalTime / pointsModified, ' s'
+#    print 'Time / point = ', totalTime / pointsModified, ' s'
     print 'Number of Frames Modified: ', framesModified
-    print 'Time / frame = ', totalTime / framesModified, ' s'
+#    print 'Time / frame = ', totalTime / framesModified, ' s'
     #---------------------------------------------------------------------------
 
 def update_point_array(n_array,add,delete):
