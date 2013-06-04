@@ -288,4 +288,10 @@ class ImageStack:
         
     #Method that computes the number of frames modified
     def framesModified(self):
-        return (self.pointsModified() + 0.0) / self.point_kinds
+        count = 0
+        for frame in range(0,self.total_frames):
+            for kind_index in range(0,self.point_kinds):
+                if self.point[frame][kind_index][0] > 0 or self.point[frame][kind_index][1] >0:
+                    count += 1
+                    break
+        return count
