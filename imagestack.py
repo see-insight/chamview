@@ -312,8 +312,8 @@ class ImageStack:
     #Method that computes the number of points predicted given numpy array point
     def pointsModified(self):        
         count = 0
-        for frame in range(0,self.total_frames):
-            for kind_index in range(0,self.point_kinds):
+        for frame in range(self.total_frames):
+            for kind_index in range(self.point_kinds):
                 if self.point[frame][kind_index][0] > 0 or self.point[frame][kind_index][1] >0:
                     count += 1
         return count

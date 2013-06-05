@@ -14,11 +14,13 @@ import subprocess
 
 class SystemInspector:
     
-    def __init__(self,extra_attributes={},extra_attr_names=[]):
+    def __init__(self,extra_attr_names=[],extra_attr_values=[]):
         self.attr_names = ['PLATFORM','PYTHON_VERSION','INSTALLED_PYTHON_MODULES']
         self.attributes = {}
+        self.extra_attributes = dict(zip(extra_attr_names, extra_attr_values))
         self.add_attribute('PLATFORM', sys.platform)
         self.add_attribute('PYTHON_VERSION', sys.version)
+        self.add_attribute('INSTALLED_PYTHON_MODULES', sys.modules.keys())
         if os.path.isdir('.git'):
             self.attr_names.append('GIT_HASH')
             git_hash = subprocess.check_output(['git', 'log', '--pretty=format:"%H"', '-n', '1'])
@@ -29,7 +31,6 @@ class SystemInspector:
         if os.path.isdir('.hg'):
             self.attr_names.append('MERCURIAL')
             self.add_attribute('MERCURIAL', True)
-        self.add_attribute('INSTALLED_PYTHON_MODULES', sys.modules.keys())
         for attr in extra_attr_names:
             self.attr_names.append(attr)
             self.add_attribute(attr,extra_attributes[attr])

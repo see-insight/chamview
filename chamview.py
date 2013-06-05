@@ -177,6 +177,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     
     #Run System Inspector
     if argSysInspector : 
+        import string
         
          #Stop timer and compute total time
         end = timeit.default_timer()
@@ -185,6 +186,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
         #Compute the number of points modified and frames modified
         pointsModified = imstack.pointsModified()
         framesModified = imstack.framesModified()
+        
+        #Compute predictor activity aka how many accepted points came from each predictor
+        pred_activity = [[string.upper(predictor_name[i])+'_POINTS',0] for i in range(len(predictor_name))]
+        pred_activity.append(['MANUAL_POINTS',0])
+        for frame in imstack.point:
+            for point_kind in frame:
+                if point_kind[0] > 0 or point_kind[1] > 0:
+                    pred_activity[point_kind[2]][1] += 1
+                    
+        #Compute time data
         try:
             timePerPoint = totalTime / pointsModified
             timePerFrame = totalTime / framesModified
@@ -192,22 +203,25 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
             timePerPoint = 'N/A'
             timePerFrame = 'N/A'
         
+        #Compile list of attribute names
         attr_names = ['CHOOSER','PREPROCESSOR','PREDICTORS','IMAGE_DIRECTORY',
                       'TOTAL_POINTS','POINTS_MODIFIED','TOTAL_FRAMES',
-                      'FRAMES_MODIFIED','TOTAL_TIME','TIME/POINT','TIME/FRAME']
-        attributes = {'CHOOSER': argChooser,
-                      'PREPROCESSOR': argPreproc,
-                      'PREDICTORS': predictor_name,
-                      'IMAGE_DIRECTORY': argDir,
-                      'TOTAL_POINTS': imstack.total_frames * imstack.point_kinds,
-                      'POINTS_MODIFIED': pointsModified,
-                      'TOTAL_FRAMES': imstack.total_frames,
-                      'FRAMES_MODIFIED': framesModified,
-                      'TOTAL_TIME': totalTime,
-                      'TIME/POINT': timePerPoint,
-                      'TIME/FRAME': timePerFrame}
-                      
-        inspector = SI.SystemInspector(attributes,attr_names)
+                      'FRAMES_MODIFIED','MANUAL_POINTS']
+        for source in pred_activity[:-1]:
+            attr_names.append(source[0])
+        attr_names.extend(['TOTAL_TIME','TIME/POINT','TIME/FRAME'])
+        
+        #Compile list of attribute values
+        attr_values = [argChooser,argPreproc,predictor_name,argDir,
+                      imstack.total_frames * imstack.point_kinds,pointsModified,
+                      imstack.total_frames,framesModified,pred_activity[-1][1]]
+        for source in pred_activity[:-1]:
+            attr_values.append(source[1])
+        attr_names.extend([totalTime,timePerPoint,timePerFrame])
+        
+        #Create SystemInspector object and pass it the additional chamview 
+        #specific attributes then write the object to a file
+        inspector = SI.SystemInspector(attr_names,attr_values)
         try:
             inspector.write_to_file(argSysInspector)
         except TypeError:
