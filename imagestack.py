@@ -21,10 +21,10 @@ class ImageStack:
     exit              if set to True, main ChamView file will exit and save
                       the current point set
     """
-
+    
     def __init__(self,directory=''):
         #Called upon instance creation
-        self.point = zeros((0,0,2))
+        self.point = zeros((0,0,3))
         self.point_kind_list = []
         self.point_kinds = 0
         self.img_list = []
@@ -72,7 +72,10 @@ class ImageStack:
         self.total_frames = len(self.img_list)
         if self.total_frames == 1:
             self.single_img = True
-        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point = zeros((self.total_frames,self.point_kinds,3))
+        for frame in self.point:
+            for point_kind in frame:
+                point_kind[2] = -1
 
     def get_point_kinds(self,filename='',List=[]):
         #Creates a list of valid point kinds read in from a file or a list of
@@ -86,7 +89,10 @@ class ImageStack:
             if os.path.exists(filename) == False: return
             self.point_kinds = sum(1 for line in open(filename))
             self.point_kind_list = []
-            self.point = zeros((self.total_frames,self.point_kinds,2))
+            self.point = zeros((self.total_frames,self.point_kinds,3))
+            for frame in self.point:
+                for point_kind in frame:
+                    point_kind[2] = -1
             file_in = open(filename)
             for line in file_in:
                 #If it's an old point kind file, switch over to the legacy loader
@@ -106,8 +112,15 @@ class ImageStack:
         else:
             self.point_kinds = len(List)
             self.point_kind_list = List
-            if self.point == zeros((0,0,2)):
-                self.point = zeros((self.total_frames,self.point_kinds,2))
+            temp = self.point
+            for frame in temp:
+                for kind in frame:
+                    kind[2] *= 0
+            if temp == zeros((0,0,3)):
+                self.point = zeros((self.total_frames,self.point_kinds,3))
+                for frame in self.point:
+                    for point_kind in frame:
+                        point_kind[2] = -1
 
     def get_point_kinds_legacy(self,filename=''):
         #Loads point kinds from a file in the legacy format. The first line of
@@ -115,7 +128,10 @@ class ImageStack:
         #is in the format buttonToHit label color
         self.point_kinds = sum(1 for line in open(filename)) - 1
         self.point_kind_list = []
-        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point = zeros((self.total_frames,self.point_kinds,3))
+        for frame in self.point:
+            for point_kind in frame:
+                point_kind[2] = -1
         file_in = open(filename)
         for line in file_in:
             line_list = line.split(' ')
@@ -128,7 +144,10 @@ class ImageStack:
         #Loads previous point data in from a file. Each line should be in the
         #format frame,point label,row,column. If the input file is legacy from
         #the old Chamview, it will be loaded appropriately
-        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point = zeros((self.total_frames,self.point_kinds,3))
+        for frame in self.point:
+            for point_kind in frame:
+                point_kind[2] = -1
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         
@@ -164,7 +183,10 @@ class ImageStack:
     def load_points_legacy(self,filename):
         #Loads previous point data in from a file. Each line should be in the
         #old format of frame+n:row0:column0:row1:column1:circleID+label
-        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point = zeros((self.total_frames,self.point_kinds,3))
+        for frame in self.point:
+            for point_kind in frame:
+                point_kind[2] = -1
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         for line in file_in:
@@ -174,16 +196,17 @@ class ImageStack:
             kind = line_list[5][1:-1]
             #Take the average of each set of points describing the circle to get
             #the center
-            row = int((int(line_list[1])+int(line_list[3]))/2)
-            column = int((int(line_list[2])+int(line_list[4]))/2)
+            column = int((int(line_list[1])+int(line_list[3]))/2)
+            row = int((int(line_list[2])+int(line_list[4]))/2)
             try:
                 kind_index = self.point_kind_list.index(kind)
             except ValueError:
                 kind_index = -1
             if frame > self.total_frames - 1 or frame < 0: continue
             if kind_index > self.point_kinds - 1 or kind_index == -1: continue
-            self.point[frame,kind_index,0] = row
-            self.point[frame,kind_index,1] = column
+            self.point[frame,kind_index,0] = column
+            self.point[frame,kind_index,1] = row
+            self.point[frame,kind_index,2] = -1
         file_in.close()
         
     def point_empty(self, frame, point_kind):
@@ -249,7 +272,8 @@ class ImageStack:
                 kind = self.point_kind_list[kind_index]
                 file_out.write(str(frame)+','+kind+','+
                     str(int(self.point[frame,kind_index,0]))+','+
-                    str(int(self.point[frame,kind_index,1]))+'\n')
+                    str(int(self.point[frame,kind_index,1]))+','+
+                    str(int(self.point[frame,kind_index,2]))+'\n')
         file_out.close()
         print "points saved to "+filename
 
@@ -267,7 +291,7 @@ class ImageStack:
         if self.current_frame > self.total_frames-1:
             if self.single_img == True:
                 self.total_frames = self.current_frame+1
-                self.point.resize((self.total_frames,self.point_kinds,2))
+                self.point.resize((self.total_frames,self.point_kinds,3))
             else:
                 self.current_frame = self.total_frames-1
         self.load_img()

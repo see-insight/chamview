@@ -78,6 +78,7 @@ class BasicGui(Chooser):
     
         #set activePoint[]
         self.activePoint[0] = self.selectedPredictions[self.pointKind]
+        self.activePoint[0] = self.imstack.point[self.imstack.current_frame,self.pointKind,2]
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
 #        print self.imstack.point[self.imstack.current_frame,self.pointKind,0], ',', self.imstack.point[self.imstack.current_frame,self.pointKind,1]
@@ -389,6 +390,7 @@ class BasicGui(Chooser):
         self.selectedPredictions[self.pointKind] = -1
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
+        self.imstack.point[self.imstack.current_frame,self.pointKind,2] = -1
         self.drawCanvas()
 
 #****** Canvas and Point Drawing ******
@@ -407,12 +409,15 @@ class BasicGui(Chooser):
     def drawCanvas(self):
         if (self.selectedPredictions[self.pointKind] != -1 and
         self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
+            i = self.selectedPredictions[self.pointKind]
             x = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,0]
             y = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,1]
+            self.activePoint[0] = i
             self.activePoint[1] = x
             self.activePoint[2] = y
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
+            self.imstack.point[self.imstack.current_frame,self.pointKind,2] = i
 #        print '****ACTIVE POINT after drawCanvas:****\n', self.activePoint
         #Clear out any existing points
         self.canvas.delete('all')
@@ -464,17 +469,11 @@ class BasicGui(Chooser):
             y = pred[self.pointKind,1] * self.scale
             conf = pred[self.pointKind,2]
             color='yellow'
-            if self.activePoint[0] == -1:
-                    color='yellow'
-            elif cnt == self.activePoint[0]: 
+            if cnt == self.activePoint[0]: 
                 color='blue'
-            elif (x == self.imstack.point[self.imstack.current_frame,self.pointKind,0] and
-            y == self.imstack.point[self.imstack.current_frame,self.pointKind,1]):
-                color='magenta'
             #If it didn't return a point, don't draw anything
             if x == 0 and y == 0 and conf == 0: 
                 self.predlist.select_clear(cnt)
-                color='yellow'
             else:
                 self.predlist.select_set(cnt)
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
@@ -483,14 +482,18 @@ class BasicGui(Chooser):
         '''Draw the selected points in this frame. The current pointkind is in red
         and the other pointkinds are in green.'''
         rad = BasicGui.circle_radius
-        for i in range(0,self.imstack.point_kinds):
-            x = self.imstack.point[self.imstack.current_frame,i,0] * self.scale
-            y = self.imstack.point[self.imstack.current_frame,i,1] * self.scale
+        for k in range(self.imstack.point_kinds):
+            x = self.imstack.point[self.imstack.current_frame,k,0] * self.scale
+            y = self.imstack.point[self.imstack.current_frame,k,1] * self.scale
+            i = self.imstack.point[self.imstack.current_frame,k,2]
             #If we haven't selected a point yet then don't draw it
             if x == 0 and y == 0: continue
             #Red is selected pointkind, green is other pointkinds
-            if i == self.pointKind:
-                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+            if k == self.pointKind:
+                if i != -1:
+                    self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='magenta')
+                else:                    
+                    self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
             else:
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
 
@@ -552,6 +555,7 @@ class BasicGui(Chooser):
         self.selectedPredictions[self.pointKind] = i
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
+        self.imstack.point[self.imstack.current_frame,self.pointKind,2] = i
     
     def end_update_loop(self):
         '''Exit TKinter's update loop, control is given back to ChamView. 
