@@ -77,19 +77,19 @@ def main(argc,argv):
                 
         if argOutput == '':
             argOutput = argDir+'.txt'
+
         run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
+
 
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, 'For help use --help'
         return 2
 
-
 def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector):
     
-    #Compute the time since beginning to the end--------------------------------
+    #Start timer if argSysInspector
     if argSysInspector: start = timeit.default_timer()
-    #---------------------------------------------------------------------------
     
     #Load images into memory
     imstack = ImageStack(argDir)
@@ -112,8 +112,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     predictor,predictor_name = vocab.getPredictors()
     
     #Picking only some predictors for debugging purposes------------------------
+    
     predictor = [predictor[0],predictor[1],predictor[3]]
     predictor_name = [predictor_name[0],predictor_name[1],predictor_name[3]]
+    
     #---------------------------------------------------------------------------
 
     #Preprocess the ImageStack image
