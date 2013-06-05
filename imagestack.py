@@ -12,6 +12,8 @@ class ImageStack:
                       a numpy array [frame,point kind,column/row]
     point_kind_list[] list of string labels associated with each point kind
     point_kinds       number of point kinds in use
+    point_sources     array with indices of which predictor provided the point
+                      with -1 = user; format: [frame,point kind,source]
     img_list[]        list of paths to image files to load and use as frames
     img_current       PIL image of current frame or None if no frames loaded
     img_previous      PIL image of previous frame or None if current_frame == 0
@@ -24,9 +26,10 @@ class ImageStack:
     
     def __init__(self,directory=''):
         #Called upon instance creation
-        self.point = zeros((0,0,3))
+        self.point = zeros((0,0,2))
         self.point_kind_list = []
         self.point_kinds = 0
+        self.point_sources = []
         self.img_list = []
         self.img_current = None
         self.img_previous = None
@@ -72,10 +75,8 @@ class ImageStack:
         self.total_frames = len(self.img_list)
         if self.total_frames == 1:
             self.single_img = True
-        self.point = zeros((self.total_frames,self.point_kinds,3))
-        for frame in self.point:
-            for point_kind in frame:
-                point_kind[2] = -1
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
 
     def get_point_kinds(self,filename='',List=[]):
         #Creates a list of valid point kinds read in from a file or a list of
@@ -89,10 +90,8 @@ class ImageStack:
             if os.path.exists(filename) == False: return
             self.point_kinds = sum(1 for line in open(filename))
             self.point_kind_list = []
-            self.point = zeros((self.total_frames,self.point_kinds,3))
-            for frame in self.point:
-                for point_kind in frame:
-                    point_kind[2] = -1
+            self.point = zeros((self.total_frames,self.point_kinds,2))
+            self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
             file_in = open(filename)
             for line in file_in:
                 #If it's an old point kind file, switch over to the legacy loader
@@ -112,15 +111,9 @@ class ImageStack:
         else:
             self.point_kinds = len(List)
             self.point_kind_list = List
-            temp = self.point
-            for frame in temp:
-                for kind in frame:
-                    kind[2] *= 0
-            if temp == zeros((0,0,3)):
+            if self.point == zeros((0,0,2)):
                 self.point = zeros((self.total_frames,self.point_kinds,3))
-                for frame in self.point:
-                    for point_kind in frame:
-                        point_kind[2] = -1
+                self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
 
     def get_point_kinds_legacy(self,filename=''):
         #Loads point kinds from a file in the legacy format. The first line of
@@ -128,10 +121,8 @@ class ImageStack:
         #is in the format buttonToHit label color
         self.point_kinds = sum(1 for line in open(filename)) - 1
         self.point_kind_list = []
-        self.point = zeros((self.total_frames,self.point_kinds,3))
-        for frame in self.point:
-            for point_kind in frame:
-                point_kind[2] = -1
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
         file_in = open(filename)
         for line in file_in:
             line_list = line.split(' ')
@@ -144,10 +135,8 @@ class ImageStack:
         #Loads previous point data in from a file. Each line should be in the
         #format frame,point label,row,column. If the input file is legacy from
         #the old Chamview, it will be loaded appropriately
-        self.point = zeros((self.total_frames,self.point_kinds,3))
-        for frame in self.point:
-            for point_kind in frame:
-                point_kind[2] = -1
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         
@@ -177,16 +166,14 @@ class ImageStack:
             if point_source < -1: continue
             self.point[frame,kind_index,0] = column
             self.point[frame,kind_index,1] = row
-            self.point[frame,kind_index,2] = point_source
+            self.point_sources[frame][kind_index] = point_source
         file_in.close()
 
     def load_points_legacy(self,filename):
         #Loads previous point data in from a file. Each line should be in the
         #old format of frame+n:row0:column0:row1:column1:circleID+label
-        self.point = zeros((self.total_frames,self.point_kinds,3))
-        for frame in self.point:
-            for point_kind in frame:
-                point_kind[2] = -1
+        self.point = zeros((self.total_frames,self.point_kinds,2))
+        self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
         if os.path.exists(filename) == False: return
         file_in = open(filename)
         for line in file_in:
@@ -206,7 +193,7 @@ class ImageStack:
             if kind_index > self.point_kinds - 1 or kind_index == -1: continue
             self.point[frame,kind_index,0] = column
             self.point[frame,kind_index,1] = row
-            self.point[frame,kind_index,2] = -1
+            self.point_sources[frame][kind_index] = -1
         file_in.close()
         
     def point_empty(self, frame, point_kind):
@@ -217,24 +204,30 @@ class ImageStack:
         
     def addPointKinds(self,n):
         '''Add n new Point Kinds to the image stack's numpy array of point information.'''
-        temp_list = self.point.tolist()
+        temp = self.point.tolist()
         for i in range(n):
-            for frame in temp_list:
-                frame.append([0,0])
-        self.point = array(temp_list)
+            for frame in range(self.total_frames):
+                temp[frame].append([0,0])
+                self.point_sources[frame].append(-1)
+        self.point = array(temp)
         
     def deletePointKinds(self,indices):
         '''Delete Point information in the image stack's numpy array of point 
         information for each index provided.'''
         temp = self.point.tolist()
         new_point = []
-        for frame in temp:
-            new_frame = []
-            for i in range(len(frame)):
-                if i not in indices:
-                    new_frame.append(frame[i])
-            new_point.append(new_frame)
-        self.point = array(new_point)
+        new_sources = []
+        for frame in range(self.total_frames):
+            new_point_frame = []
+            new_sources_frame = []
+            for kind in range(self.point_kinds):
+                if kind not in indices:
+                    new_point_frame.append(temp[frame][kind])
+                    new_sources_frame.append(self.point_sources[frame][kind])
+            new_point.append(new_point_frame)
+            new_sources.append(new_sources_frame)
+        self.point = array(new_point)     
+        
         
     def clearFrame(self):
         pass
@@ -268,13 +261,13 @@ class ImageStack:
         #        frame,point kind,column,row,point_source.
         #Note that this will overwrite any existing file without warning
         file_out = open(filename,'w')
-        for frame in range(0,self.total_frames):
-            for kind_index in range(0,self.point_kinds):
+        for frame in range(self.total_frames):
+            for kind_index in range(self.point_kinds):
                 kind = self.point_kind_list[kind_index]
                 file_out.write(str(frame)+','+kind+','+
                     str(int(self.point[frame,kind_index,0]))+','+
                     str(int(self.point[frame,kind_index,1]))+','+
-                    str(int(self.point[frame,kind_index,2]))+'\n')
+                    str(int(self.point_sources[frame][kind_index]))+'\n')
         file_out.close()
         print "points saved to "+filename
 
@@ -292,7 +285,8 @@ class ImageStack:
         if self.current_frame > self.total_frames-1:
             if self.single_img == True:
                 self.total_frames = self.current_frame+1
-                self.point.resize((self.total_frames,self.point_kinds,3))
+                self.point.resize((self.total_frames,self.point_kinds,2))
+                self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
             else:
                 self.current_frame = self.total_frames-1
         self.load_img()

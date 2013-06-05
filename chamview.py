@@ -132,6 +132,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     def print_var_info():
         print '****SELECTED POINTS:****\n', imstack.point
         print '****PREDICTED POINTS:****\n', predict_point
+        print '****POINT SOURCE HISTORY:****\n', imstack.point_sources
         #print '****CURRENT FRAME:****\n', imstack.current_frame
         print '****ACTIVE POINT:****\n', chooser.activePoint
         print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
@@ -190,10 +191,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
         #Compute predictor activity aka how many accepted points came from each predictor
         pred_activity = [[string.upper(predictor_name[i])+'_POINTS',0] for i in range(len(predictor_name))]
         pred_activity.append(['MANUAL_POINTS',0])
-        for frame in imstack.point:
-            for point_kind in frame:
-                if point_kind[0] > 0 or point_kind[1] > 0:
-                    pred_activity[point_kind[2]][1] += 1
+        for frame in range(len(imstack.point_sources)):
+            for kind in range(len(imstack.point_sources[frame])):
+                source = imstack.point_sources[frame][kind]
+                if imstack.point[frame][kind][0] > 0 or imstack.point[frame][kind][1] > 0:
+                    pred_activity[source][1] += 1
                     
         #Compute time data
         try:
