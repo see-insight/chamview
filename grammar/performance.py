@@ -5,6 +5,9 @@ from pylab import *
 import matplotlib.pyplot as plt
 from decimal import *
 from mpl_toolkits.mplot3d import axes3d
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import numpy as np
 #from mayavi.mlab import *
 
 '''This file implements classes where the performance of predictors
@@ -30,12 +33,14 @@ class Performance(Chooser):
         
         self.name = [] #Name of predictor
         self.pointKList = [] #Name of the point kinds
+        self.totalFrames = 0 #Keep track of the number of frames of dataset
+        self.totalPointK = 0 #Keep track of the number of point kinds of dataset
         
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
-        self.upperB = 500 #Max number of pixels that we care about for error
-        self.tpBound = 5 #Bound to split True Positives and False Negatives
+        self.upperB = 50 #Max number of pixels that we care about for error
+        self.tpBound = 15 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
         #Variables used to match with chamview.py requirements
@@ -64,7 +69,7 @@ class Performance(Chooser):
         self.showErrorEachPointK()
         self.showROC()
         self.showPercentageError()
-        #self.showError3D()
+        self.showError3D()
         
         
 
@@ -91,6 +96,10 @@ class Performance(Chooser):
             #A 3-dimensional array for confidence in predictions
             #1.- predictor, 2.- frame, 3.- point kind
             self.confidence = zeros((len(self.name), stack.total_frames, stack.point_kinds))
+            
+            #Get the total of point kinds and total of frames
+            self.totalFrames = stack.total_frames
+            self.totalPointK = stack.point_kinds
 
         #Get the accuracy of each predictor
         for pred in range(0,len(self.name)):
@@ -134,11 +143,11 @@ class Performance(Chooser):
         for i in range(0,len(self.name)):
             
             #Define an array that will save the errors for predictor i
-            errors = zeros(len(self.y[0]) * len(self.y[0][0]))
+            errors = zeros(self.totalFrames * self.totalPointK)
             itr = 0;
             
-            for frame in range(0,len(self.y[0])):
-                for pointK in range(0,len(self.y[0][0])):
+            for frame in range(0,self.totalFrames):
+                for pointK in range(0,self.totalPointK):
                     errors[itr] = self.y[i][frame][pointK]
                     itr += 1
             
@@ -164,6 +173,10 @@ class Performance(Chooser):
             
             #Compute percentage of points
             yPlot = yPlot * 100 / len(errors)
+            
+            #Fill out the rest of the point
+            for j in range(err, len(yPlot)):
+                yPlot[j] = 100 
             
             #Save data to file
             fo = open('Percentage_of_Error'+self.name[i]+'.txt','w')
@@ -261,7 +274,7 @@ class Performance(Chooser):
         #print 'Plot graphs with error of predictors for each kind point'        
         
         #Go through each point kind
-        for pointK in range(0, len(self.y[0][0])):
+        for pointK in range(0, self.totalPointK):
             
             self.numPlots += 1
             #Define a new figure
@@ -341,7 +354,7 @@ class Performance(Chooser):
         plt.figure(self.numPlots)
         
         #Define a 3-dimensional array that will contain accuracy * Confidence
-        accConfidence = zeros((len(self.y), len(self.y[0]), len(self.y[0][0])))
+        accConfidence = zeros((len(self.y), self.totalFrames, self.totalPointK))
         
         for pred in range(0,len(accConfidence)):
             for frame in range(0,len(accConfidence[0])):
@@ -352,7 +365,7 @@ class Performance(Chooser):
         
         #Define a 2-dimensional array that contains the average of accConfidence
         #for each frame
-        yaccConf = zeros((len(self.y), len(self.y[0])))
+        yaccConf = zeros((len(self.y), self.totalFrames))
         for pred in range(0,len(yaccConf)):
             for frame in range(0,len(yaccConf[0])):
                 yaccConf[pred][frame] = sum(accConfidence[pred][frame])
@@ -392,8 +405,8 @@ class Performance(Chooser):
             numFP = 0
             
             #Here we count the number of True positives and False positives
-            for frame in range(0,len(self.y[0])):
-                for pointK in range(0,len(self.y[0][0])):
+            for frame in range(0,self.totalFrames):
+                for pointK in range(0,self.totalPointK):
                     if self.y[pred][frame][pointK] <= self.tpBound:
                         numTP += 1
                     else:
@@ -403,11 +416,11 @@ class Performance(Chooser):
             if numTP > 0:
                 tpUnit = 1 / Decimal(numTP) 
             else:
-                tpUnit = 0.0000001 ############################################
+                tpUnit = 0.0
             if numFP > 0:
                 fpUnit = 1 / Decimal(numFP)
             else:
-                fpUnit = 0.0000001 ############################################
+                fpUnit = 1.0
             
             
             #Debugging purposes-------------------------------------------------
@@ -427,8 +440,8 @@ class Performance(Chooser):
             
             itr = 0
             #Here we compute the TPrate and FPrate and then plot it
-            for frame in range(0,len(self.y[0])):
-                for pointK in range(0,len(self.y[0][0])):
+            for frame in range(0,self.totalFrames):
+                for pointK in range(0,self.totalPointK):
                     if self.y[pred][frame][pointK] <= self.tpBound:
                         #Add to True Positives
                         TPrate += tpUnit
@@ -437,7 +450,9 @@ class Performance(Chooser):
                         #Add to False Negatives
                         itr += 1
                         yPlot[itr] = TPrate
-            
+
+            #Fill last position as 1
+            yPlot[len(yPlot)-1] = 1
             
             #Debugging purposes-------------------------------------------------
             #print 'yPlot: ', yPlot
@@ -454,30 +469,63 @@ class Performance(Chooser):
       
     def showError3D(self):
         
-        #print 'Plot errors 3D given image list and point kind'
-        
+        #For each predictor
         for i in range(0,len(self.y)):
+        
+            self.numPlots += 1
+            #Define a new figure
+            fig = plt.figure(self.numPlots)    
+                    
+            #Define arrays for all axis
+            xPlot = arange(0,self.totalFrames)
+            yPlot = arange(0,self.totalPointK)
             
-            #Define arrays for x and y axis
-            xPlot = arange(0,len(self.y[0]),1)
-            yPlot = arange(0,len(self.y[0][0]),1)
+            xPlot, yPlot = np.meshgrid(xPlot, yPlot)
+                                
+            zPlot = zeros(self.totalFrames * self.totalPointK)
             
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            #X, Y, Z = axes3d.get_test_data(0.05)
-            ax.plot_wireframe(xPlot, yPlot, self.y[i], rstride=10, cstride=10)
+            #Fill up z axis vector
+            itr = 0
+            for frame in range(0,self.totalFrames):
+                for pointK in range(0,self.totalPointK):
+                    newError = self.y[i][frame][pointK]
+                    if newError <= self.upperB:
+                         zPlot[itr] = newError
+                    else:
+                        zPlot[itr] = self.upperB
+                    itr += 1
+                    
+            zPlot = np.array(zPlot).reshape(xPlot.shape)
+                    
+            ax = fig.gca(projection='3d')
+            
+            surf = ax.plot_surface(xPlot, yPlot, zPlot, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+
+            ax.zaxis.set_major_locator(LinearLocator(10))
+            ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+            fig.colorbar(surf, shrink=0.5, aspect=5)
+            
+            #Messages for plot
+            title('Predictor: ' + self.name[i])
+            xlabel('Frames')
+            ylabel('Point Kinds')
+            #zlabel('Error in Pixels')
+            plt.legend(self.name)
+            plt.show() 
+            
             plt.show()                  
 
     def computeErrorByFrame(self):
         
         #Create a 2-dimensional array, predictors x frames
-        self.errorFrame = zeros((len(self.name), len(self.y[0])))
+        self.errorFrame = zeros((len(self.name), self.totalFrames))
         
         for pred in range(0,len(self.errorFrame)):
             for frame in range(0,len(self.errorFrame[0])):
                 self.errorFrame[pred][frame] = sum(self.y[pred][frame])
         #Divide over the number of point kinds
-        self.errorFrame = self.errorFrame / len(self.y[0][0])  
+        self.errorFrame = self.errorFrame / self.totalPointK  
         
     def cutArray(self, array, upperBound):
         '''This method takes an array and every value greater than the upper
