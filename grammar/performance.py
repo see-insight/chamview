@@ -61,11 +61,12 @@ class Performance(Chooser):
         #different ways
         self.computeErrorByFrame()
         
+        #self.showAccuracyConfidence()
+        
         #Show results in text files and in graphs
         self.showErrorByFrame()
         self.showErrorByPointKind()
         self.showAccuracy()
-        #self.showAccuracyConfidence()
         self.showErrorEachPointK()
         self.showROC()
         self.showPercentageError()
@@ -154,10 +155,6 @@ class Performance(Chooser):
             #Sort errors array
             errors.sort()
             
-            #Debugging purposes-------------------------------------------------
-            #print 'errors: ', errors
-            #Debugging purposes-------------------------------------------------
-            
             yPlot = zeros(self.upperB)
             xPlot = arange(0,self.upperB,1)
             
@@ -187,16 +184,15 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot)
             
-        title('Percentage of Error')
+        title('Percentage of Error\nThis graph shows the percentage of points'
+             +'predicted with error less or equal than ' + str(self.upperB) + ' pixels') 
         xlabel('Error in Pixels')
         ylabel('Percentage of Points')
         plt.legend(self.name)
         plt.show()              
                                  
     def showErrorByFrame(self):
-        
-        #print 'Plot graph of errors in predictors by frames'
-        
+                
         self.numPlots += 1
         
         #Define a initial figure
@@ -222,15 +218,14 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
             
-        title('Error on Prediction')
+        title('Error on Prediction\nThis graph shows errors less or equal than '
+               +str(self.upperB)+' pixels')
         xlabel('Frame')
         ylabel('Number of Pixels')
         plt.legend(self.name)
         plt.show()
         
     def showErrorByPointKind(self):
-
-        #print 'Plot graph of errors in predictors by point kinds'
         
         self.numPlots += 1
         
@@ -262,17 +257,15 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(self.errorKindX[i],yPlot)
             
-        title('Error on Prediction')
+        title('Error on Prediction\nThis graph shows errors less or equal than '
+               +str(self.upperB)+' pixels')
         xlabel('Point Kind')
         ylabel('Number of Pixels')
         plt.legend(self.name)
-        
         plt.show()
 
     def showErrorEachPointK(self):
-        
-        #print 'Plot graphs with error of predictors for each kind point'        
-        
+                
         #Go through each point kind
         for pointK in range(0, self.totalPointK):
             
@@ -301,7 +294,8 @@ class Performance(Chooser):
                 #Plot the error in the subplot
                 plt.plot(self.x[i],yPlot)
             
-            title('Error on ' + self.pointKList[pointK])
+            title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
+                  +str(self.upperB)+' pixels')
             xlabel('Frame')
             ylabel('Number of Pixels')
             plt.legend(self.name)
@@ -310,9 +304,7 @@ class Performance(Chooser):
             
         
     def showAccuracy(self):
-        
-        #print 'Plot graph for accuracy in predictors by frames'
-        
+                
         self.numPlots += 1
         
         #Define a initial figure
@@ -338,16 +330,15 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot)
             
-        title('Accuracy on Prediction')
+        title('Accuracy on Prediction\n'
+              + 'It is a number between 0 and 1. Close to 1 means good prediction')
         xlabel('Frame')
         ylabel('Accuracy')
         plt.legend(self.name)
         plt.show()
         
     def showAccuracyConfidence(self):
-        
-        #print 'Plot graph for accuracy and confidence in predictors by frames'
-        
+                
         self.numPlots += 1
         
         #Define a initial figure
@@ -392,9 +383,7 @@ class Performance(Chooser):
         plt.show()     
         
     def showROC(self):
-        
-        #print 'Plot ROC curve to detect which predictors are better'
-        
+                
         self.numPlots += 1
         #Define a new figure
         plt.figure(self.numPlots)
@@ -453,15 +442,12 @@ class Performance(Chooser):
 
             #Fill last position as 1
             yPlot[len(yPlot)-1] = 1
-            
-            #Debugging purposes-------------------------------------------------
-            #print 'yPlot: ', yPlot
-            #-------------------------------------------------------------------    
-                                    
+                                         
             #Plot the error in the subplot
             plt.plot(xPlot, yPlot)
             
-        title('ROC Curve')
+        title('Receiver Operating Characteristic (ROC) Curve\n'+
+              'A predictor is better if its curve is above other')
         xlabel('False Positive Rate')
         ylabel('True Positive Rate')
         plt.legend(self.name)
@@ -507,14 +493,16 @@ class Performance(Chooser):
             fig.colorbar(surf, shrink=0.5, aspect=5)
             
             #Messages for plot
-            title('Predictor: ' + self.name[i])
+            title('Error in Predictor: ' + self.name[i] + 
+                 '\nRed color means high error, Blue color means low error')
             xlabel('Frames')
             ylabel('Point Kinds')
             #zlabel('Error in Pixels')
             plt.legend(self.name)
-            plt.show() 
+            #text(1, 1, 'Anything', fontsize=12) 
             
-            plt.show()                  
+            plt.show() 
+                            
 
     def computeErrorByFrame(self):
         
