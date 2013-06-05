@@ -201,10 +201,10 @@ class Performance(Chooser):
             yPlot = self.cutArray(yPlot, self.upperB)
             
             #Save data to file
-            fo = open('Error_byFrame_'+self.name[i]+'.txt','w')
+            '''fo = open('Error_byFrame_'+self.name[i]+'.txt','w')
             for j in range(0,self.x[i].shape[0]):
                 fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()
+            fo.close()'''
                         
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
@@ -241,10 +241,10 @@ class Performance(Chooser):
             yPlot = self.cutArray(yPlot, self.upperB)    
                                       
             #Save data to file
-            fo = open('Error_byPointKind_'+self.name[i]+'.txt','w')
+            '''fo = open('Error_byPointKind_'+self.name[i]+'.txt','w')
             for j in range(0,self.errorKindX[i].shape[0]):
                 fo.write(str(self.errorKindX[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()
+            fo.close()'''
         
             #Plot the error in the subplot
             plt.plot(self.errorKindX[i],yPlot)
