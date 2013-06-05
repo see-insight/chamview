@@ -77,8 +77,7 @@ class BasicGui(Chooser):
             self.editedPointKinds = False
     
         #set activePoint[]
-        self.activePoint[0] = self.selectedPredictions[self.pointKind]
-        self.activePoint[0] = self.imstack.point[self.imstack.current_frame,self.pointKind,2]
+        self.activePoint[0] = int(self.imstack.point[self.imstack.current_frame,self.pointKind,2])
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
 #        print self.imstack.point[self.imstack.current_frame,self.pointKind,0], ',', self.imstack.point[self.imstack.current_frame,self.pointKind,1]

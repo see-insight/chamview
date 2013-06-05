@@ -264,7 +264,8 @@ class ImageStack:
             self.img_previous = None
 
     def save_points(self,filename):
-        #Saves all points to a file in the format frame,point kind,row,column.
+        #Saves all points to a file in the format:
+        #        frame,point kind,column,row,point_source.
         #Note that this will overwrite any existing file without warning
         file_out = open(filename,'w')
         for frame in range(0,self.total_frames):
