@@ -127,8 +127,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                     
     #Picking only some predictors for debugging purposes------------------------
     
-    #predictor = [predictor[3]]
-    #predictor_name = [predictor_name[3]]
+    predictor = [predictor[0],predictor[1],predictor[3]]
+    predictor_name = [predictor_name[0],predictor_name[1],predictor_name[3]]
     
     #---------------------------------------------------------------------------
 
@@ -161,7 +161,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
     #Give this result to the chooser to get the initial ground-truth point
 #    print 'call chooser'
-    edited = chooser.choose(imstack,predict_point,predictor_name)
+    chooser.choose(imstack,predict_point,predictor_name)
 #    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
@@ -173,23 +173,25 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
         #Give each predictor the current image stack and get a prediction back
         for i in range(0,len(predictor)):
-            predict_point[i] = predictor[i].predict(imstack,edited)
+            predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
             
         print_var_info()
         
         #Give this result to the chooser to get the "real" point
 #        print 'call chooser'
-        edited = chooser.choose(imstack,predict_point,predictor_name)
+        chooser.choose(imstack,predict_point,predictor_name)
 #        print 'exit chooser'
 
-        if edited:    
+        if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
+            
+        if chooser.stagedToSave:
+            #Save points to file
+            if argOutput != '': imstack.save_points(argOutput)
             
     print '\n###### FINAL VARIABLE VALUES ######\n'
     print_var_info()
 
-    #Save points to file
-    if argOutput != '': imstack.save_points(argOutput)
 #    print 'EXIT loop'
     
     #Run System Inspector

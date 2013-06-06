@@ -15,7 +15,7 @@ class TemplateMatch(Predictor):
     def teardown(self):
         pass
 
-    def predict(self,stack,pointsEdited):
+    def predict(self,stack,pointsEdited=False):
         #Convert the PIL image to a numpy array
         img = array(stack.img_current.convert('L'))
         #Get a prediction for each different point kind in this frame

@@ -24,7 +24,7 @@ class Kinematic(Predictor):
 	
 		pass
 	
-	def predict(self,stack,pointsEdited) :
+	def predict(self,stack,pointsEdited=False) :
 		
 	
 		#initialize "results". Will be a two dimensional array of zeros with the number of rows dependent on the size of "stack.pointkind", and 3 columns

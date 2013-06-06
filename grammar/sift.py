@@ -40,7 +40,7 @@ class Sift(Predictor):
         """
         pass
 
-    def predict(self,stack,pointsEdited):
+    def predict(self,stack,pointsEdited=False):
         """Called on every image frame. SiftObjects predict point positions
         -stack:   properly initialized ImageStack using this Predictor
         returns:  numpy array [point kind,row/column/confidence]
