@@ -31,6 +31,7 @@ class Performance(Chooser):
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
         self.fo = None
+        self.outputName = 'Performance_Report.txt' #Name of output file
         
         self.name = [] #Name of predictor
         self.pointKList = [] #Name of the point kinds
@@ -63,7 +64,7 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Open a text file to save results
-        self.fo = open('PerformanceReport.txt','w')
+        self.fo = open(self.outputName,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
         self.fo.write('(We do not care about errors above ' + str(self.upperB) + 
                       ' pixels and they are written as INF)\n')        
@@ -80,6 +81,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
+        print 'Report saved to ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
     
@@ -151,8 +153,8 @@ class Performance(Chooser):
         
         #Save title in text file
         self.fo.write('\nPERCENTAGE OF ERROR\n')
-        self.fo.write('(For a given error in pixels from 1 to ' + str(self.upperB) +
-                      ', the percentage of points with at most that error is indicated)\n')
+        self.fo.write('(For a given error from 1 to ' + str(self.upperB) +
+                      ', pixels the percentage of points with at most that error is indicated)\n')
         
         self.numPlots += 1
         
@@ -203,8 +205,8 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot)
             
-        title('Percentage of Error\n(For a given error in pixels from 1 to ' + 
-              str(self.upperB) + ',\nthe next graph shows the percentage of ' +
+        title('Percentage of Error\n(For a given error from 1 to ' + 
+              str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
               'points with at most that error)\n') 
         xlabel('Error in Pixels')
         ylabel('Percentage of Points')
