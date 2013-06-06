@@ -30,6 +30,7 @@ class Performance(Chooser):
         self.y = [] #Error from ground-truth
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
+        self.fo = None
         
         self.name = [] #Name of predictor
         self.pointKList = [] #Name of the point kinds
@@ -61,18 +62,23 @@ class Performance(Chooser):
         #different ways
         self.computeErrorByFrame()
         
+        #Open a text file to save results
+        self.fo = open('PerformanceReport.txt','w')
+        self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
+        self.fo.write('(Errors above ' + str(self.upperB) + ' pixels are unknown and written as INF)\n')        
         #self.showAccuracyConfidence()
         
         #Show results in text files and in graphs
         self.showErrorByFrame()
         self.showErrorByPointKind()
-        self.showAccuracy()
         self.showErrorEachPointK()
-        self.showROC()
         self.showPercentageError()
+        self.showROC()
+        self.showAccuracy()
         self.showError3D()
         
-        
+        #Close text file
+        self.fo.close()
 
     def choose(self,stack,predicted,predictor_name):
     
@@ -135,6 +141,11 @@ class Performance(Chooser):
             
     def showPercentageError(self):
         
+        #Save title in text file
+        self.fo.write('\nPERCENTAGE OF ERROR\n')
+        self.fo.write('(For a given error in pixels from 1 to ' + str(self.upperB) +
+                      ', the percentage of points with at most that error is indicated)\n')
+        
         self.numPlots += 1
         
         #Define a initial figure
@@ -142,6 +153,8 @@ class Performance(Chooser):
         
         #Go through each predictor
         for i in range(0,len(self.name)):
+            
+            self.fo.write(' Predictor: ' + self.name[i] + '\n') #Write predictor name
             
             #Define an array that will save the errors for predictor i
             errors = zeros(self.totalFrames * self.totalPointK)
@@ -155,8 +168,8 @@ class Performance(Chooser):
             #Sort errors array
             errors.sort()
             
-            yPlot = zeros(self.upperB)
-            xPlot = arange(0,self.upperB,1)
+            yPlot = zeros(self.upperB + 1)
+            xPlot = arange(0,self.upperB + 1,1)
             
             #Define two variables that traverse errors and yPlot arrays
             err = 0
@@ -176,16 +189,15 @@ class Performance(Chooser):
                 yPlot[j] = 100 
             
             #Save data to file
-            fo = open('Percentage_of_Error'+self.name[i]+'.txt','w')
             for j in range(0,xPlot.shape[0]):
-                fo.write(str(xPlot[j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()
+                self.fo.write('  ' + str(xPlot[j]).zfill(4)+','+str(yPlot[j])+' %\n')
                         
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot)
             
-        title('Percentage of Error\nThis graph shows the percentage of points'
-             +'predicted with error less or equal than ' + str(self.upperB) + ' pixels') 
+        title('Percentage of Error\n(For a given error in pixels from 1 to ' + 
+              str(self.upperB) + ',\nthe next graph shows the percentage of ' +
+              'points with at most that error)\n') 
         xlabel('Error in Pixels')
         ylabel('Percentage of Points')
         plt.legend(self.name)
@@ -193,6 +205,9 @@ class Performance(Chooser):
                                  
     def showErrorByFrame(self):
                 
+        #Save title in text file
+        self.fo.write('\nERROR BY FRAME\n')
+        
         self.numPlots += 1
         
         #Define a initial figure
@@ -200,6 +215,8 @@ class Performance(Chooser):
         
         #Go through each predictor
         for i in range(0,len(self.name)):
+            
+            self.fo.write(' Predictor: ' + self.name[i] + '\n')
             
             #Get the error by frame array at position i
             yPlot = zeros(len(self.errorFrame[i]))
@@ -210,10 +227,10 @@ class Performance(Chooser):
             yPlot = self.cutArray(yPlot, self.upperB)
             
             #Save data to file
-            '''fo = open('Error_byFrame_'+self.name[i]+'.txt','w')
             for j in range(0,self.x[i].shape[0]):
-                fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()'''
+                if yPlot[j] >= self.upperB: yVal = 'INF' 
+                else: yVal = yPlot[j]
+                self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yVal) +' px\n')
                         
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
@@ -227,6 +244,9 @@ class Performance(Chooser):
         
     def showErrorByPointKind(self):
         
+        #Write title in text file
+        self.fo.write('\nERROR BY POINT KIND\n')
+        
         self.numPlots += 1
         
         #Define a new figure
@@ -234,6 +254,8 @@ class Performance(Chooser):
         
         #Go through each predictor
         for i in range(0,len(self.name)):
+            
+            self.fo.write(' Predictor: ' + self.name[i] + '\n')
         
             #An array that contains the averages of errors by point kind
             yPlot = zeros(len(self.y[i][0]))
@@ -249,10 +271,8 @@ class Performance(Chooser):
             yPlot = self.cutArray(yPlot, self.upperB)    
                                       
             #Save data to file
-            '''fo = open('Error_byPointKind_'+self.name[i]+'.txt','w')
             for j in range(0,self.errorKindX[i].shape[0]):
-                fo.write(str(self.errorKindX[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()'''
+                self.fo.write('  ' + self.pointKList[j] +','+str(yPlot[j])+' px\n')
         
             #Plot the error in the subplot
             plt.plot(self.errorKindX[i],yPlot)
@@ -265,9 +285,14 @@ class Performance(Chooser):
         plt.show()
 
     def showErrorEachPointK(self):
-                
+        
+        #Save title in text file    
+        self.fo.write('\nERROR FOR EACH POINT KIND\n')
+        
         #Go through each point kind
         for pointK in range(0, self.totalPointK):
+            
+            self.fo.write(' Point Kind: ' + self.pointKList[pointK] + '\n') #Write point kind
             
             self.numPlots += 1
             #Define a new figure
@@ -277,6 +302,8 @@ class Performance(Chooser):
             #Go through each predictor
             for i in range(0,len(self.name)):
         
+                self.fo.write('  Predictor: ' + self.name[i] + '\n')
+        
                 #Get the error by frame array at position i
                 yPlot = zeros(len(self.y[i]))
                 for frame in range(0,len(yPlot)):            
@@ -285,11 +312,9 @@ class Performance(Chooser):
                 #Cut error by a given upper bound
                 yPlot = self.cutArray(yPlot, self.upperB)
             
-                '''#Save data to file
-                fo = open('Error_byFrame_pointK_'+str(pointK+1)+'_'+self.name[i]+'.txt','w')
+                #Save data to file
                 for j in range(0,self.x[i].shape[0]):
-                    fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-                fo.close()'''
+                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+' px\n')
             
                 #Plot the error in the subplot
                 plt.plot(self.x[i],yPlot)
@@ -305,6 +330,11 @@ class Performance(Chooser):
         
     def showAccuracy(self):
                 
+        #Write title in text file
+        self.fo.write('\nACCURACY IN PREDICTION\n')
+        self.fo.write('(A number between 0 and 1. Close to 0 means bad prediction,'
+                     + ' close to 1 means good prediction)\n')
+        
         self.numPlots += 1
         
         #Define a initial figure
@@ -312,6 +342,8 @@ class Performance(Chooser):
         
         #Go through each predictor
         for i in range(0,len(self.name)):
+            
+            self.fo.write(' Predictor: ' + self.name[i] + '\n')
             
             #Get the error by frame array at position i
             yPlot = self.errorFrame[i]
@@ -321,11 +353,9 @@ class Performance(Chooser):
             #Take the inverse of the result
             yPlot = yPlot ** -1
             
-            '''#Save data to file
-            fo = open('Accuracy_byFrame_'+self.name[i]+'.txt','w')
+            #Save data to file
             for j in range(0,self.x[i].shape[0]):
-                fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()'''
+                self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot)
@@ -338,7 +368,12 @@ class Performance(Chooser):
         plt.show()
         
     def showAccuracyConfidence(self):
-                
+       
+        #Write title in text file     
+        self.fo.write('\nACCURACY WITH CONFIDENCE\n')
+        self.fo.write('(A number between 0 and 1. Close to 0 means bad prediction,'
+                     + ' close to 1 means good prediction)\n')
+        
         self.numPlots += 1
         
         #Define a initial figure
@@ -364,14 +399,14 @@ class Performance(Chooser):
         #Go through each predictor
         for i in range(0,len(self.name)):
             
+            self.fo.write(' Predictor: ' + self.name[i])
+            
             #Get the error by frame array at position i
             yPlot = yaccConf[i]
             
-            '''#Save data to file
-            fo = open('AccuracyandConfidence_byFrame_'+self.name[i]+'.txt','w')
+            #Save data to file
             for j in range(0,self.x[i].shape[0]):
-                fo.write(str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
-            fo.close()'''
+                self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot)
@@ -383,7 +418,10 @@ class Performance(Chooser):
         plt.show()     
         
     def showROC(self):
-                
+              
+        #Write title in text file
+        self.fo.write('\nReceiver Operating Characteristic (ROC) Curve\n')
+                    
         self.numPlots += 1
         #Define a new figure
         plt.figure(self.numPlots)
@@ -454,6 +492,9 @@ class Performance(Chooser):
         plt.show()          
       
     def showError3D(self):
+        
+        #Write title in text file
+        self.fo.write('\nError for each Predictor in 3D\n')
         
         #For each predictor
         for i in range(0,len(self.y)):
