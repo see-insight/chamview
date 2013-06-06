@@ -31,6 +31,7 @@ class Performance(Chooser):
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
         self.fo = None
+        self.outputName = 'Performance_Report.txt' #Name of output file
         
         self.name = [] #Name of predictor
         self.pointKList = [] #Name of the point kinds
@@ -63,9 +64,10 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Open a text file to save results
-        self.fo = open('PerformanceReport.txt','w')
+        self.fo = open(self.outputName,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
-        self.fo.write('(Errors above ' + str(self.upperB) + ' pixels are unknown and written as INF)\n')        
+        self.fo.write('(We do not care about errors above ' + str(self.upperB) + 
+                      ' pixels and they are written as INF)\n')        
         #self.showAccuracyConfidence()
         
         #Show results in text files and in graphs
@@ -79,6 +81,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
+        print 'Report saved to ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
     
@@ -114,11 +117,18 @@ class Performance(Chooser):
             #Add the accuracy given for each pointkind
             for pKind in range(0,stack.point_kinds):
                 
-                #Get distance between predicted and ground truth
-                dx = predicted[pred, pKind, 0] - stack.point[stack.current_frame,pKind,0]
-                dy = predicted[pred, pKind, 1] - stack.point[stack.current_frame,pKind,1]
+                xGT = stack.point[stack.current_frame, pKind, 0]
+                yGT = stack.point[stack.current_frame, pKind, 1]
+                
+                if xGT == 0 and yGT == 0:
+                    #If point has no ground truth, make the distance the largest possible
+                    dist = self.upperB + 1
+                else:
+                    #Get distance between predicted and ground truth
+                    dx = predicted[pred, pKind, 0] - xGT
+                    dy = predicted[pred, pKind, 1] - yGT
             
-                dist = (dx**2 + dy**2)**0.5
+                    dist = (dx**2 + dy**2)**0.5
                 
                 #Add the distance error to the matrix y 
                 self.y[pred][stack.current_frame][pKind] = dist
@@ -143,8 +153,8 @@ class Performance(Chooser):
         
         #Save title in text file
         self.fo.write('\nPERCENTAGE OF ERROR\n')
-        self.fo.write('(For a given error in pixels from 1 to ' + str(self.upperB) +
-                      ', the percentage of points with at most that error is indicated)\n')
+        self.fo.write('(For a given error from 1 to ' + str(self.upperB) +
+                      ', pixels the percentage of points with at most that error is indicated)\n')
         
         self.numPlots += 1
         
@@ -195,8 +205,8 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot)
             
-        title('Percentage of Error\n(For a given error in pixels from 1 to ' + 
-              str(self.upperB) + ',\nthe next graph shows the percentage of ' +
+        title('Percentage of Error\n(For a given error from 1 to ' + 
+              str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
               'points with at most that error)\n') 
         xlabel('Error in Pixels')
         ylabel('Percentage of Points')
@@ -272,7 +282,9 @@ class Performance(Chooser):
                                       
             #Save data to file
             for j in range(0,self.errorKindX[i].shape[0]):
-                self.fo.write('  ' + self.pointKList[j] +','+str(yPlot[j])+' px\n')
+                if yPlot[j] >= self.upperB: yVal = 'INF' 
+                else: yVal = yPlot[j]
+                self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+' px\n')
         
             #Plot the error in the subplot
             plt.plot(self.errorKindX[i],yPlot)
@@ -314,7 +326,9 @@ class Performance(Chooser):
             
                 #Save data to file
                 for j in range(0,self.x[i].shape[0]):
-                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+' px\n')
+                    if yPlot[j] >= self.upperB: yVal = 'INF' 
+                    else: yVal = yPlot[j]
+                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+' px\n')
             
                 #Plot the error in the subplot
                 plt.plot(self.x[i],yPlot)
