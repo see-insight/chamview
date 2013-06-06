@@ -5,7 +5,7 @@ Usage options:
     -h --help       Print this help message
     -i --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
     -g --dirGT      Ground Truth data directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
-    -o --output     Output file. Default is (none)
+    -o --output     Output file. Default is (Performance_Report.txt) #It doesn't work yet, the default works 
     -p --predictor  Predictor Name. Default is (Kinematic)
 
 Example: 
@@ -28,7 +28,7 @@ def main(argc,argv):
     #Default arguments
     argFrameDir = './dataSets/ChamB_LB/frames'
     argGroundT = './dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt'
-    argOutput = ''
+    argOutput = 'Performance_Report.txt'
     argPredictor = 'Kinematic'
     try:
         try:
