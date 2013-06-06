@@ -226,7 +226,8 @@ class ImageStack:
                     new_sources_frame.append(self.point_sources[frame][kind])
             new_point.append(new_point_frame)
             new_sources.append(new_sources_frame)
-        self.point = array(new_point)     
+        self.point = array(new_point)
+        self.point_sources = new_sources     
         
         
     def clearFrame(self):

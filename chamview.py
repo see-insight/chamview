@@ -132,7 +132,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     def print_var_info():
         print '****SELECTED POINTS:****\n', imstack.point
         print '****PREDICTED POINTS:****\n', predict_point
-        print '****POINT SOURCE HISTORY:****\n', imstack.point_sources
+        print '****POINT SOURCE HISTORY:****'
+        for frame in imstack.point_sources:
+            print frame
         #print '****CURRENT FRAME:****\n', imstack.current_frame
         print '****ACTIVE POINT:****\n', chooser.activePoint
         print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
