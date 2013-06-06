@@ -14,7 +14,7 @@ class Guess(Predictor):
     def teardown(self):
         pass
 
-    def predict(self,stack):
+    def predict(self,stack,pointsEdited):
         imwidth = stack.img_current.size[0]
         imheight = stack.img_current.size[1]
         result = zeros([stack.point_kinds,3])

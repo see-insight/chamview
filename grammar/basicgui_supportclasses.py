@@ -113,7 +113,7 @@ class EditPointKinds(Dialog):
         self.currentpoints = self.stack.point_kind_list
         self.num_added = 0
         self.deleted_indices = []
-        self.result = (self.currentpoints,self.num_added,self.deleted_indices)
+        self.result = (self.num_added,self.deleted_indices)
         Dialog.__init__(self,parent,title)
         
     def body(self, master):
@@ -156,7 +156,10 @@ class EditPointKinds(Dialog):
         self.listbox.activate(self.point)
         
     def revert_to_default(self,event=''):
+        self.deleted_indices = range(len(self.currentpoints))
         self.listbox.delete(0,END)
+        self.stack.get_point_kinds(List=list(self.listbox.get(0,END)))
+        self.num_added = self.stack.point_kinds
         self.ok()
         
     def set_as_default(self,event=''):
@@ -190,8 +193,7 @@ class EditPointKinds(Dialog):
         Dialog.ok(self)
         
     def apply(self):
-        self.result = (self.listbox.get(0,END), 
-                       self.num_added, 
+        self.result = (self.num_added, 
                        self.deleted_indices)
 
 
