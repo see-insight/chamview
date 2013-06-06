@@ -24,7 +24,7 @@ class Kinematic(Predictor):
 	
 		pass
 	
-	def predict(self,stack) :
+	def predict(self,stack,pointsEdited) :
 		
 	
 		#initialize "results". Will be a two dimensional array of zeros with the number of rows dependent on the size of "stack.pointkind", and 3 columns
@@ -60,7 +60,7 @@ class Kinematic(Predictor):
 				#gets points on previous 3 frames, then predicts a point on the current frame
 				self.p3 = [0,0]
 				self.p3[0] = stack.point[ stack.current_frame,i,0 ]
-				self.p3[1] = stack.point[ stack.current_frame,i,0 ]
+				self.p3[1] = stack.point[ stack.current_frame,i,1 ]
 				self.p2 =[0,0]
 				self.p2[0]= stack.point[((stack.current_frame) - 1 ),i,0]
 				self.p2[1]= stack.point[((stack.current_frame) - 1 ),i,1]
@@ -73,6 +73,7 @@ class Kinematic(Predictor):
 				self.p0[1]= stack.point[((stack.current_frame) - 3 ),i,1]
 				current = [0,0]
 				current[0] = self.p3[0]
+				current[1] = self.p3[1]
 				#calls velocity function
 				pf= veloc(self.p0,self.p1,self.p2)
 				confidence = 0.0

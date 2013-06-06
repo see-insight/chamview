@@ -158,11 +158,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
 
         
-    print_var_info()
+#    print_var_info()
 
     #Give this result to the chooser to get the initial ground-truth point
 #    print 'call chooser'
-    chooser.choose(imstack,predict_point,predictor_name)
+    edited = chooser.choose(imstack,predict_point,predictor_name)
 #    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
@@ -174,20 +174,23 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
         #Give each predictor the current image stack and get a prediction back
         for i in range(0,len(predictor)):
-            predict_point[i] = predictor[i].predict(imstack)
+            new = predictor[i].predict(imstack,edited)
+            print new
+            print predict_point[i]
+            predict_point[i] = new
             
-        print_var_info()
+#        print_var_info()
         
         #Give this result to the chooser to get the "real" point
 #        print 'call chooser'
-        chooser.choose(imstack,predict_point,predictor_name)
+        edited = chooser.choose(imstack,predict_point,predictor_name)
 #        print 'exit chooser'
 
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
             
-    print '\n###### FINAL VARIABLE VALUES ######\n'
-    print_var_info()
+#    print '\n###### FINAL VARIABLE VALUES ######\n'
+#    print_var_info()
 
     #Save points to file
     if argOutput != '': imstack.save_points(argOutput)

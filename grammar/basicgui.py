@@ -87,6 +87,7 @@ class BasicGui(Chooser):
         self.drawCanvas()
         #Show the window and get user input
         self.master.mainloop()
+        return self.editedPointKinds
 
     def fillPointkindList(self):
         '''List each point kind in the point kind Listbox'''
@@ -286,7 +287,7 @@ class BasicGui(Chooser):
         self.deleted = []
         dialog_window = support.EditPointKinds(self.master,self.imstack,
                                         'Edit Point Kinds')
-        new_points, self.added, self.deleted = dialog_window.result
+        self.added, self.deleted = dialog_window.result
         
         self.pointlist.delete(0,END)
         self.fillPointkindList()
