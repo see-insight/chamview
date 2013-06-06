@@ -48,15 +48,18 @@ class Sift(Predictor):
         #Pre-compute a contrast-enhanced numpy array from the current image
         #frame so every point prediction doesn't have to, saving time
         arr = img_contrast(img_toArr(stack.img_current),self.contrastAdd)
-        #Get a prediction for each different point kind in this frame
-        for pointKind in range(0,stack.point_kinds):
-            self.getPointPrediction(stack,arr,pointKind)
-        #Return the prediction for every point kind for this frame
-        result = zeros([stack.point_kinds,3])
-        for pointKind in range(0,stack.point_kinds):
-            result[pointKind,0] = self.prediction[stack.current_frame,pointKind,0]
-            result[pointKind,1] = self.prediction[stack.current_frame,pointKind,1]
-            result[pointKind,2] = self.prediction[stack.current_frame,pointKind,2]
+        try:
+            #Get a prediction for each different point kind in this frame
+            for pointKind in range(0,stack.point_kinds):
+                self.getPointPrediction(stack,arr,pointKind)
+            #Return the prediction for every point kind for this frame
+            result = zeros([stack.point_kinds,3])
+            for pointKind in range(0,stack.point_kinds):
+                result[pointKind,0] = self.prediction[stack.current_frame,pointKind,0]
+                result[pointKind,1] = self.prediction[stack.current_frame,pointKind,1]
+                result[pointKind,2] = self.prediction[stack.current_frame,pointKind,2]
+        except IndexError:
+            result = self.setup(stack)
         return result
 
     def getPointPrediction(self,stack,arr,pointKind):
