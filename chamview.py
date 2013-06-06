@@ -2,13 +2,16 @@
 """Main Chamview testing program
 
 Usage options:
-    -h --help    Print this help message
-    -d --dir     Image directory. Default is (./images)
-    -c --chooser Chooser subclass. Default is (BasicGui)
-    -i --prep    Preprocessor subclass. Default is (none)
-    -o --output  Output file. Default is (none)
-    -k --pkind   Point kind file. Default is (defaultPointKinds.txt)
-    -p --ppos    Previously saved output file. Default is (none)
+    -h --help       Print this help message
+    -d --dir        Image directory. Default is (./images)
+    -c --chooser    Chooser subclass. Default is (BasicGui)
+    -i --prep       Preprocessor subclass. Default is (none)
+    -o --output     Output file. Default is (none)
+    -k --pkind      Point kind file. Default is (defaultPointKinds.txt)
+    -p --ppos       Previously saved output file. Default is (none)
+    -s --inspect    Save system specific data to a file (for development purposes)
+    -w --inspectout Same as -s but following arg specifies the name of the file to save to
+    -r --predictor  Specify the sole predictor you want to use
 
 Example: 
     
