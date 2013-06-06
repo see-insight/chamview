@@ -8,7 +8,6 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
-#from mayavi.mlab import *
 
 '''This file implements classes where the performance of predictors
 is computed using different techniques.
@@ -41,7 +40,7 @@ class Performance(Chooser):
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
-        self.upperB = 50 #Max number of pixels that we care about for error
+        self.upperB =  50 #Max number of pixels that we care about for error
         self.tpBound = 15 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
@@ -51,13 +50,6 @@ class Performance(Chooser):
         self.selectedPredictions = []
 
     def teardown(self):
-        
-        #Print current informaction for debugging purposes----------------------
-        #print 'self.name: ', self.name
-        #print 'x:\n', self.x
-        #print 'y:\n', self.y     
-        #print 'errorKindX:\n', self.errorKindX   
-        #----------------------------------------------------------------------- 
 
         #Compute the error by frame for each predictor to plot results in
         #different ways
@@ -141,13 +133,6 @@ class Performance(Chooser):
         self.numImagesTested += 1
         
         if self.numImagesTested == stack.total_frames: stack.exit = True
-        
-        #Printing information for debugging purposes----------------------------
-        #print 'Current image: ', stack.current_frame
-        #print 'Predicted Points for current image\n', predicted
-        #print 'Ground truth data for current image\n', stack.point[stack.current_frame]
-        #-----------------------------------------------------------------------
-     
             
     def showPercentageError(self):
         
@@ -203,7 +188,7 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(xPlot[j]).zfill(4)+','+str(yPlot[j])+' %\n')
                         
             #Plot the error in the subplot
-            plt.plot(xPlot,yPlot)
+            plt.plot(xPlot,yPlot, lw = 2)
             
         title('Percentage of Error\n(For a given error from 1 to ' + 
               str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
@@ -258,7 +243,6 @@ class Performance(Chooser):
         self.fo.write('\nERROR BY POINT KIND\n')
         
         self.numPlots += 1
-        
         #Define a new figure
         plt.figure(self.numPlots)
         
@@ -287,7 +271,9 @@ class Performance(Chooser):
                 self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+' px\n')
         
             #Plot the error in the subplot
-            plt.plot(self.errorKindX[i],yPlot)
+            #n, bins, patches = plt.hist(yPlot, len(yPlot), normed=1, facecolor='g', alpha=0.75)
+            #plt.plot(self.errorKindX[i], yPlot, 'bo', self.errorKindX[i], yPlot, 'k')
+            plt.plot(self.errorKindX[i],yPlot, lw = 2)
             
         title('Error on Prediction\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
@@ -331,7 +317,7 @@ class Performance(Chooser):
                     self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+' px\n')
             
                 #Plot the error in the subplot
-                plt.plot(self.x[i],yPlot)
+                plt.plot(self.x[i],yPlot, lw = 2)
             
             title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
                   +str(self.upperB)+' pixels')
@@ -372,7 +358,7 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot)
+            plt.plot(self.x[i], yPlot, lw = 2)
             
         title('Accuracy on Prediction\n'
               + 'It is a number between 0 and 1. Close to 1 means good prediction')
@@ -423,7 +409,7 @@ class Performance(Chooser):
                 self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot)
+            plt.plot(self.x[i], yPlot, lw = 2)
             
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
@@ -463,15 +449,6 @@ class Performance(Chooser):
             else:
                 fpUnit = 1.0
             
-            
-            #Debugging purposes-------------------------------------------------
-            #print 'Predictor: ',pred
-            #print 'numTP: ', numTP
-            #print 'numFP: ', numFP
-            #print 'tpUnit: ',tpUnit
-            #print 'fpUnit: ', fpUnit
-            #-------------------------------------------------------------------
-            
             #Define arrays that are our x and y axis
             xPlot = arange(0,1 + fpUnit,fpUnit) 
             yPlot = zeros(len(xPlot))
@@ -495,8 +472,8 @@ class Performance(Chooser):
             #Fill last position as 1
             yPlot[len(yPlot)-1] = 1
                                          
-            #Plot the error in the subplot
-            plt.plot(xPlot, yPlot)
+            #Plot the error
+            plt.plot(xPlot, yPlot, lw = 2)
             
         title('Receiver Operating Characteristic (ROC) Curve\n'+
               'A predictor is better if its curve is above other')
@@ -548,8 +525,7 @@ class Performance(Chooser):
             fig.colorbar(surf, shrink=0.5, aspect=5)
             
             #Messages for plot
-            title('Error in Predictor: ' + self.name[i] + 
-                 '\nRed color means high error, Blue color means low error')
+            title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
             #zlabel('Error in Pixels')
