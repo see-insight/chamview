@@ -116,11 +116,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
     
-    #Choose only some predictors for debugging purposes-------------------------
-    predictor = [predictor[0], predictor[1], predictor[3]]
-    predictor_name = [predictor_name[0], predictor_name[1], predictor_name[3]]
-    #---------------------------------------------------------------------------
-    
     #Load the Predictor needed for user
     if pred != '':
         try:
@@ -130,7 +125,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except Exception:
             pass#Continue with the same predictors
                     
-    
     #Picking only some predictors for debugging purposes------------------------
     
     #predictor = [predictor[3]]
