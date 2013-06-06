@@ -92,8 +92,8 @@ class Kinematic(Predictor):
 			return result
 			
 		else:
-			print 'YOU NEED AT LEAST 3 FRAMES OF POINTS TO PREDICT'
-			print ' GO TO FRAME 4 AND THEN PRESS PREDICT!!! '
+			#print 'YOU NEED AT LEAST 3 FRAMES OF POINTS TO PREDICT'
+			#print ' GO TO FRAME 4 AND THEN PRESS PREDICT!!! '
                         #Return zeros to avoid getting nan values
 			return zeros([stack.point_kinds,3])
 		

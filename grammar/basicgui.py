@@ -77,7 +77,7 @@ class BasicGui(Chooser):
             self.editedPointKinds = False
     
         #set activePoint[]
-        self.activePoint[0] = int(self.imstack.point[self.imstack.current_frame,self.pointKind,2])
+        self.activePoint[0] = self.imstack.point_sources[self.imstack.current_frame][self.pointKind]
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
 #        print self.imstack.point[self.imstack.current_frame,self.pointKind,0], ',', self.imstack.point[self.imstack.current_frame,self.pointKind,1]
@@ -389,7 +389,7 @@ class BasicGui(Chooser):
         self.selectedPredictions[self.pointKind] = -1
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
-        self.imstack.point[self.imstack.current_frame,self.pointKind,2] = -1
+        self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = -1
         self.drawCanvas()
 
 #****** Canvas and Point Drawing ******
@@ -416,7 +416,7 @@ class BasicGui(Chooser):
             self.activePoint[2] = y
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
-            self.imstack.point[self.imstack.current_frame,self.pointKind,2] = i
+            self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = i
 #        print '****ACTIVE POINT after drawCanvas:****\n', self.activePoint
         #Clear out any existing points
         self.canvas.delete('all')
@@ -484,7 +484,7 @@ class BasicGui(Chooser):
         for k in range(self.imstack.point_kinds):
             x = self.imstack.point[self.imstack.current_frame,k,0] * self.scale
             y = self.imstack.point[self.imstack.current_frame,k,1] * self.scale
-            i = self.imstack.point[self.imstack.current_frame,k,2]
+            i = self.imstack.point_sources[self.imstack.current_frame][k]
             #If we haven't selected a point yet then don't draw it
             if x == 0 and y == 0: continue
             #Red is selected pointkind, green is other pointkinds
@@ -554,7 +554,7 @@ class BasicGui(Chooser):
         self.selectedPredictions[self.pointKind] = i
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
-        self.imstack.point[self.imstack.current_frame,self.pointKind,2] = i
+        self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = i
     
     def end_update_loop(self):
         '''Exit TKinter's update loop, control is given back to ChamView. 
@@ -575,8 +575,9 @@ class BasicGui(Chooser):
    
     def clearPointKind(self,event=''):
         '''Clear the selected point kind from all frames.'''
-        for frame in self.imstack.point:
-            frame[self.pointKind] *= 0
+        for frame in range(self.imstack.total_frames):
+            self.imstack.point[frame][self.pointKind] *= 0
+            self.imstack.point_sources[frame][self.pointKind] = -1
         # reset Point Kind source history
         self.selectedPredictions[self.pointKind] = self.activePoint[0] = -1
         self.activePoint[1] = self.activePoint[2] = 0
@@ -585,6 +586,8 @@ class BasicGui(Chooser):
     def clearFrame(self,event=''):
         '''Clear all points on the current frame.'''
         self.imstack.point[self.imstack.current_frame] *= 0
+        for i in range(len(self.imstack.point_sources[self.imstack.current_frame])):
+            self.imstack.point_sources[self.imstack.current_frame][i] = -1
         # reset Point source history
         for i in range(len(self.selectedPredictions)):
             self.selectedPredictions[i] = -1
@@ -595,6 +598,9 @@ class BasicGui(Chooser):
     def clearAll(self,event=''):
         '''Clear all points from all frames.'''
         self.imstack.point *= 0
+        for frame in self.imstack.point_sources:
+            for i in range(len(frame)):
+                frame[i] = -1
         # reset Point source history
         for i in range(len(self.selectedPredictions)):
             self.selectedPredictions[i] = -1
