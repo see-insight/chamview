@@ -36,7 +36,7 @@ class Predictor(object):
         #files
         raise NotImplementedError
 
-    def predict(self,stack):
+    def predict(self,stack,pointsEdited=False):
         #Using the current and previous frame and previous ground-truth point
         #positions, predict and return the position of the points in the current
         #frame as well as a confidence. Confidence is a float 0.0-1.0. Must
