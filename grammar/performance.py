@@ -548,8 +548,7 @@ class Performance(Chooser):
             fig.colorbar(surf, shrink=0.5, aspect=5)
             
             #Messages for plot
-            title('Error in Predictor: ' + self.name[i] + 
-                 '\nRed color means high error, Blue color means low error')
+            title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
             #zlabel('Error in Pixels')
