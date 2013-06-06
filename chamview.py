@@ -209,19 +209,21 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
         
         #Compile list of attribute names
         attr_names = ['CHOOSER','PREPROCESSOR','PREDICTORS','IMAGE_DIRECTORY',
-                      'TOTAL_POINTS','POINTS_MODIFIED','TOTAL_FRAMES',
-                      'FRAMES_MODIFIED','MANUAL_POINTS']
+                      'TOTAL_POINTS','POINTS_MODIFIED','MANUAL_POINTS']
         for source in pred_activity[:-1]:
             attr_names.append(source[0])
-        attr_names.extend(['TOTAL_TIME','TIME/POINT','TIME/FRAME'])
+        attr_names.extend(['TOTAL_FRAMES','FRAMES_MODIFIED','TOTAL_TIME',
+                           'TIME/POINT','TIME/FRAME'])
+
         
         #Compile list of attribute values
         attr_values = [argChooser,argPreproc,predictor_name,argDir,
                       imstack.total_frames * imstack.point_kinds,pointsModified,
-                      imstack.total_frames,framesModified,pred_activity[-1][1]]
+                      pred_activity[-1][1]]
         for source in pred_activity[:-1]:
             attr_values.append(source[1])
-        attr_names.extend([totalTime,timePerPoint,timePerFrame])
+        attr_values.extend([imstack.total_frames,framesModified,totalTime,
+                            timePerPoint,timePerFrame])
         
         #Create SystemInspector object and pass it the additional chamview 
         #specific attributes then write the object to a file
