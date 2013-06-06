@@ -44,13 +44,14 @@ def main(argc,argv):
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     argSysInspector = False
+    pred = ''
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                      'hd:c:i:o:k:p:sw:',
+                                      'hd:c:i:o:k:p:sw:r:',
                                       ['help','dir=','chooser=','prep=',
                                       'output=','pkind=','ppos=',
-                                      'inspect','inspectout='])
+                                      'inspect','inspectout=','predictor='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -74,11 +75,12 @@ def main(argc,argv):
                 argSysInspector = True
             elif opt in ('-w', '--inspectout'):
                 argSysInspector = arg
-                
+            elif opt in ('-r', '--predictor='):
+                pred = arg
         if argOutput == '':
             argOutput = argDir+'.txt'
 
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, pred)
 
 
     except Usage, err:
@@ -86,7 +88,7 @@ def main(argc,argv):
         print >>sys.stderr, 'For help use --help'
         return 2
 
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, pred):
     
     #Start timer if argSysInspector
     if argSysInspector: start = timeit.default_timer()
@@ -111,10 +113,20 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector)
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
     
+    #Load the Predictor needed for user
+    if pred != '':
+        try:
+            predIndex = predictor_name.index(pred)
+            predictor = [predictor[predIndex]]
+            predictor_name = [predictor_name[predIndex]]
+        except Exception:
+            pass#Continue with the same predictors
+                    
+    
     #Picking only some predictors for debugging purposes------------------------
     
-    predictor = [predictor[0],predictor[1],predictor[3]]
-    predictor_name = [predictor_name[0],predictor_name[1],predictor_name[3]]
+    #predictor = [predictor[3]]
+    #predictor_name = [predictor_name[3]]
     
     #---------------------------------------------------------------------------
 
