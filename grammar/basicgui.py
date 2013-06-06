@@ -289,9 +289,12 @@ class BasicGui(Chooser):
                                         'Edit Point Kinds')
         self.added, self.deleted = dialog_window.result
         
-        self.pointlist.delete(0,END)
-        self.fillPointkindList()
-        self.updateSelectedPredList(self.added,self.deleted)
+        if self.added > 0 or self.deleted != []:
+            self.pointlist.delete(0,END)
+            self.fillPointkindList()
+            self.updateSelectedPredList(self.added,self.deleted)
+        else:
+            self.editedPointKinds = False
         self.update_points()
         self.end_update_loop() 
 
