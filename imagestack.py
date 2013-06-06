@@ -112,7 +112,7 @@ class ImageStack:
             self.point_kinds = len(List)
             self.point_kind_list = List
             if self.point == zeros((0,0,2)):
-                self.point = zeros((self.total_frames,self.point_kinds,3))
+                self.point = zeros((self.total_frames,self.point_kinds,2))
                 self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
 
     def get_point_kinds_legacy(self,filename=''):
