@@ -79,9 +79,9 @@ def main(argc,argv):
                 argSysInspector = True
             elif opt in ('-w', '--inspectout'):
                 argSysInspector = arg
-            elif opt in ('-r', '--predictor='):
+            elif opt in ('-r', '--predictor'):
                 argPred = arg
-            elif opt in ('-e', '--evaluate='):
+            elif opt in ('-e', '--evaluate'):
                 argEvaluate = arg
         if argOutput == '':
             argOutput = argDir+'.txt'
@@ -130,14 +130,12 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             predictor = [predictor[predIndex]]
             predictor_name = [predictor_name[predIndex]]
         except Exception:
-            pass#Continue with the same predictors
-    
-          
+            pass #Continue with the same predictors      
                       
     #Picking only some predictors for debugging purposes------------------------
     
-    #predictor = [predictor[0],predictor[1],predictor[3]]
-    #predictor_name = [predictor_name[0],predictor_name[1],predictor_name[3]]
+    predictor = [predictor[2], predictor[3]]
+    predictor_name = [predictor_name[2], predictor_name[3]]
     
     #---------------------------------------------------------------------------
 
@@ -166,7 +164,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
 
         
-    print_var_info()
+    #print_var_info() ***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
 #    print 'call chooser'
@@ -184,7 +182,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
             
-        print_var_info()
+        #print_var_info()*************************************************************************
         
         #Give this result to the chooser to get the "real" point
 #        print 'call chooser'
