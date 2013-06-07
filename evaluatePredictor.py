@@ -5,8 +5,8 @@ Usage options:
     -h --help       Print this help message
     -i --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
     -g --dirGT      Ground Truth data directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
-    -o --output     Output file. Default is (Performance_Report.txt) #It doesn't work yet, the default works 
-    -p --predictor  Predictor Name. Default is (Kinematic)
+    -o --output     Output file. Default is (Performance_Report.txt)
+    -p --predictor  Predictor Name. Default is all predictors
     -u --upBound    Determines the upper bound of results we can see
     -t --truePos    Determines the maximum value of a prediction to be considered as true positive
 
@@ -32,7 +32,7 @@ def main(argc,argv):
     argFrameDir = './dataSets/ChamB_LB/frames'
     argGroundT = './dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt'
     argOutput = 'Performance_Report.txt'
-    argPredictor = 'Kinematic'
+    argPredictor = ''
     argUpBound = 50
     argTruePos = 5
     try:
