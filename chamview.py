@@ -30,7 +30,7 @@ import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
 from grammar import Grammar
-import SystemInspector as SI
+from sys-inspector import SystemInspector
 
 
 class Usage(Exception):
@@ -232,27 +232,25 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             timePerPoint = 'N/A'
             timePerFrame = 'N/A'
         
-        #Compile list of attribute names
-        attr_names = ['CHOOSER','PREPROCESSOR','PREDICTORS','IMAGE_DIRECTORY',
-                      'TOTAL_POINTS','POINTS_MODIFIED','MANUAL_POINTS']
+        #Compile list of tuples of chamview specific attributes
+        attributes = [('CHOOSER',argChooser),
+                      ('PREPROCESSOR',argPreproc),
+                      ('PREDICTORS',predictor_name),
+                      ('IMAGE_DIRECTORY',argDir),
+                      ('TOTAL_POINTS',imstack.total_frames * imstack.point_kinds),
+                      ('POINTS_MODIFIED',pointsModified),
+                      ('MANUAL_POINTS',pred_activity[-1][1])]
         for source in pred_activity[:-1]:
-            attr_names.append(source[0])
-        attr_names.extend(['TOTAL_FRAMES','FRAMES_MODIFIED','TOTAL_TIME',
-                           'TIME/POINT','TIME/FRAME'])
-
-        
-        #Compile list of attribute values
-        attr_values = [argChooser,argPreproc,predictor_name,argDir,
-                      imstack.total_frames * imstack.point_kinds,pointsModified,
-                      pred_activity[-1][1]]
-        for source in pred_activity[:-1]:
-            attr_values.append(source[1])
-        attr_values.extend([imstack.total_frames,framesModified,totalTime,
-                            timePerPoint,timePerFrame])
+            attributes.append((source[0],source[1]))
+        attributes.extend([('TOTAL_FRAMES',imstack.total_frames),
+                           ('FRAMES_MODIFIED',framesModified),
+                           ('TOTAL_TIME',totalTime),
+                           ('TIME/POINT',timePerPoint),
+                           ('TIME/FRAME',timePerFrame)])
         
         #Create SystemInspector object and pass it the additional chamview 
         #specific attributes then write the object to a file
-        inspector = SI.SystemInspector(attr_names,attr_values)
+        inspector = si.SystemInspector(attributes)
         try:
             inspector.write_to_file(argSysInspector)
         except TypeError:
