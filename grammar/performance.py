@@ -41,13 +41,24 @@ class Performance(Chooser):
         self.numImagesTested = 0 #Keeps track of the number of images tested
         self.className = 'Performance' #The name of this class
         self.upperB =  50 #Max number of pixels that we care about for error
-        self.tpBound = 15 #Bound to split True Positives and False Negatives
+        self.tpBound = 5 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
         #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
         self.activePoint = -1
         self.selectedPredictions = []
+        self.stagedToSave = False
+
+    def setupPar(self,argEvaluate):
+        
+        #Get parameters: Output-upperBound-TruePositiveBound
+        parameters = argEvaluate.split('-')
+        
+        #Update variables
+        if parameters[0] != '': self.outputName = parameters[0]
+        if parameters[1] != '': self.upperB = int(parameters[1])
+        if parameters[2] != '': self.tpBound = int(parameters[2])
 
     def teardown(self):
 
