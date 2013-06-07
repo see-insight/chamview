@@ -12,7 +12,7 @@ Usage options:
     -s --inspect    Save system specific data to a file (for development purposes)
     -w --inspectout Same as -s but following arg specifies the name of the file to save to
     -r --predictor  Specify the sole predictor you want to use
-
+    -e --evaluate   Determines if user wants to evaluate predictors and parameters used
 Example: 
     
     $ chamview.py -d ./images/Chameleon -o ./points
@@ -39,7 +39,7 @@ class Usage(Exception):
 
 
 def main(argc,argv):
-    #Default arguments
+    #Default arguments    print 'argTruePos: ', argTruePos
     argDir = './images'
     argChooser = 'BasicGui'
     argPreproc = ''
@@ -47,14 +47,15 @@ def main(argc,argv):
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     argSysInspector = False
-    pred = ''
+    argPred = ''
+    argEvaluate = ''
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                      'hd:c:i:o:k:p:sw:r:',
+                                      'hd:c:i:o:k:p:sw:r:e:',
                                       ['help','dir=','chooser=','prep=',
                                       'output=','pkind=','ppos=',
-                                      'inspect','inspectout=','predictor='])
+                                      'inspect','inspectout=','predictor=','evaluate='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -79,11 +80,13 @@ def main(argc,argv):
             elif opt in ('-w', '--inspectout'):
                 argSysInspector = arg
             elif opt in ('-r', '--predictor='):
-                pred = arg
+                argPred = arg
+            elif opt in ('-e', '--evaluate='):
+                argEvaluate = arg
         if argOutput == '':
             argOutput = argDir+'.txt'
 
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, pred)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, argPred, argEvaluate)
 
 
     except Usage, err:
@@ -91,7 +94,7 @@ def main(argc,argv):
         print >>sys.stderr, 'For help use --help'
         return 2
 
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, pred):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, argPred, argEvaluate):
     
     #Start timer if argSysInspector
     if argSysInspector: start = timeit.default_timer()
@@ -110,6 +113,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     chooser = vocab.getChooser(argChooser)
     chooser.setup()
 
+    #Setup parameters if evaluation
+    if argEvaluate != '':
+        chooser.setupPar(argEvaluate)
+
     #Load the Preprocessor subclass instance
     preproc = vocab.getPreprocessor(argPreproc)
 
@@ -117,18 +124,20 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     predictor,predictor_name = vocab.getPredictors()
     
     #Load the Predictor needed for user
-    if pred != '':
+    if argPred != '':
         try:
-            predIndex = predictor_name.index(pred)
+            predIndex = predictor_name.index(argPred)
             predictor = [predictor[predIndex]]
             predictor_name = [predictor_name[predIndex]]
         except Exception:
             pass#Continue with the same predictors
-                    
+    
+          
+                      
     #Picking only some predictors for debugging purposes------------------------
     
-    predictor = [predictor[0],predictor[1],predictor[3]]
-    predictor_name = [predictor_name[0],predictor_name[1],predictor_name[3]]
+    #predictor = [predictor[0],predictor[1],predictor[3]]
+    #predictor_name = [predictor_name[0],predictor_name[1],predictor_name[3]]
     
     #---------------------------------------------------------------------------
 
