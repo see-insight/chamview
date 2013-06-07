@@ -677,6 +677,13 @@ def feature_save(imagename,resultname,box=None,params="--edge-thresh 10 --peak-t
         imagename = 'tmp.pgm'
     #Hand it over to the OS-specific SIFT binary for processing
     command = os.getcwd()+os.path.sep+'grammar'+os.path.sep+'vlfeat'+os.path.sep
+    #If the path contains a space, add quotes
+    dirs = command.split(os.path.sep)
+    for i in range(len(dirs)):
+        for ch in dirs[i]:
+            if ch.isspace():
+                dirs[i] = '"'+dirs[i]+'"'
+    command = os.path.sep.join(dirs)
     if sys.platform.startswith('linux'):
         command += 'glnx86'
     elif sys.platform == 'win32' or sys.platform == 'cygwin':
