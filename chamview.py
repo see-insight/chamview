@@ -30,7 +30,11 @@ import vocabulary as vocab
 from numpy import *
 from imagestack import ImageStack
 from grammar import Grammar
-from sys-inspector import SystemInspector
+
+#modify sys.path in order to import from sysInspector/
+sipath = os.getcwd()+os.path.sep+'sys-inspector'
+sys.path.insert(0,sipath)
+import SystemInspector as si
 
 
 class Usage(Exception):

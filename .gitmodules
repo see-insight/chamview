@@ -1,3 +1,3 @@
-[submodule "sysInspector"]
-	path = sysInspector
-	url = https://github.com/becketta/sys-inspector.git
+[submodule "sys-inspector"]
+	path = sys-inspector
+	url = http://github.com/becketta/sys-inspector.git
