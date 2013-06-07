@@ -7,6 +7,8 @@ Usage options:
     -g --dirGT      Ground Truth data directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
     -o --output     Output file. Default is (Performance_Report.txt) #It doesn't work yet, the default works 
     -p --predictor  Predictor Name. Default is (Kinematic)
+    -u --upBound    Determines the upper bound of results we can see
+    -t --truePos    Determines the maximum value of a prediction to be considered as true positive
 
 Example: 
     
@@ -18,6 +20,7 @@ import subprocess
 import sys
 import getopt
 from numpy import *
+import vocabulary as vocab
 
 
 class Usage(Exception):
@@ -30,9 +33,11 @@ def main(argc,argv):
     argGroundT = './dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt'
     argOutput = 'Performance_Report.txt'
     argPredictor = 'Kinematic'
+    argUpBound = 50
+    argTruePos = 5
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:', ['help','dirImg=','dirGT=','output=', 'predictor='])
+            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:u:t:', ['help','dirImg=','dirGT=','output=', 'predictor=','upBound=','truePos='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -48,11 +53,12 @@ def main(argc,argv):
                 argOutput = arg
             elif opt in ('-p', '--predictor'):
                 argPredictor = arg
-            
-        if argOutput == '':
-            argOutput = argFrameDir + '.txt'
+            elif opt in ('-u', '--upBound'):
+                argUpBound = arg
+            elif opt in ('-t', '--truePos'):
+                argTruePos = arg
 
-        callChamview(argFrameDir, argGroundT, argOutput, argPredictor)
+        callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -60,24 +66,32 @@ def main(argc,argv):
         return 2
 
 
-def callChamview(argFrameDir, argGroundT, argOutput, argPredictor):
-
+def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos):
+    
     command = ["./chamview.py", "-c", "Performance", "-r"]
 
     #Get predictor name
     command.append(argPredictor)
-
-    command.append("-d")
+    
+    command.append("-d")    
     
     #Get path for frames
-    command.append(argFrameDir)
+    command.append(argFrameDir)    
     
-    command.append("-p")
+    command.append("-p")    
     
     #Get ground truth path
-    command.append(argGroundT)
-    
-    subprocess.call(command)
+    command.append(argGroundT)    
+   
+    #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos
+    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) 
+      
+    #Add evaluate argument
+    command.append("-e")
+    command.append(argEvaluate)
+   
+    #Call subprocess 
+    subprocess.call(command) 
     
 if __name__ == '__main__':
     argc = len(sys.argv)
