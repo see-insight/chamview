@@ -120,7 +120,7 @@ class EditPointKinds(Dialog):
     def body(self, master):
         '''Create dialog body. Return widget that should have initial focus.'''
         #Tix Balloon for hover-over help
-        self.balloon = Tix.Balloon(master)
+#        self.balloon = Tix.Balloon(master)
         
         self.topframe = Frame(master)
         self.topframe.grid(row=0,padx=15,pady=15)
@@ -131,13 +131,13 @@ class EditPointKinds(Dialog):
         self.listbox.bind('<<ListboxSelect>>',self.highlight)
         self.default = Button(self.topframe, text="Default", width=10, 
                                 command=self.revert_to_default)
-        self.balloon.bind_widget(self.default,
-            balloonmsg='Resets the point kinds to the default.')
+#        self.balloon.bind_widget(self.default,
+#            balloonmsg='Resets the point kinds to the default.')
         self.default.pack(side=LEFT,padx=5, pady=5)
         self.maked = Button(self.topframe, text="Make Default", width=10, 
                                 command=self.set_as_default)
-        self.balloon.bind_widget(self.maked,
-            balloonmsg='Sets the current point kinds as the default point kinds.')
+#        self.balloon.bind_widget(self.maked,
+#            balloonmsg='Sets the current point kinds as the default point kinds.')
         self.maked.pack(side=LEFT, padx=5, pady=5)
         
         self.bottomframe = Frame(master,height=70,width=295)
