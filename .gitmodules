@@ -1,0 +1,3 @@
+[submodule "inspector"]
+	path = inspector
+	url = https://github.com/becketta/sys-inspector.git
