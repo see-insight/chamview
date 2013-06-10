@@ -6,8 +6,8 @@
 
 from Grammar import Chooser
 from numpy import *
-import Tix
 from Tkinter import *
+import Tix
 import tkMessageBox
 import ttk
 from PIL import Image, ImageTk
