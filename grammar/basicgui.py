@@ -1,5 +1,12 @@
+#
+# Editted by Aaron Beckett
+#
+#
+
+
 from Grammar import Chooser
 from numpy import *
+import Tix
 from Tkinter import *
 import tkMessageBox
 import ttk
@@ -37,7 +44,7 @@ class BasicGui(Chooser):
 
     def setup(self):
         '''Set instance variables and create the GUI.'''
-        self.master = Tk()
+        self.master = Tix.Tk()
         #Frame and point info
         self.currentFrame = StringVar()
         self.totalFrame = StringVar()
@@ -100,8 +107,7 @@ class BasicGui(Chooser):
             self.pointlist.insert(END,self.imstack.point_kind_list[i])
 #            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.pointKind = 0
-        self.pointlist.select_clear(0,END)
-        self.pointlist.select_set(0)
+        self.updatePointKind()
         #Fill the list of predictor choices
         if not self.filledSelectedPredList: self.updateSelectedPredList()
     
@@ -139,39 +145,48 @@ class BasicGui(Chooser):
         self.frameR.config(borderwidth=3,relief=GROOVE)
         
         ###frameL###
+        #Tix Balloon for hover-over help
+        self.balloon = Tix.Balloon(self.master)
         #Separator line
-        self.lineframe = Frame(self.frameL, height=20)
+        self.lineframe = Frame(self.frameL, height=15)
         self.lineframe.grid(row=0,column=0,columnspan=3,rowspan=1)
         #Annotation frame
         self.aframe = Frame(self.frameL)
         self.aframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=15)
         #Delete button
         self.button_del = Button(self.aframe,text='Delete',command=self.delete)
-        self.button_del.grid(row=0,column=0,sticky='WE')
-        #Clear Point Kind button
-        self.button_clearp = Button(self.aframe,text='Clear Point',command=self.clearPointKind)
-        self.button_clearp.grid(row=0,column=1,sticky='WE')
+        self.balloon.bind_widget(self.button_del,
+            balloonmsg='Deletes current point kind\'s selection from current frame.') 
+        self.button_del.grid(row=0,column=0,columnspan=2,ipadx=15)
         #Clear Frame button
-        self.button_clearf = Button(self.aframe,
-                        text='Clear Frame',command=self.clearFrame)
+        self.button_clearf = Button(self.aframe,text='Clear Frame',command=self.clearFrame)
+        self.balloon.bind_widget(self.button_clearf,
+            balloonmsg='Deletes all points on the current frame.')
         self.button_clearf.grid(row=1,column=0,sticky='WE')
         #Clear All button
-        self.button_cleara = Button(self.aframe,
-                        text='Clear All',command=self.clearAll)
+        self.button_cleara = Button(self.aframe,text='Clear All Frames',command=self.clearAll)
+        self.balloon.bind_widget(self.button_cleara,
+            balloonmsg='Deletes all points from all frames.')
         self.button_cleara.grid(row=1,column=1,sticky='WE')
         #Save and Help frame
         self.shframe = Frame(self.frameL)
-        self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=10)
+        self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=5)
         #Save button
         self.button_save = Button(self.shframe,text='Save',command=self.save)
+        self.balloon.bind_widget(self.button_save,
+            balloonmsg='Saves all point data to text file.')
         self.button_save.grid(row=0,column=0,sticky=E)
         #Help button
         self.button_help = Button(self.shframe,text='Help',command=self.showHelp)
+        self.balloon.bind_widget(self.button_help,
+            balloonmsg='Display help window.')
         self.button_help.grid(row=0,column=1,sticky=W)
         #Point Types Label and edit button
         self.pt_label = Label(self.frameL,text='Point Types',height=4,anchor=S)
         self.pt_label.grid(row=3,column=1)
         self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
+        self.balloon.bind_widget(self.pt_edit,
+            balloonmsg='Click to edit the available point kinds.')
         self.pt_edit.grid(row=3,column=2,sticky=S)
         #Listbox used to select point kind
         self.pointlist = Listbox(self.frameL,width=15,height=10,selectmode=BROWSE)
@@ -182,16 +197,23 @@ class BasicGui(Chooser):
         self.pointlist.config(yscrollcommand=self.pt_scroll.set)
         self.pointlist.bind('<<ListboxSelect>>',self.setPointKind)
         self.pointlist.focus()
+        #Clear Point Kind button
+        self.button_clearp = Button(self.frameL,text='Clear Point Kind',command=self.clearPointKind)
+        self.balloon.bind_widget(self.button_clearp,
+            balloonmsg='Clears selected point kind from all frames.')
+        self.button_clearp.grid(row=5,column=1,columnspan=2)
         #Predictors Label and edit button
         self.pd_label = Label(self.frameL,text='Predictors',height=3,anchor=S)
-        self.pd_label.grid(row=5,column=1)
-        self.pd_edit = Button(self.frameL,text='Info',command=self.predictorsInfo)
-        self.pd_edit.grid(row=5,column=2,sticky=S)
+        self.pd_label.grid(row=6,column=1)
+        self.pd_info = Button(self.frameL,text='Info',command=self.predictorsInfo)
+        self.balloon.bind_widget(self.pd_info,
+            balloonmsg='NOT IMPLEMENTED--will display predictor stats.')
+        self.pd_info.grid(row=6,column=2,sticky=S)
         #Listbox used to show predictors
         self.predlist= Listbox(self.frameL,width=15,height=10,selectmode=BROWSE)
-        self.predlist.grid(row=6,column=1,columnspan=2)
+        self.predlist.grid(row=7,column=1,columnspan=2)
         self.pd_scroll = Scrollbar(self.frameL,orient=VERTICAL)
-        self.pd_scroll.grid(row=6,column=0,sticky=NS)
+        self.pd_scroll.grid(row=7,column=0,sticky=NS)
         self.pd_scroll.config(command=self.predlist.yview,width=15)
         self.predlist.config(yscrollcommand=self.pd_scroll.set)
         
@@ -276,9 +298,11 @@ class BasicGui(Chooser):
         
     def updatePointKind(self):
         '''Set the pointlist's selection and draw the new pointkind on the frame.'''
+        self.pointlist.select_clear(0,END)
         self.pointlist.select_set(self.pointKind)
         self.pointlist.see(self.pointKind)
         self.pointlist.activate(self.pointKind)
+        self.button_clearp.configure(text='Clear '+ self.pointlist.get(self.pointKind))
         self.end_update_loop()
         
     def pointKindEdit(self,event=''):
