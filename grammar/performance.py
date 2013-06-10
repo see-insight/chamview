@@ -12,7 +12,6 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
-import pylab as P
 
 '''This file implements classes where the performance of predictors
 is computed using different techniques.
@@ -78,10 +77,10 @@ class Performance(Chooser):
         #self.showAccuracyConfidence()
         
         #Show results in text files and in graphs
-        #self.showErrorByFrame()
+        self.showErrorByFrame()
         self.showErrorByPointKind()
-        #self.showErrorEachPointK()
-        #self.showPercentageError()
+        self.showErrorEachPointK()
+        self.showPercentageError()
         #self.showROC()
         #self.showAccuracy()
         #self.showError3D()
@@ -285,9 +284,10 @@ class Performance(Chooser):
                 self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+' px\n')
             
             #Plot error
-            x = arange(self.totalPointK)
-            plt.bar(x, yPlot)
-            plt.xticks( x + 0.5,  self.pointKList)
+            xPlot = arange(self.totalPointK)
+            width = 0.35
+            plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            plt.xticks( xPlot + 0.5,  self.pointKList)
             
         title('Error on Prediction\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
