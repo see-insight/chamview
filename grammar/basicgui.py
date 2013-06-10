@@ -604,38 +604,47 @@ class BasicGui(Chooser):
    
     def clearPointKind(self,event=''):
         '''Clear the selected point kind from all frames.'''
-        for frame in range(self.imstack.total_frames):
-            self.imstack.point[frame][self.pointKind] *= 0
-            self.imstack.point_sources[frame][self.pointKind] = -1
-        # reset Point Kind source history
-        self.selectedPredictions[self.pointKind] = self.activePoint[0] = -1
-        self.activePoint[1] = self.activePoint[2] = 0
-        self.drawCanvas()
+        if tkMessageBox.askyesno(icon='warning',title='Warning',default='no',
+                    message='This action will delete the selected point kind from ALL frames.\nWould you like to proceed?',
+                    parent=self.master):
+            for frame in range(self.imstack.total_frames):
+                self.imstack.point[frame][self.pointKind] *= 0
+                self.imstack.point_sources[frame][self.pointKind] = -1
+            # reset Point Kind source history
+            self.selectedPredictions[self.pointKind] = self.activePoint[0] = -1
+            self.activePoint[1] = self.activePoint[2] = 0
+            self.drawCanvas()
       
     def clearFrame(self,event=''):
         '''Clear all points on the current frame.'''
-        self.imstack.point[self.imstack.current_frame] *= 0
-        for i in range(len(self.imstack.point_sources[self.imstack.current_frame])):
-            self.imstack.point_sources[self.imstack.current_frame][i] = -1
-        # reset Point source history
-        for i in range(len(self.selectedPredictions)):
-            self.selectedPredictions[i] = -1
-        self.activePoint[0] = -1
-        self.activePoint[1] = self.activePoint[2] = 0
-        self.drawCanvas()
+        if tkMessageBox.askyesno(icon='warning',title='Warning',default='no',
+                    message='This action will delete ALL points on the current frame.\nWould you like to proceed?',
+                    parent=self.master):
+            self.imstack.point[self.imstack.current_frame] *= 0
+            for i in range(len(self.imstack.point_sources[self.imstack.current_frame])):
+                self.imstack.point_sources[self.imstack.current_frame][i] = -1
+            # reset Point source history
+            for i in range(len(self.selectedPredictions)):
+                self.selectedPredictions[i] = -1
+            self.activePoint[0] = -1
+            self.activePoint[1] = self.activePoint[2] = 0
+            self.drawCanvas()
         
     def clearAll(self,event=''):
         '''Clear all points from all frames.'''
-        self.imstack.point *= 0
-        for frame in self.imstack.point_sources:
-            for i in range(len(frame)):
-                frame[i] = -1
-        # reset Point source history
-        for i in range(len(self.selectedPredictions)):
-            self.selectedPredictions[i] = -1
-        self.activePoint[0] = -1
-        self.activePoint[1] = self.activePoint[2] = 0
-        self.drawCanvas()
+        if tkMessageBox.askyesno(icon='warning',title='Warning',default='no',
+                    message='This action will delete ALL point data from ALL frames.\nWould you like to proceed?',
+                    parent=self.master):
+            self.imstack.point *= 0
+            for frame in self.imstack.point_sources:
+                for i in range(len(frame)):
+                    frame[i] = -1
+            # reset Point source history
+            for i in range(len(self.selectedPredictions)):
+                self.selectedPredictions[i] = -1
+            self.activePoint[0] = -1
+            self.activePoint[1] = self.activePoint[2] = 0
+            self.drawCanvas()
         
     def new(self,event=''):
         print "New"
