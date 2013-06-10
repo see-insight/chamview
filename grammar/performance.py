@@ -8,6 +8,7 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
+import pylab as P
 
 '''This file implements classes where the performance of predictors
 is computed using different techniques.
@@ -73,13 +74,13 @@ class Performance(Chooser):
         #self.showAccuracyConfidence()
         
         #Show results in text files and in graphs
-        self.showErrorByFrame()
+        #self.showErrorByFrame()
         self.showErrorByPointKind()
-        self.showErrorEachPointK()
-        self.showPercentageError()
-        self.showROC()
-        self.showAccuracy()
-        self.showError3D()
+        #self.showErrorEachPointK()
+        #self.showPercentageError()
+        #self.showROC()
+        #self.showAccuracy()
+        #self.showError3D()
         
         #Close text file
         self.fo.close()
@@ -283,7 +284,11 @@ class Performance(Chooser):
             #Plot the error in the subplot
             #n, bins, patches = plt.hist(yPlot, len(yPlot), normed=1, facecolor='g', alpha=0.75)
             #plt.plot(self.errorKindX[i], yPlot, 'bo', self.errorKindX[i], yPlot, 'k')
-            plt.plot(self.errorKindX[i],yPlot, lw = 1)
+            # the histogram of the data with histtype='step'
+            print 'length(yPlot):', yPlot 
+            n, bins, patches = P.hist([2,5,3,4,7], [1,2,3,4,5], normed=1, histtype='stepfilled')
+            P.setp(patches, 'facecolor', 'g', 'alpha', 0.75)
+            #plt.plot(self.errorKindX[i],yPlot, lw = 1)
             
         title('Error on Prediction\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
