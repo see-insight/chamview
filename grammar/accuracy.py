@@ -15,7 +15,6 @@ class Accuracy(Chooser):
         
         self.x = [] #Frame number
         self.y = [] #Error from ground-truth
-        self.z = [] #Contains the accuracy(a number between 0 and 1)
         self.name = [] #Name of predictor
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
@@ -30,11 +29,11 @@ class Accuracy(Chooser):
             #Save data to file
             fo = open('accuracy_'+self.name[i]+'.txt','w')
             for j in range(0,self.x[i].shape[0]):
-                fo.write(str(self.x[i][j]).zfill(4)+','+str(self.z[i][j])+'\n')
+                fo.write(str(self.x[i][j]).zfill(4)+','+str(self.y[i][j])+'\n')
             fo.close()
             
             #Plot the accuracy for current predictor
-            plt.plot(self.x[i],self.z[i])
+            plt.plot(self.x[i],self.y[i])
         
         #Declare other features for graph
         title('Accuracy on Prediction')
@@ -58,27 +57,17 @@ class Accuracy(Chooser):
             for i in range(0,len(self.name)):
                 self.x.append(arange(0,stack.total_frames,1))
                 self.y.append(ones(stack.total_frames))
-                self.z.append(zeros(stack.total_frames))
                
         #Get the accuracy of each predictor
         for pred in range(0,len(self.name)):
             
-            #Add the accuracy given for each pointkind
-            for pKind in range(0,stack.point_kinds):
-                #Get distance between predicted and ground truth
-                dx = predicted[pred,pKind,0] - stack.point[stack.current_frame,pKind,0]
-                dy = predicted[pred,pKind,1] - stack.point[stack.current_frame,pKind,1]
+            #Add the accuracy given for pointkind 0
+            #Get distance between predicted and ground truth
+            dx = predicted[pred,0,0] - stack.point[stack.current_frame,0,0]
+            dy = predicted[pred,0,1] - stack.point[stack.current_frame,0,1]
             
-                dist = (dx**2 + dy**2)**0.5
-                self.y[pred][stack.current_frame] += dist / stack.point_kinds
-            
-            #Compute the accuracy of predictor pred in current frame
-            
-            if math.isnan(self.y[pred][stack.current_frame]):
-                #Case when error is nan, then make it zero
-                self.z[pred][stack.current_frame] = 0
-            else:
-                self.z[pred][stack.current_frame] = 1 / self.y[pred][stack.current_frame]
+            dist = (dx**2 + dy**2)**0.5
+            self.y[pred][stack.current_frame] = dist
    
         #Advance the frame (imagestack is 0-based, so if we hit total_frames
         #that means that we're out of images)
