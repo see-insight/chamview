@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+#This class implements evaluators for Chamview predictors
+#Manuel E. Dosal
+#May 28, 2013
+
 from Grammar import Chooser
 import os
 from pylab import *
@@ -263,14 +267,13 @@ class Performance(Chooser):
             self.fo.write(' Predictor: ' + self.name[i] + '\n')
         
             #An array that contains the averages of errors by point kind
-            yPlot = zeros(len(self.y[i][0]))
+            yPlot = zeros(self.totalPointK)
             
             for pointK in range(0,len(yPlot)):
-                for frame in range(0,len(self.y[i])):
-                    yPlot[pointK] += sum(self.y[i][frame][pointK])
+                for frame in range(0,self.totalFrames):
+                    yPlot[pointK] += self.y[i][frame][pointK]            
             #Divide over the number of frames
             yPlot = yPlot / len(self.y[i])  
-        
         
             #Cut error by a given upper bound
             yPlot = self.cutArray(yPlot, self.upperB)    
@@ -280,15 +283,11 @@ class Performance(Chooser):
                 if yPlot[j] >= self.upperB: yVal = 'INF' 
                 else: yVal = yPlot[j]
                 self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+' px\n')
-        
-            #Plot the error in the subplot
-            #n, bins, patches = plt.hist(yPlot, len(yPlot), normed=1, facecolor='g', alpha=0.75)
-            #plt.plot(self.errorKindX[i], yPlot, 'bo', self.errorKindX[i], yPlot, 'k')
-            # the histogram of the data with histtype='step'
-            print 'length(yPlot):', yPlot 
-            n, bins, patches = P.hist([2,5,3,4,7], [1,2,3,4,5], normed=1, histtype='stepfilled')
-            P.setp(patches, 'facecolor', 'g', 'alpha', 0.75)
-            #plt.plot(self.errorKindX[i],yPlot, lw = 1)
+            
+            #Plot error
+            x = arange(self.totalPointK)
+            plt.bar(x, yPlot)
+            plt.xticks( x + 0.5,  self.pointKList)
             
         title('Error on Prediction\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
