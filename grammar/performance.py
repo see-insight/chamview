@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+#This class implements evaluators for Chamview predictors
+#Manuel E. Dosal
+#May 28, 2013
+
 from Grammar import Chooser
 import os
 from pylab import *
@@ -39,7 +43,6 @@ class Performance(Chooser):
         
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
-        self.className = 'Performance' #The name of this class
         self.upperB =  50 #Max number of pixels that we care about for error
         self.tpBound = 5 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
@@ -78,9 +81,9 @@ class Performance(Chooser):
         self.showErrorByPointKind()
         self.showErrorEachPointK()
         self.showPercentageError()
-        self.showROC()
-        self.showAccuracy()
-        self.showError3D()
+        #self.showROC()
+        #self.showAccuracy()
+        #self.showError3D()
         
         #Close text file
         self.fo.close()
@@ -199,7 +202,7 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(xPlot[j]).zfill(4)+','+str(yPlot[j])+' %\n')
                         
             #Plot the error in the subplot
-            plt.plot(xPlot,yPlot, lw = 2)
+            plt.plot(xPlot,yPlot, lw = 1)
             
         title('Percentage of Error\n(For a given error from 1 to ' + 
               str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
@@ -263,14 +266,13 @@ class Performance(Chooser):
             self.fo.write(' Predictor: ' + self.name[i] + '\n')
         
             #An array that contains the averages of errors by point kind
-            yPlot = zeros(len(self.y[i][0]))
+            yPlot = zeros(self.totalPointK)
             
             for pointK in range(0,len(yPlot)):
-                for frame in range(0,len(self.y[i])):
-                    yPlot[pointK] += sum(self.y[i][frame][pointK])
+                for frame in range(0,self.totalFrames):
+                    yPlot[pointK] += self.y[i][frame][pointK]            
             #Divide over the number of frames
             yPlot = yPlot / len(self.y[i])  
-        
         
             #Cut error by a given upper bound
             yPlot = self.cutArray(yPlot, self.upperB)    
@@ -280,11 +282,12 @@ class Performance(Chooser):
                 if yPlot[j] >= self.upperB: yVal = 'INF' 
                 else: yVal = yPlot[j]
                 self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+' px\n')
-        
-            #Plot the error in the subplot
-            #n, bins, patches = plt.hist(yPlot, len(yPlot), normed=1, facecolor='g', alpha=0.75)
-            #plt.plot(self.errorKindX[i], yPlot, 'bo', self.errorKindX[i], yPlot, 'k')
-            plt.plot(self.errorKindX[i],yPlot, lw = 2)
+            
+            #Plot error
+            xPlot = arange(self.totalPointK)
+            width = 0.35
+            plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            plt.xticks( xPlot + 0.5,  self.pointKList)
             
         title('Error on Prediction\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
@@ -328,7 +331,7 @@ class Performance(Chooser):
                     self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+' px\n')
             
                 #Plot the error in the subplot
-                plt.plot(self.x[i],yPlot, lw = 2)
+                plt.plot(self.x[i],yPlot, lw = 1)
             
             title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
                   +str(self.upperB)+' pixels')
@@ -369,7 +372,7 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot, lw = 2)
+            plt.plot(self.x[i], yPlot, lw = 1)
             
         title('Accuracy on Prediction\n'
               + 'It is a number between 0 and 1. Close to 1 means good prediction')
@@ -420,7 +423,7 @@ class Performance(Chooser):
                 self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot, lw = 2)
+            plt.plot(self.x[i], yPlot, lw = 1)
             
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
@@ -484,7 +487,7 @@ class Performance(Chooser):
             yPlot[len(yPlot)-1] = 1
                                          
             #Plot the error
-            plt.plot(xPlot, yPlot, lw = 2)
+            plt.plot(xPlot, yPlot, lw = 1)
             
         title('Receiver Operating Characteristic (ROC) Curve\n'+
               'A predictor is better if its curve is above other')

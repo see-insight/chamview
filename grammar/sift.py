@@ -664,6 +664,7 @@ def feature_save(imagename,resultname,box=None,params="--edge-thresh 10 --peak-t
                   peak is min contrast for feature; lower value -> more features
     returns:      Nothing
     '''
+    
     #Did the call request the image to be cropped first? If so, crop it
     if box != None:
         im = Image.open(imagename).convert('L')
