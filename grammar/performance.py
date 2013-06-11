@@ -38,6 +38,7 @@ class Performance(Chooser):
         #Variables from Image Stack class
         self.name = [] #Name of predictor
         self.pointKList = [] #Name of the point kinds
+        self.totalPredictors = 0 #Number of predictors
         self.totalFrames = 0 #Keep track of the number of frames of dataset
         self.totalPointK = 0 #Keep track of the number of point kinds of dataset
         
@@ -56,8 +57,16 @@ class Performance(Chooser):
         #Variables used to save information into a text file
         self.fo = None 
         self.division = '--\n' #String that determines the division between two evaluations
-        self.predLabel = 'Predictor: '
-        self.graphNames = ['ERROR BY FRAME\n']
+        self.endDocument = '---' #String that determines the document end
+        self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
+        self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
+        self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
+        self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
+        self.numPointKL = 'Numboer_of_Point_Kinds: ' #Label for number of point kinds
+        self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
+        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF ERROR\n']
+        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
+        self.graphNames.append('ACCURACY IN PREDICTION\n')
 
     def setupPar(self,argEvaluate):
         
@@ -80,6 +89,12 @@ class Performance(Chooser):
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
         self.fo.write('(We do not care about errors above ' + str(self.upperB) + 
                       ' pixels and they are written as INF)\n')        
+        
+        self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
+        self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
+        self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
+        self.fo.write(self.upperBoundL + str(self.upperB) + '\n')
+        
         #self.showAccuracyConfidence()
         
         #Show results in text files and in graphs
@@ -92,6 +107,7 @@ class Performance(Chooser):
         #self.showError3D()
         
         #Close text file
+        self.fo.write(self.endDocument)
         self.fo.close()
         print 'Report saved to ' + self.outputName
 
@@ -122,6 +138,7 @@ class Performance(Chooser):
             #Get the total of point kinds and total of frames
             self.totalFrames = stack.total_frames
             self.totalPointK = stack.point_kinds
+            self.totalPredictors = len(predictor_name)
 
         #Get the accuracy of each predictor
         for pred in range(0,len(self.name)):
@@ -258,7 +275,7 @@ class Performance(Chooser):
         #Go through each point kind
         for pointK in range(0, self.totalPointK):
             
-            self.fo.write(' Point Kind: ' + self.pointKList[pointK] + '\n') #Write point kind
+            self.fo.write(' ' + self.pointKLabel + self.pointKList[pointK] + '\n') #Write point kind
             
             self.numPlots += 1
             #Define a new figure
