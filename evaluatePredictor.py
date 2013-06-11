@@ -103,9 +103,9 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     subprocess.call(command) 
     
 def callPlotPerformance(argSavedGraph):
-    #Define a new object to plot dataset    
-    plotP = PlotData(argSavedGraph)
-    plotP.plot()
+    
+    #Plot dataset    
+    PlotData(argSavedGraph)
     
 if __name__ == '__main__':
     argc = len(sys.argv)
