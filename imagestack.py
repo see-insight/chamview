@@ -141,6 +141,9 @@ class ImageStack:
         file_in = open(filename)
         
         for line in file_in:
+            #If the line begins with a # skip it and move on
+            if line[0] == '#':
+                continue
             #If it's an old point file, switch over to the legacy point loader
             if len(line.split(',')) == 1 and len(line.split(':')) == 6:
                 file_in.close()
