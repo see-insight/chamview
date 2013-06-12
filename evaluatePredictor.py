@@ -16,7 +16,7 @@ Example:
     $ evaluatePredictor.py -i ./images/Chameleon -g ./images/points.txt -o ./results.txt
 
 """
-#This file helps to run evaluators through command line
+#This file allows to run evaluators through command line
 #Manuel E. Dosal
 #June 5, 2013
 
@@ -65,8 +65,10 @@ def main(argc,argv):
 
         #Determines if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
-            callPlotPerformance(argSavedGraph)
+            #Plot dataset from a text file
+            PlotData(argSavedGraph)
         else:
+            #compute errors and then plot
             callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos)
 
     except Usage, err:
@@ -100,12 +102,7 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     command.append(argEvaluate)
    
     #Call subprocess 
-    subprocess.call(command) 
-    
-def callPlotPerformance(argSavedGraph):
-    
-    #Plot dataset    
-    PlotData(argSavedGraph)
+    subprocess.call(command)    
     
 if __name__ == '__main__':
     argc = len(sys.argv)
