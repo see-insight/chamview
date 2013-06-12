@@ -23,13 +23,14 @@ class PlotData:
         #Atribbutes that are obtained from performance class
         self.graphNames = []
         self.division = ''
-        self.endDocument = ''
+        #Label variables used to match with text file information
         self.predLabel = ''
         self.pointKLabel = ''
         self.numPredictorsL = ''
         self.numFramesL = ''
         self.numPointKL = ''
-        self.fileArr = [] #Contains information about 
+        self.infVal = ''
+        self.fileArr = [] #Contains the data from text file
         
         #Attributes that are obtained from text file
         self.numPredictors = 0
@@ -46,14 +47,6 @@ class PlotData:
         #Get the dataset into an array
         self.readFile(directory)
         
-        #Debugging purposes-----------------------------------------------------
-        print 'self.numPredictors', self.numPredictors
-        print 'self.numFrames', self.numFrames
-        print 'self.numPointK', self.numPointK
-        print 'self.upperB', self.upperB
-        #print 'self.fileArr', self.fileArr
-        #-----------------------------------------------------------------------
-        
         #Plot all the graphs
         self.plot()
         
@@ -62,9 +55,11 @@ class PlotData:
         #If filename does not exist, return
         if os.path.exists(filename) == False: return
         
+        #Open file and read each line
         input = open(filename)
         fileArr = input.readlines()
         
+        #Find the index i for the first graph name and discard the data before it
         for i in range(0, len(fileArr)):
             if fileArr[i] in (self.graphNames):
                 break
@@ -77,10 +72,11 @@ class PlotData:
         #While loop that checks if there are still data to plot
         while itr < len(self.fileArr):
         
+            #Check if current line cotains a graph name or a point kind name
             if self.fileArr[itr] in self.graphNames or self.pointKLabel in self.fileArr[itr]:
             
                 self.numPlots += 1
-                #Define a initial figure
+                #Define a new figure
                 plt.figure(self.numPlots)
                 
                 graphTitle = self.fileArr[itr] #Save graph title
@@ -92,7 +88,7 @@ class PlotData:
                 while self.predLabel in self.fileArr[itr]:
                     
                     pred = self.getPredictor(self.fileArr[itr]) #Get predictor name
-                    predictors.append(pred) #Put in the array
+                    predictors.append(pred) #Put it in the array
                     itr += 1
                     
                     #Define xPlot and yPlot
@@ -103,43 +99,54 @@ class PlotData:
                         newX, newY = self.getXY(self.fileArr[itr])
                         xPlot.append(newX)
                         yPlot.append(newY)
-                        itr += 1
-                        
-                    #Debugging purposes-----------------------------------------
-                    #print 'xPlot: ', xPlot
-                    #print 'yPlot: ', yPlot
-                    #-----------------------------------------------------------   
+                        itr += 1  
                         
                     if graphTitle == 'ERROR BY POINT KIND\n':
+                        
                         #Plot error with bars if it is by point kinds
                         i = len(predictors) - 1
                         x = arange(self.numPointK)
                         width = 0.35
                         plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
                         plt.xticks( x + 0.5,  xPlot)
+                        
                     else:
+                        
                         #Plot the error in the subplot
                         plt.plot(xPlot,yPlot)
                 
-                #Debugging purposes---------------------------------------------
-                print 'predictors: ', predictors
-                #--------------------------------------------------------------- 
-                
-                title(graphTitle)
-                
+                #Choose the correct labels for x and y axis
                 if graphTitle == 'ERROR BY POINT KIND\n':
+                    
+                    title(graphTitle + 'This graph shows errors less or equal than '
+                    +str(self.upperB)+' pixels')
                     xlabel('Point Kind')
                     ylabel('Number of Pixels')
+                    
                 elif graphTitle == 'PERCENTAGE OF ERROR\n':
+                    
+                    title(graphTitle + '(For a given error from 1 to ' + 
+                    str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
+                    'points with at most that error)')
                     xlabel('Error in Pixels')
                     ylabel('Percentage of Points')
+                    
                 elif graphTitle == 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n':
+                    
+                    title(graphTitle + 'A predictor is better if its curve is above other')
                     xlabel('False Positive Rate')
                     ylabel('True Positive Rate')
+                    
                 elif graphTitle == 'ACCURACY IN PREDICTION\n':
+                    
+                    title(graphTitle)
                     xlabel('Frame')
                     ylabel('Accuracy')
+                    
                 else:    
+                    
+                    title(graphTitle + 'This graph shows errors less or equal than '
+                    + str(self.upperB) + ' pixels')
                     xlabel('Frame')
                     ylabel('Number of Pixels')
                     
@@ -151,34 +158,13 @@ class PlotData:
                
     def getXY(self, line):
         xy = line.split(',')         
-        if xy[1] == 'INF\n':
+        if xy[1] == self.infVal + '\n':
             xy[1] = self.upperB
         return xy[0], xy[1]
         
     def getPredictor(self, line):
-        p = line.split()
-        return p[len(p) - 1]
-            
-        
-    def plotGraph(self,graphName):     
-                    
-        #If the next graph is for each point kind, we need a graph for each one
-        #Then do it recursively with each point kind
-        if graphName == 'ERROR FOR EACH POINT KIND':
-            newGName = self.file_in.read()
-            self.plotGraph(newGName)
-        
-        for pred in range(0, self.numPredictors):
-
-            predictor, xPlot, yPlot = self.getLine()            
-    
-    def getLine(self):
-        
-        predictor = self.file_in.read()
-        arr = predictor.split() 
-        predictor = ''.join(arr[1:])
-            
-        print 'predictor--', predictor
+        idx = line.index(self.predLabel) + len(self.predLabel)
+        return line[idx:]
         
     def getNumbers(self, filename):
         
@@ -210,7 +196,6 @@ class PlotData:
             
             if pred and fram and pointK and uB: break
             
-    
     def getPerformanceAtt(self):
         #Create a new performance object
         per = vocab.getChooser('Performance')
@@ -225,4 +210,4 @@ class PlotData:
         self.numFramesL = per.numFramesL
         self.numPointKL = per.numPointKL
         self.upperBoundL = per.upperBoundL
-        self.endDocument = per.endDocument
+        self.infVal = per.infVal
