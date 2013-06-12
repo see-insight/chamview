@@ -9,7 +9,7 @@ Usage options:
     -o --output     Output file. Default is (none)
     -k --pkind      Point kind file. Default is (defaultPointKinds.txt)
     -p --ppos       Previously saved output file. Default is (none)
-    -s --inspect    Save system specific data to a file (for development purposes)
+    -s --inspect    Save system specific data to a file. Default is (./images/metafile.txt)
     -w --inspectout Same as -s but following arg specifies the name of the file to save to
     -r --predictor  Specify the sole predictor you want to use
     -e --evaluate   Determines if user wants to evaluate predictors and parameters used
@@ -76,7 +76,7 @@ def main(argc,argv):
             elif opt in ('-p', '--ppos'):
                 argPPos = arg
             elif opt in ('-s', '--inspect'):
-                argSysInspector = True
+                argSysInspector = argDir+'/metadata.txt'
             elif opt in ('-w', '--inspectout'):
                 argSysInspector = arg
             elif opt in ('-r', '--predictor'):
@@ -84,7 +84,7 @@ def main(argc,argv):
             elif opt in ('-e', '--evaluate'):
                 argEvaluate = arg
         if argOutput == '':
-            argOutput = argDir+'.txt'
+            argOutput = argDir+'/points.txt'
 
         run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, argPred, argEvaluate)
 
@@ -203,7 +203,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 #    print 'EXIT loop'
     
     #Run System Inspector
-    if argSysInspector : 
+    if argSysInspector: 
         import string
         
          #Stop timer and compute total time
