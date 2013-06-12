@@ -10,6 +10,7 @@ Usage options:
     -u --upBound    Determines the upper bound of results we can see
     -t --truePos    Determines the maximum value of a prediction to be considered as true positive
     -s --savedGraph Data results previously saved in text file that is used to graph.
+    -m --metadata   Directory of metadata to plot graphs using the information there.
 
 Example: 
     
@@ -38,9 +39,13 @@ def main(argc,argv):
     argUpBound = 50
     argTruePos = 5
     argSavedGraph = ''
+    argMetadata = ''
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:u:t:s:', ['help','dirImg=','dirGT=','output=', 'predictor=','upBound=','truePos=', 'savedGraph='])
+            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:u:t:s:m:', ['help','dirImg=',
+                         'dirGT=','output=', 'predictor=','upBound=','truePos=',
+                         'savedGraph=', 'metadata='])
+       
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -62,11 +67,22 @@ def main(argc,argv):
                 argTruePos = arg
             elif opt in ('-s', '--savedGraph'):
                 argSavedGraph = arg
+            elif opt in ('-m', '--metadata'):
+                argMetadata = arg
 
-        #Determines if user wants to compute errors or plot a previously saved data
+        #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
+            
             #Plot dataset from a text file
-            PlotData(argSavedGraph)
+            pd = PlotData(argSavedGraph)
+            pd.plotSavedG()
+            
+        elif argMetadata != '':
+            
+            #Show graphs using Metadata info
+            pd = PlotData(argMetadata)
+            pd.plotMeta()
+            
         else:
             #compute errors and then plot
             callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos)
@@ -102,7 +118,7 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     command.append(argEvaluate)
    
     #Call subprocess 
-    subprocess.call(command)    
+    subprocess.call(command)   
     
 if __name__ == '__main__':
     argc = len(sys.argv)
