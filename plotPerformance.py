@@ -19,6 +19,7 @@ class PlotData:
         #Attributes
         self.numPlots = 0
         self.file_in = None
+        self.directory = directory
         
         #Atribbutes that are obtained from performance class
         self.graphNames = []
@@ -38,14 +39,17 @@ class PlotData:
         self.numPointK = 0
         self.upperB = 0
         
+        
+    def plotSavedG(self):
+        
         #Get performance attributes
         self.getPerformanceAtt()
         
         #Get number of predictros, frames, and point kinds
-        self.getNumbers(directory)
+        self.getNumbers(self.directory)
         
         #Get the dataset into an array
-        self.readFile(directory)
+        self.readFile(self.directory)
         
         #Plot all the graphs
         self.plot()
@@ -211,3 +215,103 @@ class PlotData:
         self.numPointKL = per.numPointKL
         self.upperBoundL = per.upperBoundL
         self.infVal = per.infVal
+        
+    #Method that plots information from Metadata file
+    def plotMeta(self):
+        
+        #If filename does not exist, return
+        if os.path.exists(self.directory) == False: return
+        
+        #Open file and read each line
+        input = open(self.directory)
+        metaArr = input.readlines()
+        
+        #Define an array to save how many accepted points came from each predictor
+        predictorUse = []
+
+        #Obtain each value
+        for line in metaArr:
+            
+            if line.startswith('TOTAL_POINTS'):
+                totalPoints = int(line.split()[-1])
+            
+            elif line.startswith('POINTS_MODIFIED'):
+                pointsModified = int(line.split()[-1])
+                
+            elif line.startswith('MANUAL_POINTS'):
+                manualPoints = int(line.split()[-1])
+                
+            elif line.startswith('TOTAL_FRAMES'):
+                totalFrames = int(line.split()[-1])
+                
+            elif line.startswith('FRAMES_MODIFIED'):
+                framesModified = int(line.split()[-1])
+                
+            if line.startswith('TOTAL_TIME'):
+                totalTime = float(line.split()[-1])
+                
+            if line.startswith('TIME/POINT'):
+                timePerPoint = float(line.split()[-1])
+                
+            if line.startswith('TIME/FRAME'):
+                timePerFrame = float(line.split()[-1])
+                
+            if line.startswith('PREDICTORS'):
+                predictors = self.getPred(line)
+                
+            
+        
+        #MISSING: GET USE FOR EACH PREDICTOR
+        #USE: string.upper(predictor_name[i])+'_POINTS
+        
+        #Debugging purposes-----------------------------------------------------
+        print 'totalPoints: ', totalPoints
+        print 'totalTime: ', totalTime
+        print 'predictors:', predictors
+        print 'predictors[0]:'
+        print predictors[0]
+        print 'predictors[1]:'
+        print predictors[1]
+        #-----------------------------------------------------------------------
+        
+        #Information to use
+#PREDICTORS: ['Sift', 'Kinematic']
+#IMAGE_DIRECTORY: dataSets/ChamB_LFull/frames
+#TOTAL_POINTS: 2185
+#POINTS_MODIFIED: 2115
+#MANUAL_POINTS: 1549
+#SIFT_POINTS: 229
+#KINEMATIC_POINTS: 337
+#TOTAL_FRAMES: 437
+#FRAMES_MODIFIED: 437
+#TOTAL_TIME: 9464.14169598
+#TIME/POINT: 4.47477148746
+#TIME/FRAME: 21.6570748192
+
+    #Method that receives a string and return an array
+    def getPred(self, line):
+        
+        #Get the indexes for array bounds
+        first = line.index('[')
+        last = line.index(']')
+        
+        List = line[first + 1 : last]
+        newList = List.split(',')
+        
+        for i in range(0, len(newList)):
+            
+            pred = newList[i] #Get predictor i and remove ' '
+            
+            f = pred.index("'") #Find first (')
+            pred = pred[f+1:]
+            
+            l = pred.index("'") #Find last (')
+            pred = pred[:l]
+            
+            newList[i] = pred
+            
+        return newList
+            
+        
+        
+        
