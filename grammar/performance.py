@@ -48,25 +48,26 @@ class Performance(Chooser):
         self.tpBound = 5 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
         
-        #Variables used to match with chamview.py requirements
-        self.editedPointKinds = False
-        self.activePoint = -1
-        self.selectedPredictions = []
-        self.stagedToSave = False
-        
         #Variables used to save information into a text file
         self.fo = None 
         self.division = '--\n' #String that determines the division between two evaluations
-        self.endDocument = '---' #String that determines the document end
         self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
         self.numPointKL = 'Numboer_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
-        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF ERROR\n']
+        self.infVal = 'INF' #Label that indicates the error is very large
+        #Define an array that saves all the graph names
+        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF POINTS\n']
         self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
         self.graphNames.append('ACCURACY IN PREDICTION\n')
+        
+        #Variables used to match with chamview.py requirements
+        self.editedPointKinds = False
+        self.activePoint = -1
+        self.selectedPredictions = []
+        self.stagedToSave = False
 
     def setupPar(self,argEvaluate):
         
@@ -88,33 +89,30 @@ class Performance(Chooser):
         self.fo = open(self.outputName,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
         self.fo.write('(We do not care about errors above ' + str(self.upperB) + 
-                      ' pixels and they are written as INF)\n')        
-        
+                      ' pixels and they are written as ' + self.infVal + ')\n')        
+        #Save important values in text file
         self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
         self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
         self.fo.write(self.upperBoundL + str(self.upperB) + '\n')
         
+        #Possible graphs that can be used in a future
         #self.showAccuracyConfidence()
+        #self.showError3D()
+        #self.showROC()
+        #self.showAccuracy()
         
         #Show results in text files and in graphs
         self.showErrorByFrame()
         self.showErrorByPointKind()
         self.showErrorEachPointK()
         self.showPercentageError()
-        self.showROC()
-        self.showAccuracy()
-        #self.showError3D()
         
         #Close text file
-        self.fo.write(self.endDocument)
         self.fo.close()
         print 'Report saved to ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
-    
-        #Print the frame number that we are working with
-        #print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
@@ -176,7 +174,6 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = 'ERROR BY FRAME'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         self.numPlots += 1
         
@@ -198,7 +195,7 @@ class Performance(Chooser):
             
             #Save data to file
             for j in range(0,self.x[i].shape[0]):
-                if yPlot[j] >= self.upperB: yVal = 'INF' 
+                if yPlot[j] >= self.upperB: yVal = self.infVal 
                 else: yVal = yPlot[j]
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yVal) +'\n')
                         
@@ -220,7 +217,6 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = 'ERROR BY POINT KIND'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         self.numPlots += 1
         #Define a new figure
@@ -245,7 +241,7 @@ class Performance(Chooser):
                                       
             #Save data to file
             for j in range(0,self.errorKindX[i].shape[0]):
-                if yPlot[j] >= self.upperB: yVal = 'INF' 
+                if yPlot[j] >= self.upperB: yVal = self.infVal
                 else: yVal = yPlot[j]
                 self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+'\n')
             
@@ -258,7 +254,7 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
             
-        title('Error on Prediction\nThis graph shows errors less or equal than '
+        title('Error by Point Kind\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
         xlabel('Point Kind')
         ylabel('Number of Pixels')
@@ -270,7 +266,6 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = 'ERROR FOR EACH POINT KIND'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         #Go through each point kind
         for pointK in range(0, self.totalPointK):
@@ -297,7 +292,7 @@ class Performance(Chooser):
             
                 #Save data to file
                 for j in range(0,self.x[i].shape[0]):
-                    if yPlot[j] >= self.upperB: yVal = 'INF' 
+                    if yPlot[j] >= self.upperB: yVal = self.infVal
                     else: yVal = yPlot[j]
                     self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+'\n')
             
@@ -318,9 +313,8 @@ class Performance(Chooser):
     def showPercentageError(self):
         
         #Save title in text file and in graphNames array
-        gName = 'PERCENTAGE OF ERROR'
+        gName = 'PERCENTAGE OF POINTS'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         self.numPlots += 1
         
@@ -374,9 +368,9 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        title('Percentage of Error\n(For a given error from 1 to ' + 
+        title('Percentage of Points\n(For a given error from 1 to ' + 
               str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
-              'points with at most that error)\n') 
+              'points with at most that error)') 
         xlabel('Error in Pixels')
         ylabel('Percentage of Points')
         plt.legend(self.name)
@@ -387,7 +381,6 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = 'ACCURACY IN PREDICTION'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         self.numPlots += 1
         
@@ -428,7 +421,6 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = 'ACCURACY WITH CONFIDENCE'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         self.numPlots += 1
         
@@ -481,7 +473,6 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE'
         self.fo.write('\n' + gName + '\n')
-        self.graphNames.append(gName)
         
         self.numPlots += 1
         #Define a new figure
