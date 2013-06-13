@@ -261,8 +261,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         attributes.extend([('TOTAL_FRAMES',imstack.total_frames),
                            ('FRAMES_MODIFIED',framesModified),
                            ('TOTAL_TIME',time.strftime('%H:%M:%S', time.gmtime(totalTime))),
-                           ('TIME/POINT',time.strftime('%H:%M:%S', time.gmtime(timePerPoint))),
-                           ('TIME/FRAME',time.strftime('%H:%M:%S', time.gmtime(timePerFrame)))])
+                           ('TIME/POINT',timePerPoint),
+                           ('TIME/FRAME',timePerFrame)])
         
         #Create SystemInspector object and pass it the additional chamview 
         #specific attributes then write the object to a file
