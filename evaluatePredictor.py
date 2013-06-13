@@ -7,8 +7,8 @@ Usage options:
     -g --dirGT      Ground Truth data directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
     -o --output     Output file. Default is (Performance_Report.txt)
     -p --predictor  Predictor Name. Default is all predictors
-    -u --upBound    Determines the upper bound of results we can see
-    -t --truePos    Determines the maximum value of a prediction to be considered as true positive
+    -u --upBound    Determines the upper bound of results we can see. Default is 50
+    -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5
     -s --savedGraph Data results previously saved in text file that is used to graph.
     -m --metadata   Directory of metadata to plot graphs using the information there.
 
