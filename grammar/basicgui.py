@@ -459,9 +459,9 @@ class BasicGui(Chooser):
         self.canvas.create_image(0,0,image=self.photo,anchor=NW)
         #Update status bar
         img_name = self.imstack.name_current
-            if len(img_name.split(os.path.sep)) > 3:
-                img_name = img_name.split(os.path.sep)
-                img_name = '...'+os.path.sep+os.path.sep.join(img_name[-3:])
+        if len(img_name.split(os.path.sep)) > 3:
+            img_name = img_name.split(os.path.sep)
+            img_name = '...'+os.path.sep+os.path.sep.join(img_name[-3:])
         try:
             self.temporary_statusbar.set(self.format, img_name,
                             self.imstack.point_kind_list[self.pointKind], 
