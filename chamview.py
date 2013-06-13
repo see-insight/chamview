@@ -173,13 +173,13 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #print_var_info() ***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
-#    print 'call chooser'
+    print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
-#    print 'exit chooser'
+    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-#    print 'ENTER loop'
+    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Preprocess the ImageStack image
@@ -191,9 +191,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print_var_info()*************************************************************************
         
         #Give this result to the chooser to get the "real" point
-#        print 'call chooser'
+        print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-#        print 'exit chooser'
+        print 'exit chooser'
 
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
@@ -206,6 +206,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except NameError:
             pass
         
+    print 'EXIT loop'
+        
     try:
         if chooser.stagedToSave[1] != '':
             pass
@@ -215,7 +217,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     print '\n###### FINAL VARIABLE VALUES ######\n'
     print_var_info()
 
-#    print 'EXIT loop'
     
     #Run System Inspector
     if argSysInspector: 

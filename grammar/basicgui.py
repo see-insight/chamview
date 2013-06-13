@@ -134,6 +134,7 @@ class BasicGui(Chooser):
         self.topmenu.add_cascade(label='File', menu=self.filemenu)
         self.filemenu.add_command(label='New', command=self.new)
         self.filemenu.add_command(label='Open', command=self.open)
+        self.filemenu.add_command(label='Save As', command=self.save_as)
         self.filemenu.add_command(label='Save', command=self.save)
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit', command=self.quit)
@@ -665,6 +666,7 @@ class BasicGui(Chooser):
         
     def save_as(self,event=''):
         filename = tkFileDialog.asksaveasfilename(defaultextension='.txt',
+                        filetypes=[('Text File',"*.txt")],
                         initialdir=os.path.dirname(self.imstack.name_current),
                         initialfile='points',
                         parent=self.master,
