@@ -3,12 +3,13 @@
 #
 #
 
-
+import os
 from Grammar import Chooser
 from numpy import *
 from Tkinter import *
-import Tix
+#import Tix
 import tkMessageBox
+import tkFileDialog
 import ttk
 from PIL import Image, ImageTk
 import basicgui_supportclasses as support
@@ -663,7 +664,14 @@ class BasicGui(Chooser):
             self.end_update_loop()
         
     def save_as(self,event=''):
-        print 'Save As'
+        filename = tkFileDialog.asksaveasfilename(defaultextension='.txt',
+                        initialdir=os.path.dirname(self.imstack.name_current),
+                        initialfile='points',
+                        parent=self.master,
+                        title='Save Points Data')
+        if filename:
+            self.stagedToSave[1] = filename
+            self.save()
 
     def showHelp(self,event=''):
         '''Shows basic usage information in a popup window.'''
