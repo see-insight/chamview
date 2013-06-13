@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#This file allows to run evaluators through command line
+#Manuel E. Dosal
+#June 5, 2013
 """Evaluator for Chamview predictors
 
 Usage options:
@@ -17,10 +20,6 @@ Example:
     $ evaluatePredictor.py -i ./images/Chameleon -g ./images/points.txt -o ./results.txt
 
 """
-#This file allows to run evaluators through command line
-#Manuel E. Dosal
-#June 5, 2013
-
 import subprocess
 import sys
 import getopt
