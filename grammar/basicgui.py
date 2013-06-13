@@ -54,7 +54,7 @@ class BasicGui(Chooser):
         self.added = 0      # number of new point types added during cycle
         self.deleted = []   # indices of point types deleted during cycle
         self.editedPointKinds = False   # true if point kinds were edited in the update loop
-        self.stagedToSave = [False,'points.txt']    # [0] true if the user clicked the save button (will save after exiting update loop)
+        self.stagedToSave = [False,'']    # [0] true if the user clicked the save button (will save after exiting update loop)
                                                     # [1] name of file to save to
         #Choosing a prediction to use
         self.showPredictions = True     # yes or no to automatically show point predictions
@@ -655,9 +655,12 @@ class BasicGui(Chooser):
         print "Open"
         
     def save(self,event=''):
-        self.stagedToSave[0] = True
-        self.update_points()
-        self.end_update_loop()
+        if self.stagedToSave[1] == '':
+            self.save_as()
+        else:
+            self.stagedToSave[0] = True
+            self.update_points()
+            self.end_update_loop()
         
     def save_as(self,event=''):
         print 'Save As'
@@ -676,7 +679,7 @@ class BasicGui(Chooser):
     def quit(self,event=''):
         '''Exit ChamView's main loop and destroy the GUI window'''
         self.imstack.exit = True
-        self.stagedToSave = True
+        self.stagedToSave[0] = True
         self.update_points()
         self.end_update_loop()
         

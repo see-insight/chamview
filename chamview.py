@@ -208,7 +208,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         
     try:
         if chooser.stagedToSave[1] != '':
-            imstack.save_points(chooser.stagedToSave[1])
+            pass
     except NameError:
         if argOutput != '': imstack.save_points(argOutput)
             
