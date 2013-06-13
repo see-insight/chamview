@@ -54,7 +54,8 @@ class BasicGui(Chooser):
         self.added = 0      # number of new point types added during cycle
         self.deleted = []   # indices of point types deleted during cycle
         self.editedPointKinds = False   # true if point kinds were edited in the update loop
-        self.stagedToSave = False       # true if the user clicked the save button (will save in 
+        self.stagedToSave = [False,'points.txt']    # [0] true if the user clicked the save button (will save after exiting update loop)
+                                                    # [1] name of file to save to
         #Choosing a prediction to use
         self.showPredictions = True     # yes or no to automatically show point predictions
         self.selectedPredictions = []    # store where point came from last frame for each point kind (-1:user, 0 to # of predictors: predictor index)
@@ -80,7 +81,7 @@ class BasicGui(Chooser):
         #Fill the pointlist with point kinds available for use if it hasn't been
         if not self.madePointkindList:self.fillPointkindList()
         if not self.madePredictorList:self.fillPredictorList()
-        self.stagedToSave = False
+        self.stagedToSave[0] = False
         if self.editedPointKinds:
             self.added = 0
             self.deleted = []
@@ -654,7 +655,7 @@ class BasicGui(Chooser):
         print "Open"
         
     def save(self,event=''):
-        self.stagedToSave = True
+        self.stagedToSave[0] = True
         self.update_points()
         self.end_update_loop()
         
