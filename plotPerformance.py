@@ -46,7 +46,7 @@ class PlotData:
         #Get performance attributes
         self.getPerformanceAtt()
         
-        #Get number of predictros, frames, and point kinds
+        #Get number of predictors, frames, and point kinds
         self.getNumbers(self.directory)
         
         #Get the dataset into an array
@@ -103,7 +103,7 @@ class PlotData:
                     while not(self.predLabel in self.fileArr[itr] or self.fileArr[itr] == self.division or self.pointKLabel in self.fileArr[itr]):
                         newX, newY = self.getXY(self.fileArr[itr])
                         xPlot.append(newX)
-                        yPlot.append(newY)
+                        yPlot.append(float(newY))
                         itr += 1  
                         
                     if graphTitle == 'ERROR BY POINT KIND\n':
@@ -111,7 +111,7 @@ class PlotData:
                         #Plot error with bars if it is by point kinds
                         i = len(predictors) - 1
                         x = arange(self.numPointK)
-                        width = 0.35
+                        width = 0.2
                         plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
                         plt.xticks( x + 0.5,  xPlot)
                         
