@@ -176,7 +176,7 @@ class BasicGui(Chooser):
         self.shframe = Frame(self.frameL)
         self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=5)
         #Save button
-        self.button_save = Button(self.shframe,text='Save',command=self.save)
+        self.button_save = Button(self.shframe,text='Save Points',command=self.save)
 #        self.balloon.bind_widget(self.button_save,
 #            balloonmsg='Saves all point data to text file.')
         self.button_save.grid(row=0,column=0,sticky=E)
@@ -459,7 +459,11 @@ class BasicGui(Chooser):
         self.canvas.create_image(0,0,image=self.photo,anchor=NW)
         #Update status bar
         try:
-            self.temporary_statusbar.set(self.format, self.imstack.name_current,
+            img_name = self.imstack.name_current
+            if len(img_name.split(os.path.sep)) > 3:
+                img_name = img_name.split(os.path.sep)
+                img_name = '...'+os.path.sep+os.path.sep.join(img_name[-3:])
+            self.temporary_statusbar.set(self.format, img_name,
                             self.imstack.point_kind_list[self.pointKind], 
                             self.activePoint[1], self.activePoint[2])
         except TypeError:
