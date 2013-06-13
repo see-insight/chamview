@@ -134,8 +134,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                       
     #Picking only some predictors for debugging purposes------------------------
     
-    #predictor = [predictor[1], predictor[3], predictor[2]]
-    #predictor_name = [predictor_name[1], predictor_name[3], predictor_name[2]]
+    predictor = []
+    predictor_name = []
     
     #---------------------------------------------------------------------------
 
@@ -150,7 +150,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess
                 
-    #Pass argOutput to 
+    #Pass argOutput to chooser if possible
+    try:
+        chooser.stagedToSave[1] = argOutput
+    except NameError:
+        pass
 
     def print_var_info():
         print '****SELECTED POINTS:****\n', imstack.point
@@ -197,11 +201,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         try:    
             if chooser.stagedToSave[0]:
                 #Save points to file
-                if argOutput != '': imstack.save_points(argOutput)
+                if chooser.stagedToSave[1] != '':
+                    imstack.save_points(chooser.stagedToSave[1])
         except NameError:
             pass
-            
-    if argOutput != '': imstack.save_points(argOutput)
+        
+    try:
+        if chooser.stagedToSave[1] != '':
+            imstack.save_points(chooser.stagedToSave[1])
+    except NameError:
+        if argOutput != '': imstack.save_points(argOutput)
             
     print '\n###### FINAL VARIABLE VALUES ######\n'
     print_var_info()
