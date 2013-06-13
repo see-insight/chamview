@@ -58,6 +58,8 @@ class ImageStack:
         #Creates a list of every image file that can be used in the specified
         #directory, and uses this to set self.img_list[] and self.total_frames.
         #Valid extensions include bmp,jpg,png,gif
+        for sep in ['/','\\']:
+            directory = directory.replace(sep,os.path.sep)
         self.img_list = []
         self.current_frame = 0
         self.total_frames = 0

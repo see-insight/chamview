@@ -3,12 +3,13 @@
 #
 #
 
-
+import os
 from Grammar import Chooser
 from numpy import *
 from Tkinter import *
-import Tix
+#import Tix
 import tkMessageBox
+import tkFileDialog
 import ttk
 from PIL import Image, ImageTk
 import basicgui_supportclasses as support
@@ -54,7 +55,8 @@ class BasicGui(Chooser):
         self.added = 0      # number of new point types added during cycle
         self.deleted = []   # indices of point types deleted during cycle
         self.editedPointKinds = False   # true if point kinds were edited in the update loop
-        self.stagedToSave = False       # true if the user clicked the save button (will save in 
+        self.stagedToSave = [False,'']    # [0] true if the user clicked the save button (will save after exiting update loop)
+                                                    # [1] name of file to save to
         #Choosing a prediction to use
         self.showPredictions = True     # yes or no to automatically show point predictions
         self.selectedPredictions = []    # store where point came from last frame for each point kind (-1:user, 0 to # of predictors: predictor index)
@@ -80,7 +82,7 @@ class BasicGui(Chooser):
         #Fill the pointlist with point kinds available for use if it hasn't been
         if not self.madePointkindList:self.fillPointkindList()
         if not self.madePredictorList:self.fillPredictorList()
-        self.stagedToSave = False
+        self.stagedToSave[0] = False
         if self.editedPointKinds:
             self.added = 0
             self.deleted = []
@@ -132,6 +134,7 @@ class BasicGui(Chooser):
         self.topmenu.add_cascade(label='File', menu=self.filemenu)
         self.filemenu.add_command(label='New', command=self.new)
         self.filemenu.add_command(label='Open', command=self.open)
+        self.filemenu.add_command(label='Save As', command=self.save_as)
         self.filemenu.add_command(label='Save', command=self.save)
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit', command=self.quit)
@@ -173,7 +176,7 @@ class BasicGui(Chooser):
         self.shframe = Frame(self.frameL)
         self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=5)
         #Save button
-        self.button_save = Button(self.shframe,text='Save',command=self.save)
+        self.button_save = Button(self.shframe,text='Save Points',command=self.save)
 #        self.balloon.bind_widget(self.button_save,
 #            balloonmsg='Saves all point data to text file.')
         self.button_save.grid(row=0,column=0,sticky=E)
@@ -455,12 +458,16 @@ class BasicGui(Chooser):
             self.updatePhoto()
         self.canvas.create_image(0,0,image=self.photo,anchor=NW)
         #Update status bar
+        img_name = self.imstack.name_current
+        if len(img_name.split(os.path.sep)) > 3:
+            img_name = img_name.split(os.path.sep)
+            img_name = '...'+os.path.sep+os.path.sep.join(img_name[-3:])
         try:
-            self.temporary_statusbar.set(self.format, self.imstack.name_current,
+            self.temporary_statusbar.set(self.format, img_name,
                             self.imstack.point_kind_list[self.pointKind], 
                             self.activePoint[1], self.activePoint[2])
         except TypeError:
-            self.temporary_statusbar.set(self.format, self.imstack.name_current,
+            self.temporary_statusbar.set(self.format, img_name,
                             self.imstack.point_kind_list[self.pointKind],0,0)
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for and there is no point selected
@@ -654,12 +661,23 @@ class BasicGui(Chooser):
         print "Open"
         
     def save(self,event=''):
-        self.stagedToSave = True
-        self.update_points()
-        self.end_update_loop()
+        if self.stagedToSave[1] == '':
+            self.save_as()
+        else:
+            self.stagedToSave[0] = True
+            self.update_points()
+            self.end_update_loop()
         
     def save_as(self,event=''):
-        print 'Save As'
+        filename = tkFileDialog.asksaveasfilename(defaultextension='.txt',
+                        filetypes=[('Text File',"*.txt")],
+                        initialdir=os.path.dirname(self.imstack.name_current),
+                        initialfile='points',
+                        parent=self.master,
+                        title='Save Points Data')
+        if filename:
+            self.stagedToSave[1] = filename
+            self.save()
 
     def showHelp(self,event=''):
         '''Shows basic usage information in a popup window.'''
@@ -674,10 +692,13 @@ class BasicGui(Chooser):
         
     def quit(self,event=''):
         '''Exit ChamView's main loop and destroy the GUI window'''
-        self.imstack.exit = True
-        self.stagedToSave = True
-        self.update_points()
-        self.end_update_loop()
+        if tkMessageBox.askyesno(icon='warning',title='Exiting Chamview',default='no',
+                    message='Make sure all point data is saved by pressing the save button.\nContinue exiting Chamview?',
+                    parent=self.master):
+            self.imstack.exit = True
+            self.stagedToSave[0] = True
+            self.update_points()
+            self.end_update_loop()
         
 
 
