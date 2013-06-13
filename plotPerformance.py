@@ -11,6 +11,7 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
+import string
 
 class PlotData:
     
@@ -225,9 +226,6 @@ class PlotData:
         #Open file and read each line
         input = open(self.directory)
         metaArr = input.readlines()
-        
-        #Define an array to save how many accepted points came from each predictor
-        predictorUse = []
 
         #Obtain each value
         for line in metaArr:
@@ -258,35 +256,62 @@ class PlotData:
                 
             if line.startswith('PREDICTORS'):
                 predictors = self.getPred(line)
-                
+        
+        #Define an array to save how many accepted points came from each predictor
+        #Put initially the manual points
+        predictorUse = [['manual', manualPoints]]
+        
+        #Obtain how many points came from each predictor
+        for line in metaArr:
             
+            if '_POINTS' in line:
+
+                idx = line.index('_POINTS')
+                p = string.lower(line[:idx])
+                
+                if p in predictors:
+                    predictorUse.append([p, int(line.split()[-1])])
         
-        #MISSING: GET USE FOR EACH PREDICTOR
-        #USE: string.upper(predictor_name[i])+'_POINTS
+        #Plot times
+        self.plotTimes(totalPoints, pointsModified, totalFrames, framesModified,
+                       totalTime, timePerPoint, timePerFrame)
         
-        #Debugging purposes-----------------------------------------------------
-        print 'totalPoints: ', totalPoints
-        print 'totalTime: ', totalTime
-        print 'predictors:', predictors
-        print 'predictors[0]:'
-        print predictors[0]
-        print 'predictors[1]:'
-        print predictors[1]
-        #-----------------------------------------------------------------------
+        #Plot how many accepted points came from each predictor and manually
+        self.plotUsePredictors(predictorUse, pointsModified)
+    
+    #Plot information given by metadata file
+    def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
+        plt.figure()
+        title('METADATA INFORMATION', size = 24)
         
-        #Information to use
-#PREDICTORS: ['Sift', 'Kinematic']
-#IMAGE_DIRECTORY: dataSets/ChamB_LFull/frames
-#TOTAL_POINTS: 2185
-#POINTS_MODIFIED: 2115
-#MANUAL_POINTS: 1549
-#SIFT_POINTS: 229
-#KINEMATIC_POINTS: 337
-#TOTAL_FRAMES: 437
-#FRAMES_MODIFIED: 437
-#TOTAL_TIME: 9464.14169598
-#TIME/POINT: 4.47477148746
-#TIME/FRAME: 21.6570748192
+        text(0.05, 0.5, 'Total Points: ' + str(totalPoints) + '\n'
+              'Points Modified: ' + str(pointsModified) + '\n'
+              'Total Frames: ' + str(totalFrames) + '\n'
+              'Frames Modified: ' + str(framesModified) + '\n'
+              'Total Time: ' + self.getTime(totalTime) + '\n'
+              'Time Per Point: ' + self.getTime(timePerPoint) + '\n'
+              'Time Per Frame: ' + self.getTime(timePerFrame) + '\n',
+              verticalalignment = 'center', size = 22)
+        show()                            
+    
+    #This method plots how many time each predictor was used for annotating points
+    def plotUsePredictors(self, predictorUse, pointsModified):
+        
+        plt.figure()
+        
+        xPlot = []
+        yPlot = zeros(len(predictorUse))
+        
+        for i in range(0, len(predictorUse)):
+            yPlot[i] = predictorUse[i][1]
+            xPlot.append(predictorUse[i][0] + '\n' + str(int(yPlot[i])))
+        
+        #Plot error
+        x = arange(len(predictorUse))
+        bar(x, yPlot)
+        xticks( x + 0.4, xPlot )
+        title('Use of Predictors\nPoints modified: ' + str(pointsModified))
+        show()
 
     #Method that receives a string and return an array
     def getPred(self, line):
@@ -308,10 +333,22 @@ class PlotData:
             l = pred.index("'") #Find last (')
             pred = pred[:l]
             
-            newList[i] = pred
+            newList[i] = string.lower(pred)
             
         return newList
             
+    #This method receives time in seconds and returns time in hrs, min, sec
+    def getTime(self, time):
+        time = int(time * 100) / 100.0
+        seconds = time % 60
+        totalMinutes = (time - seconds) / 60
+        minutes = totalMinutes % 60
+        hours = (totalMinutes - minutes) / 60
+        
+        strTime = ''
+        if hours > 0: strTime += str(int(hours)) + ' hrs ' 
+        if minutes > 0: strTime += str(int(minutes)) + ' min '
+        return strTime + str(seconds) + ' s'
         
         
         
