@@ -33,11 +33,12 @@ class Performance(Chooser):
         self.y = [] #Error from ground-truth
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
-        self.fo = None
         self.outputName = 'Performance_Report.txt' #Name of output file
         
+        #Variables from Image Stack class
         self.name = [] #Name of predictor
         self.pointKList = [] #Name of the point kinds
+        self.totalPredictors = 0 #Number of predictors
         self.totalFrames = 0 #Keep track of the number of frames of dataset
         self.totalPointK = 0 #Keep track of the number of point kinds of dataset
         
@@ -46,6 +47,21 @@ class Performance(Chooser):
         self.upperB =  50 #Max number of pixels that we care about for error
         self.tpBound = 5 #Bound to split True Positives and False Negatives
         self.numPlots = 0 #Determine the number of plots showed
+        
+        #Variables used to save information into a text file
+        self.fo = None 
+        self.division = '--\n' #String that determines the division between two evaluations
+        self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
+        self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
+        self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
+        self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
+        self.numPointKL = 'Numboer_of_Point_Kinds: ' #Label for number of point kinds
+        self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
+        self.infVal = 'INF' #Label that indicates the error is very large
+        #Define an array that saves all the graph names
+        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF POINTS\n']
+        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
+        self.graphNames.append('ACCURACY IN PREDICTION\n')
         
         #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
@@ -73,26 +89,30 @@ class Performance(Chooser):
         self.fo = open(self.outputName,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
         self.fo.write('(We do not care about errors above ' + str(self.upperB) + 
-                      ' pixels and they are written as INF)\n')        
+                      ' pixels and they are written as ' + self.infVal + ')\n')        
+        #Save important values in text file
+        self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
+        self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
+        self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
+        self.fo.write(self.upperBoundL + str(self.upperB) + '\n')
+        
+        #Possible graphs that can be used in a future
         #self.showAccuracyConfidence()
+        #self.showError3D()
+        #self.showROC()
+        #self.showAccuracy()
         
         #Show results in text files and in graphs
         self.showErrorByFrame()
         self.showErrorByPointKind()
         self.showErrorEachPointK()
         self.showPercentageError()
-        #self.showROC()
-        #self.showAccuracy()
-        #self.showError3D()
         
         #Close text file
         self.fo.close()
         print 'Report saved to ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
-    
-        #Print the frame number that we are working with
-        #print 'Frame '+str(stack.current_frame).zfill(4)+'/'+str(stack.total_frames).zfill(4)
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
@@ -116,6 +136,7 @@ class Performance(Chooser):
             #Get the total of point kinds and total of frames
             self.totalFrames = stack.total_frames
             self.totalPointK = stack.point_kinds
+            self.totalPredictors = len(predictor_name)
 
         #Get the accuracy of each predictor
         for pred in range(0,len(self.name)):
@@ -146,14 +167,13 @@ class Performance(Chooser):
         stack.next()
         self.numImagesTested += 1
         
-        if self.numImagesTested == stack.total_frames: stack.exit = True
-            
-    def showPercentageError(self):
-        
-        #Save title in text file
-        self.fo.write('\nPERCENTAGE OF ERROR\n')
-        self.fo.write('(For a given error from 1 to ' + str(self.upperB) +
-                      ', pixels the percentage of points with at most that error is indicated)\n')
+        if self.numImagesTested == stack.total_frames: stack.exit = True              
+                                 
+    def showErrorByFrame(self):
+                
+        #Save title in text file and in graphNames array
+        gName = 'ERROR BY FRAME'
+        self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
         
@@ -163,7 +183,148 @@ class Performance(Chooser):
         #Go through each predictor
         for i in range(0,len(self.name)):
             
-            self.fo.write(' Predictor: ' + self.name[i] + '\n') #Write predictor name
+            self.fo.write(' ' + self.predLabel + self.name[i] + '\n')
+            
+            #Get the error by frame array at position i
+            yPlot = zeros(len(self.errorFrame[i]))
+            for j in range(0,len(yPlot)):            
+                yPlot[j] = self.errorFrame[i][j]
+            
+            #Cut error by a given upper bound
+            yPlot = self.cutArray(yPlot, self.upperB)
+            
+            #Save data to file
+            for j in range(0,self.x[i].shape[0]):
+                if yPlot[j] >= self.upperB: yVal = self.infVal 
+                else: yVal = yPlot[j]
+                self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yVal) +'\n')
+                        
+            #Plot the error in the subplot
+            plt.plot(self.x[i],yPlot)
+            
+        #Write division into file
+        self.fo.write(self.division)
+        
+        title('Error on Prediction\nThis graph shows errors less or equal than '
+               +str(self.upperB)+' pixels')
+        xlabel('Frame')
+        ylabel('Number of Pixels')
+        plt.legend(self.name)
+        plt.show()
+        
+    def showErrorByPointKind(self):
+        
+        #Save title in text file and in graphNames array
+        gName = 'ERROR BY POINT KIND'
+        self.fo.write('\n' + gName + '\n')
+        
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            self.fo.write(' ' + self.predLabel + self.name[i] + '\n')
+        
+            #An array that contains the averages of errors by point kind
+            yPlot = zeros(self.totalPointK)
+            
+            for pointK in range(0,len(yPlot)):
+                for frame in range(0,self.totalFrames):
+                    yPlot[pointK] += self.y[i][frame][pointK]            
+            #Divide over the number of frames
+            yPlot = yPlot / len(self.y[i])  
+        
+            #Cut error by a given upper bound
+            yPlot = self.cutArray(yPlot, self.upperB)    
+                                      
+            #Save data to file
+            for j in range(0,self.errorKindX[i].shape[0]):
+                if yPlot[j] >= self.upperB: yVal = self.infVal
+                else: yVal = yPlot[j]
+                self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+'\n')
+            
+            #Plot error
+            xPlot = arange(self.totalPointK)
+            width = 0.35
+            plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            plt.xticks( xPlot + 0.5,  self.pointKList)
+            
+        #Write division into file
+        self.fo.write(self.division)
+            
+        title('Error by Point Kind\nThis graph shows errors less or equal than '
+               +str(self.upperB)+' pixels')
+        xlabel('Point Kind')
+        ylabel('Number of Pixels')
+        plt.legend(self.name)
+        plt.show()
+
+    def showErrorEachPointK(self):
+        
+        #Save title in text file and in graphNames array
+        gName = 'ERROR FOR EACH POINT KIND'
+        self.fo.write('\n' + gName + '\n')
+        
+        #Go through each point kind
+        for pointK in range(0, self.totalPointK):
+            
+            self.fo.write(' ' + self.pointKLabel + self.pointKList[pointK] + '\n') #Write point kind
+            
+            self.numPlots += 1
+            #Define a new figure
+            plt.figure(self.numPlots)
+            
+            
+            #Go through each predictor
+            for i in range(0,len(self.name)):
+        
+                self.fo.write('  ' + self.predLabel + self.name[i] + '\n')
+        
+                #Get the error by frame array at position i
+                yPlot = zeros(len(self.y[i]))
+                for frame in range(0,len(yPlot)):            
+                    yPlot[frame] = self.y[i][frame][pointK]
+            
+                #Cut error by a given upper bound
+                yPlot = self.cutArray(yPlot, self.upperB)
+            
+                #Save data to file
+                for j in range(0,self.x[i].shape[0]):
+                    if yPlot[j] >= self.upperB: yVal = self.infVal
+                    else: yVal = yPlot[j]
+                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+'\n')
+            
+                #Plot the error in the subplot
+                plt.plot(self.x[i],yPlot, lw = 1)
+            
+            title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
+                  +str(self.upperB)+' pixels')
+            xlabel('Frame')
+            ylabel('Number of Pixels')
+            plt.legend(self.name)
+        
+            plt.show()
+        
+        #Write division into file
+        self.fo.write(self.division)
+            
+    def showPercentageError(self):
+        
+        #Save title in text file and in graphNames array
+        gName = 'PERCENTAGE OF POINTS'
+        self.fo.write('\n' + gName + '\n')
+        
+        self.numPlots += 1
+        
+        #Define a initial figure
+        plt.figure(self.numPlots)
+        
+        #Go through each predictor
+        for i in range(0,len(self.name)):
+            
+            self.fo.write(' ' + self.predLabel + self.name[i] + '\n') #Write predictor name
             
             #Define an array that will save the errors for predictor i
             errors = zeros(self.totalFrames * self.totalPointK)
@@ -199,155 +360,27 @@ class Performance(Chooser):
             
             #Save data to file
             for j in range(0,xPlot.shape[0]):
-                self.fo.write('  ' + str(xPlot[j]).zfill(4)+','+str(yPlot[j])+' %\n')
+                self.fo.write('  ' + str(xPlot[j]).zfill(4)+','+str(yPlot[j])+'\n')
                         
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot, lw = 1)
             
-        title('Percentage of Error\n(For a given error from 1 to ' + 
+        #Write division into file
+        self.fo.write(self.division)
+        
+        title('Percentage of Points\n(For a given error from 1 to ' + 
               str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
-              'points with at most that error)\n') 
+              'points with at most that error)') 
         xlabel('Error in Pixels')
         ylabel('Percentage of Points')
         plt.legend(self.name)
-        plt.show()              
-                                 
-    def showErrorByFrame(self):
-                
-        #Save title in text file
-        self.fo.write('\nERROR BY FRAME\n')
-        
-        self.numPlots += 1
-        
-        #Define a initial figure
-        plt.figure(self.numPlots)
-        
-        #Go through each predictor
-        for i in range(0,len(self.name)):
-            
-            self.fo.write(' Predictor: ' + self.name[i] + '\n')
-            
-            #Get the error by frame array at position i
-            yPlot = zeros(len(self.errorFrame[i]))
-            for j in range(0,len(yPlot)):            
-                yPlot[j] = self.errorFrame[i][j]
-            
-            #Cut error by a given upper bound
-            yPlot = self.cutArray(yPlot, self.upperB)
-            
-            #Save data to file
-            for j in range(0,self.x[i].shape[0]):
-                if yPlot[j] >= self.upperB: yVal = 'INF' 
-                else: yVal = yPlot[j]
-                self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yVal) +' px\n')
-                        
-            #Plot the error in the subplot
-            plt.plot(self.x[i],yPlot)
-            
-        title('Error on Prediction\nThis graph shows errors less or equal than '
-               +str(self.upperB)+' pixels')
-        xlabel('Frame')
-        ylabel('Number of Pixels')
-        plt.legend(self.name)
         plt.show()
-        
-    def showErrorByPointKind(self):
-        
-        #Write title in text file
-        self.fo.write('\nERROR BY POINT KIND\n')
-        
-        self.numPlots += 1
-        #Define a new figure
-        plt.figure(self.numPlots)
-        
-        #Go through each predictor
-        for i in range(0,len(self.name)):
-            
-            self.fo.write(' Predictor: ' + self.name[i] + '\n')
-        
-            #An array that contains the averages of errors by point kind
-            yPlot = zeros(self.totalPointK)
-            
-            for pointK in range(0,len(yPlot)):
-                for frame in range(0,self.totalFrames):
-                    yPlot[pointK] += self.y[i][frame][pointK]            
-            #Divide over the number of frames
-            yPlot = yPlot / len(self.y[i])  
-        
-            #Cut error by a given upper bound
-            yPlot = self.cutArray(yPlot, self.upperB)    
-                                      
-            #Save data to file
-            for j in range(0,self.errorKindX[i].shape[0]):
-                if yPlot[j] >= self.upperB: yVal = 'INF' 
-                else: yVal = yPlot[j]
-                self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+' px\n')
-            
-            #Plot error
-            xPlot = arange(self.totalPointK)
-            width = 0.35
-            plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
-            plt.xticks( xPlot + 0.5,  self.pointKList)
-            
-        title('Error on Prediction\nThis graph shows errors less or equal than '
-               +str(self.upperB)+' pixels')
-        xlabel('Point Kind')
-        ylabel('Number of Pixels')
-        plt.legend(self.name)
-        plt.show()
-
-    def showErrorEachPointK(self):
-        
-        #Save title in text file    
-        self.fo.write('\nERROR FOR EACH POINT KIND\n')
-        
-        #Go through each point kind
-        for pointK in range(0, self.totalPointK):
-            
-            self.fo.write(' Point Kind: ' + self.pointKList[pointK] + '\n') #Write point kind
-            
-            self.numPlots += 1
-            #Define a new figure
-            plt.figure(self.numPlots)
-            
-            
-            #Go through each predictor
-            for i in range(0,len(self.name)):
-        
-                self.fo.write('  Predictor: ' + self.name[i] + '\n')
-        
-                #Get the error by frame array at position i
-                yPlot = zeros(len(self.y[i]))
-                for frame in range(0,len(yPlot)):            
-                    yPlot[frame] = self.y[i][frame][pointK]
-            
-                #Cut error by a given upper bound
-                yPlot = self.cutArray(yPlot, self.upperB)
-            
-                #Save data to file
-                for j in range(0,self.x[i].shape[0]):
-                    if yPlot[j] >= self.upperB: yVal = 'INF' 
-                    else: yVal = yPlot[j]
-                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+' px\n')
-            
-                #Plot the error in the subplot
-                plt.plot(self.x[i],yPlot, lw = 1)
-            
-            title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
-                  +str(self.upperB)+' pixels')
-            xlabel('Frame')
-            ylabel('Number of Pixels')
-            plt.legend(self.name)
-        
-            plt.show()
-            
         
     def showAccuracy(self):
                 
-        #Write title in text file
-        self.fo.write('\nACCURACY IN PREDICTION\n')
-        self.fo.write('(A number between 0 and 1. Close to 0 means bad prediction,'
-                     + ' close to 1 means good prediction)\n')
+        #Save title in text file and in graphNames array
+        gName = 'ACCURACY IN PREDICTION'
+        self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
         
@@ -357,7 +390,7 @@ class Performance(Chooser):
         #Go through each predictor
         for i in range(0,len(self.name)):
             
-            self.fo.write(' Predictor: ' + self.name[i] + '\n')
+            self.fo.write(' ' + self.predLabel + self.name[i] + '\n')
             
             #Get the error by frame array at position i
             yPlot = self.errorFrame[i]
@@ -373,9 +406,11 @@ class Performance(Chooser):
             
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot, lw = 1)
-            
-        title('Accuracy on Prediction\n'
-              + 'It is a number between 0 and 1. Close to 1 means good prediction')
+           
+        #Write division into file
+        self.fo.write(self.division) 
+  
+        title('ACCURACY ON PREDICTION\n')
         xlabel('Frame')
         ylabel('Accuracy')
         plt.legend(self.name)
@@ -383,10 +418,9 @@ class Performance(Chooser):
         
     def showAccuracyConfidence(self):
        
-        #Write title in text file     
-        self.fo.write('\nACCURACY WITH CONFIDENCE\n')
-        self.fo.write('(A number between 0 and 1. Close to 0 means bad prediction,'
-                     + ' close to 1 means good prediction)\n')
+        #Save title in text file and in graphNames array
+        gName = 'ACCURACY WITH CONFIDENCE'
+        self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
         
@@ -413,7 +447,7 @@ class Performance(Chooser):
         #Go through each predictor
         for i in range(0,len(self.name)):
             
-            self.fo.write(' Predictor: ' + self.name[i])
+            self.fo.write(' ' + self.predLabel + self.name[i])
             
             #Get the error by frame array at position i
             yPlot = yaccConf[i]
@@ -425,6 +459,9 @@ class Performance(Chooser):
             #Plot the error in the subplot
             plt.plot(self.x[i], yPlot, lw = 1)
             
+        #Write division into file
+        self.fo.write(self.division)
+
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
         ylabel('Accuracy * Confidence')
@@ -432,15 +469,18 @@ class Performance(Chooser):
         plt.show()     
         
     def showROC(self):
-              
-        #Write title in text file
-        self.fo.write('\nReceiver Operating Characteristic (ROC) Curve\n')
-                    
+   
+        #Save title in text file and in graphNames array
+        gName = 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE'
+        self.fo.write('\n' + gName + '\n')
+        
         self.numPlots += 1
         #Define a new figure
         plt.figure(self.numPlots)
         
         for pred in range(0,len(self.y)):
+            
+            self.fo.write(' ' + self.predLabel + self.name[pred] + '\n')
             
             numTP = 0
             numFP = 0
@@ -485,10 +525,17 @@ class Performance(Chooser):
 
             #Fill last position as 1
             yPlot[len(yPlot)-1] = 1
-                                         
+                     
+            #Write results into file
+            for i in range(0, len(xPlot)):
+                self.fo.write('  ' + str(xPlot[i]) + ', ' + str(yPlot[i]) + '\n')                           
+                                                                                 
             #Plot the error
             plt.plot(xPlot, yPlot, lw = 1)
-            
+         
+        #Write division into file
+        self.fo.write(self.division)   
+                  
         title('Receiver Operating Characteristic (ROC) Curve\n'+
               'A predictor is better if its curve is above other')
         xlabel('False Positive Rate')
@@ -499,7 +546,7 @@ class Performance(Chooser):
     def showError3D(self):
         
         #Write title in text file
-        self.fo.write('\nError for each Predictor in 3D\n')
+        self.fo.write('\nERROR FOR EACH PREDICTOR IN 3D\n')
         
         #For each predictor
         for i in range(0,len(self.y)):
@@ -542,9 +589,7 @@ class Performance(Chooser):
             title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            #zlabel('Error in Pixels')
             plt.legend(self.name)
-            #text(1, 1, 'Anything', fontsize=12) 
             
             plt.show() 
                             
