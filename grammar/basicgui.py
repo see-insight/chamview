@@ -678,10 +678,13 @@ class BasicGui(Chooser):
         
     def quit(self,event=''):
         '''Exit ChamView's main loop and destroy the GUI window'''
-        self.imstack.exit = True
-        self.stagedToSave[0] = True
-        self.update_points()
-        self.end_update_loop()
+        if tkMessageBox.askyesno(icon='warning',title='Exiting Chamview',default='no',
+                    message='Make sure all point data is saved by pressing the save button.\nContinue exiting Chamview?',
+                    parent=self.master):
+            self.imstack.exit = True
+            self.stagedToSave[0] = True
+            self.update_points()
+            self.end_update_loop()
         
 
 
