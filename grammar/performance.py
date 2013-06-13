@@ -247,7 +247,7 @@ class Performance(Chooser):
             
             #Plot error
             xPlot = arange(self.totalPointK)
-            width = 0.35
+            width = 0.2
             plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
             plt.xticks( xPlot + 0.5,  self.pointKList)
             
