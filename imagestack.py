@@ -267,7 +267,7 @@ class ImageStack:
         #        frame,point kind,column,row,point_source.
         #Note that this will overwrite any existing file without warning
         file_out = open(filename,'w')
-        file_out.write("# frame,point_kind,column,row,point_source")
+        file_out.write("# frame,point_kind,column,row,point_source\n")
         for frame in range(self.total_frames):
             for kind_index in range(self.point_kinds):
                 kind = self.point_kind_list[kind_index]
