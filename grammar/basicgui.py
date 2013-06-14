@@ -46,7 +46,7 @@ class BasicGui(Chooser):
     def setup(self):
         '''Set instance variables and create the GUI.'''
         self.master = Tix.Tk()
-        self.master = Tk()  # use if Tix is not available
+#        self.master = Tk()  # use if Tix is not available
         #Frame and point info
         self.currentFrame = StringVar()
         self.totalFrame = StringVar()
