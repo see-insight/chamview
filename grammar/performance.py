@@ -67,7 +67,7 @@ class Performance(Chooser):
         self.editedPointKinds = False
         self.activePoint = -1
         self.selectedPredictions = []
-        self.stagedToSave = False
+        self.stagedToSave = ['', '']
 
     def setupPar(self,argEvaluate):
         
