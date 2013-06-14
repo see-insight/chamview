@@ -139,7 +139,9 @@ class ImageStack:
         #the old Chamview, it will be loaded appropriately
         self.point = zeros((self.total_frames,self.point_kinds,2))
         self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
-        if os.path.exists(filename) == False: return
+        if os.path.exists(filename) == False:
+            print 'Points File Not Found'
+            return
         file_in = open(filename)
         
         for line in file_in:
