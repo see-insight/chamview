@@ -65,7 +65,12 @@ class Template:
         #Look at the image at the specified position and grab the template there
         #to be used in future predictions. img is a numpy array
         size = 50
-        bounds = [x-size/2, y-size/2, x+size/2, y+size/2]
+        #Check if bounds are positive for first two values
+        b1 = x-size/2
+        b2 = y-size/2
+        if b1 < 0: b1 = 0
+        if b2 < 0: b2 = 0
+        bounds = [b1, b2, x+size/2, y+size/2]
         self.template = img[bounds[1]:bounds[3], bounds[0]:bounds[2]]
         
     def confidence(self, template):
