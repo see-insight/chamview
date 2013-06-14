@@ -135,8 +135,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                       
     #Picking only some predictors for debugging purposes------------------------
     
-    predictor = []
-    predictor_name = []
+    predictor = [predictor[1]]#, predictor[4]]
+    predictor_name = [predictor_name[1]]#, predictor_name[4]]
     
     #---------------------------------------------------------------------------
 
@@ -174,9 +174,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #print_var_info() ***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
-    print 'call chooser'
+    #print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
-    print 'exit chooser'
+    #print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
@@ -192,9 +192,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print_var_info()*************************************************************************
         
         #Give this result to the chooser to get the "real" point
-        print 'call chooser'
+        #print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-        print 'exit chooser'
+        #print 'exit chooser'
 
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
