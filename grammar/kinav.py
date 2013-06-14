@@ -1,3 +1,5 @@
+#This class implements kinematic predictor with some modifications
+#June 14, 2013
 from Grammar import Predictor
 from numpy import *
 import random
@@ -35,11 +37,16 @@ class Kinav(Predictor):
 		    pf[1] = decide(p0[1], p1[1], p2[1])
 		    return pf
 		    
+		#This method decides if the new point has to follow the kinematic method
+		#or it can be computed by average of the previous point to avoid points
+		#far away
 		def decide(p0, p1, p2):
 		    
-		    if (p0 < p1 and p1 < p2) or (p0 > p1 and p1 > p2):
+		    if (p0 <= p1 and p1 <= p2) or (p0 >= p1 and p1 >= p2):
+		        #Case when points are in order
 		        pf = veloc(p0, p1, p2)
 		    else:
+		        #Case when points are not in order, better take average
 		        pf = (p0 + p1 + p2) / 3
 		    return pf
 		        
@@ -88,13 +95,9 @@ class Kinav(Predictor):
 					result[i,2] = 0.0
 		#needs at least 3 frames of points to predict. after frames are 0(stack.current_frame is an array),1, 2 a prediction will be displayed on the 4th screen 
 		if stack.current_frame > 2:	
-			
 			return result
-			
 		else:
 			return zeros([stack.point_kinds,3])
-		
-
 		
 		
 		
