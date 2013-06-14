@@ -246,7 +246,7 @@ class PlotData:
                 framesModified = int(line.split()[-1])
                 
             if line.startswith('TOTAL_TIME'):
-                totalTime = float(line.split()[-1])
+                totalTime = self.getTime(line.split()[-1])
                 
             if line.startswith('TIME/POINT'):
                 timePerPoint = float(line.split()[-1])
@@ -288,7 +288,7 @@ class PlotData:
               'Points Modified: ' + str(pointsModified) + '\n'
               'Total Frames: ' + str(totalFrames) + '\n'
               'Frames Modified: ' + str(framesModified) + '\n'
-              'Total Time: ' + self.getTime(totalTime) + '\n'
+              'Total Time: ' + totalTime + '\n'
               'Time Per Point: ' + self.getTime(timePerPoint) + '\n'
               'Time Per Frame: ' + self.getTime(timePerFrame) + '\n',
               verticalalignment = 'center', size = 22)
@@ -320,6 +320,9 @@ class PlotData:
         first = line.index('[')
         last = line.index(']')
         
+        #Check if the list is empty
+        if last - first <= 1: return []
+        
         List = line[first + 1 : last]
         newList = List.split(',')
         
@@ -339,16 +342,22 @@ class PlotData:
             
     #This method receives time in seconds and returns time in hrs, min, sec
     def getTime(self, time):
-        time = int(time * 100) / 100.0
-        seconds = time % 60
-        totalMinutes = (time - seconds) / 60
-        minutes = totalMinutes % 60
-        hours = (totalMinutes - minutes) / 60
         
-        strTime = ''
-        if hours > 0: strTime += str(int(hours)) + ' hrs ' 
-        if minutes > 0: strTime += str(int(minutes)) + ' min '
-        return strTime + str(seconds) + ' s'
+        if isinstance(time, basestring) and ':' in time:
+            #Case when time is in HH:MM:SS format
+            tSplit = time.split(':')
+            return tSplit[0] + ' hrs ' + tSplit[1] + ' min ' + tSplit[2] + ' s'
+        else:
+            time = int(time * 100) / 100.0
+            seconds = time % 60
+            totalMinutes = (time - seconds) / 60
+            minutes = totalMinutes % 60
+            hours = (totalMinutes - minutes) / 60
+        
+            strTime = ''
+            if hours > 0: strTime += str(int(hours)) + ' hrs ' 
+            if minutes > 0: strTime += str(int(minutes)) + ' min '
+            return strTime + str(seconds) + ' s'
         
         
         
