@@ -139,9 +139,7 @@ class ImageStack:
         #the old Chamview, it will be loaded appropriately
         self.point = zeros((self.total_frames,self.point_kinds,2))
         self.point_sources = [[-1 for i in range(self.point_kinds)] for i in range(self.total_frames)]
-        if os.path.exists(filename) == False:
-            print 'Points File Not Found'
-            return
+        if os.path.exists(filename) == False: return False
         file_in = open(filename)
         
         for line in file_in:
@@ -152,7 +150,7 @@ class ImageStack:
             if len(line.split(',')) == 1 and len(line.split(':')) == 6:
                 file_in.close()
                 self.load_points_legacy(filename)
-                return
+                return False
             line_list = line.split(',')
             frame = int(line_list[0])
             kind = line_list[1]
@@ -175,6 +173,7 @@ class ImageStack:
             self.point[frame,kind_index,1] = row
             self.point_sources[frame][kind_index] = point_source
         file_in.close()
+        return True
 
     def load_points_legacy(self,filename):
         #Loads previous point data in from a file. Each line should be in the
