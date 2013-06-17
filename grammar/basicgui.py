@@ -7,7 +7,7 @@ import os
 from Grammar import Chooser
 from numpy import *
 from Tkinter import *
-#import Tix
+import Tix
 import tkMessageBox
 import tkFileDialog
 import ttk
@@ -232,7 +232,7 @@ class BasicGui(Chooser):
         #Status Bar
         self.temporary_statusbar = support.StatusBar(self.stat_frame)
         self.temporary_statusbar.pack(fill=X)
-        self.format = 'Image: %s\tPoint Kind: %s\t\tPoint Position: X: %5.1d\tY: %5.1d\t'
+        self.format = 'Image: %s    Point Kind: %s      Point Position: X: %5.1d   Y: %5.1d'
         self.temporary_statusbar.set(self.format, 'none', 'default', 0, 0)
         #frame counter Frame
         self.fframe = Frame(self.frameR)
