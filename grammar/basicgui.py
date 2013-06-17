@@ -110,7 +110,7 @@ class BasicGui(Chooser):
         #and bind the first 9 to the number keys on the keyboard
         for i in range(0,self.imstack.point_kinds):
             self.pointlist.insert(END,self.imstack.point_kind_list[i])
-#            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
+            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.pointKind = 0
         self.updatePointKind()
         #Fill the list of predictor choices
@@ -119,8 +119,9 @@ class BasicGui(Chooser):
     def fillPredictorList(self):
         '''List each available predictor in the predictor Listbox'''
         self.madePredictorList = True
-        for n in self.predictor_name:
-            self.predlist.insert(END,n)
+        for pred in self.predictor_name:
+            self.predlist.insert(END,pred)
+        self.updateActivePred()
 
 #****** Set-Up GUI ******
 
@@ -195,7 +196,7 @@ class BasicGui(Chooser):
 #            balloonmsg='Click to edit the available point kinds.')
         self.pt_edit.grid(row=3,column=2,sticky=S)
         #Listbox used to select point kind
-        self.pointlist = Listbox(self.frameL,width=15,height=10,selectmode=BROWSE)
+        self.pointlist = Listbox(self.frameL,width=15,height=10,selectmode=SINGLE)
         self.pointlist.grid(row=4,column=1,columnspan=2)
         self.pt_scroll = Scrollbar(self.frameL,orient=VERTICAL)
         self.pt_scroll.grid(row=4,column=0,sticky=NS)
@@ -216,12 +217,13 @@ class BasicGui(Chooser):
 #            balloonmsg='NOT IMPLEMENTED--will display predictor stats.')
         self.pd_info.grid(row=6,column=2,sticky=S)
         #Listbox used to show predictors
-        self.predlist= Listbox(self.frameL,width=15,height=10,selectmode=BROWSE)
+        self.predlist= Listbox(self.frameL,width=15,height=10,selectmode=SINGLE)
         self.predlist.grid(row=7,column=1,columnspan=2)
         self.pd_scroll = Scrollbar(self.frameL,orient=VERTICAL)
         self.pd_scroll.grid(row=7,column=0,sticky=NS)
         self.pd_scroll.config(command=self.predlist.yview,width=15)
         self.predlist.config(yscrollcommand=self.pd_scroll.set)
+        self.predlist.bind('<<ListboxSelect>>',self.setActivePred)
         
         ###frameR###
         #Canvas to display the current frame
@@ -302,12 +304,26 @@ class BasicGui(Chooser):
             self.pointKind = int(event.char) - 1
         self.updatePointKind()
         
+    def incPointKind(self,event=''):
+        self.update_points()
+        self.pointKind = self.pointKind+1
+        if self.pointKind > self.imstack.point_kinds-1:
+            self.pointKind = 0
+        self.updatePointKind()
+
+    def decPointKind(self,event=''):
+        self.update_points()
+        self.pointKind = (self.pointKind-1)
+        if self.pointKind < 0:
+            self.pointKind = self.imstack.point_kinds-1
+        self.updatePointKind()
+        
     def updatePointKind(self):
         '''Set the pointlist's selection and draw the new pointkind on the frame.'''
         self.pointlist.select_clear(0,END)
         self.pointlist.select_set(self.pointKind)
         self.pointlist.see(self.pointKind)
-        self.pointlist.activate(self.pointKind)
+        self.pointlist.activate(self.pointKind)  # underline
         self.button_clearp.configure(text='Clear '+ self.pointlist.get(self.pointKind))
         self.end_update_loop()
         
@@ -328,7 +344,7 @@ class BasicGui(Chooser):
         self.update_points()
         self.end_update_loop() 
 
-#****** Predictor List Functions ******
+#****** Predictor Functions ******
 
     def updateSelectedPredList(self,add=0,deleted=[]):
         '''Update list of which predictors are currently used for which point type
@@ -347,6 +363,67 @@ class BasicGui(Chooser):
             self.selectedPredictions = temp
             for n in range(add):
                 self.selectedPredictions.append(-1)
+                
+    def setActivePred(self,event=''):
+        self.predlist.select_clear(self.activePoint[0])
+        try:
+            self.activePoint[0] = int(self.predlist.curselection()[0])
+        except IndexError:
+            pass
+        self.updateActivePred()
+        
+    def cyclePredictions(self,event=''):
+        '''Cycle through the predicted points to choose one to save as the point.'''
+        if not self.madePointkindList: return
+        self.predlist.select_clear(self.activePoint[0])
+        if(event.char=='q'):
+            self.decActivePred()
+        elif(event.char=='e' or event.num==3):
+            self.incActivePred()
+        self.updateActivePred()
+
+        if self.activePoint[0] != -1:
+            # store predicted coordinates in activePoint
+            self.activePoint[1] = self.predicted[self.activePoint[0],self.pointKind,0]
+            self.activePoint[2] = self.predicted[self.activePoint[0],self.pointKind,1]
+        else:
+            # no prediction or point data stored
+            self.activePoint[1] = 0
+            self.activePoint[2] = 0
+#        print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
+
+        # clear saved data for point because predictions are being examined
+        self.selectedPredictions[self.pointKind] = -1
+        self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
+        self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
+        self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = -1
+        self.drawCanvas()
+        
+    def incActivePred(self):
+        self.activePoint[0] += 1
+        if self.activePoint[0] > len(self.predicted)-1:
+            self.activePoint[0] = -1
+        self.updateActivePred()
+
+    def decActivePred(self):
+        self.activePoint[0] -= 1
+        if self.activePoint[0] < -1:
+            self.activePoint[0] = len(self.predicted)-1
+        self.updateActivePred()
+                
+    def updateActivePred(self):
+        '''Set the predlist's selection.'''
+        self.predlist.select_clear(0,END)
+        if self.activePoint[0] != -1:
+            self.predlist.select_set(self.activePoint[0])
+            self.predlist.see(self.activePoint[0])
+            self.predlist.activate(self.activePoint[0])  # underline
+            
+    def togglePredictions(self,event=''):
+        '''Turn the drawing of predicted points on or off.'''
+        self.showPredictions = not self.showPredictions
+        self.update_points()
+        self.end_update_loop()
                 
     def predictorsInfo(self,event=''):
         '''Window displaying accuracy info about each predictor.'''
@@ -371,62 +448,6 @@ class BasicGui(Chooser):
         self.master.bind('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
         self.canvas.bind("<Double-Button-1>",self.onDoubleClick)
-
-    def incPointKind(self,event=''):
-        self.update_points()
-        self.pointlist.select_clear(self.pointKind)
-        self.pointKind = self.pointKind+1
-        if self.pointKind > self.imstack.point_kinds-1:
-            self.pointKind = 0
-        self.updatePointKind()
-
-    def decPointKind(self,event=''):
-        self.update_points()
-        self.pointlist.select_clear(self.pointKind)
-        self.pointKind = (self.pointKind-1)
-        if self.pointKind < 0:
-            self.pointKind = self.imstack.point_kinds-1
-        self.updatePointKind()
-        
-    def togglePredictions(self,event=''):
-        '''Turn the drawing of predicted points on or off.'''
-        self.showPredictions = not self.showPredictions
-        self.update_points()
-        print 'togglePredictions'
-        self.end_update_loop()
-        
-    def cyclePredictions(self,event=''):
-        '''Cycle through the predicted points to choose one to save as the point.'''
-        if not self.madePointkindList: return
-        self.predlist.select_clear(0,END)
-        if(event.char=='q'):
-            self.activePoint[0] -= 1
-            if self.activePoint[0] < -1:
-                self.activePoint[0] = len(self.predicted)-1
-        elif(event.char=='e' or event.num==3):
-            self.activePoint[0] += 1
-            if self.activePoint[0] > len(self.predicted)-1:
-                self.activePoint[0] = -1
-
-        if self.activePoint[0] != -1:
-            # store predicted coordinates in activePoint
-            self.activePoint[1] = self.predicted[self.activePoint[0],self.pointKind,0]
-            self.activePoint[2] = self.predicted[self.activePoint[0],self.pointKind,1]
-            self.predlist.select_set(self.activePoint[0])
-#            self.predlist.see(self.activePoint[0])
-            self.predlist.activate(self.activePoint[0])
-        else:
-            # no prediction or point data stored
-            self.activePoint[1] = 0
-            self.activePoint[2] = 0
-#        print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
-
-        # clear saved data for point because predictions are being examined
-        self.selectedPredictions[self.pointKind] = -1
-        self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
-        self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
-        self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = -1
-        self.drawCanvas()
 
 #****** Canvas and Point Drawing ******
 
@@ -518,20 +539,15 @@ class BasicGui(Chooser):
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
-        self.predlist.select_clear(0,END) 
         for pred in self.predicted[:]:
             cnt = cnt+1
             x = pred[self.pointKind,0] * self.scale
             y = pred[self.pointKind,1] * self.scale
-            conf = pred[self.pointKind,2]
             color='yellow'
             if cnt == self.activePoint[0]: 
                 color='blue'
             #If it didn't return a point, don't draw anything
-            if x == 0 and y == 0 and conf == 0: 
-                self.predlist.select_clear(cnt)
-            else:
-                self.predlist.select_set(cnt)
+            if not(x == 0 and y == 0): 
                 self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
 
     def drawPoints(self):
