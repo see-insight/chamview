@@ -22,7 +22,9 @@ class StatusBar(Frame):
         self.label.config(text='')
         self.label.update_idletasks()
         
+        
 ##################################################
+
 
 class Dialog(Toplevel): 
            
@@ -106,8 +108,10 @@ class Dialog(Toplevel):
 
     def apply(self):
         pass # override
+        
      
 ##################################################
+
 
 class RefinePoint(Dialog):
 
@@ -193,9 +197,11 @@ class RefinePoint(Dialog):
         xdiff = (self.refined[0] - self.initial[0]) / self.scale
         ydiff = (self.refined[1] - self.initial[1]) / self.scale
         self.new_point[1] = self.new_point[1] + xdiff
-        self.new_point[2] = self.new_point[2] + ydiff       
+        self.new_point[2] = self.new_point[2] + ydiff   
+            
 
-##################################################      
+##################################################  
+    
 
 class EditPointKinds(Dialog):
     
