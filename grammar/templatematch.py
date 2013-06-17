@@ -36,8 +36,8 @@ class TemplateMatch(Predictor):
         obj = self.obj[pointKind]
         #Have we looked at the image near the initial point yet?
         if obj.hasInitialPoint == False:
-            x = stack.point[0,pointKind,0]
-            y = stack.point[0,pointKind,1]
+            x = stack.point[stack.current_frame-1,pointKind,0]
+            y = stack.point[stack.current_frame-1,pointKind,1]
             #If the chooser hasn't selected an initial point yet, then we can't
             #do anything. Return no point with no confidence
             if x == 0 and y == 0:

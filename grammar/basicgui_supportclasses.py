@@ -3,6 +3,8 @@
 import os
 from Tkinter import *
 import Tix
+import numpy as np
+from PIL import Image, ImageTk
 
 
 class StatusBar(Frame):
@@ -70,8 +72,8 @@ class Dialog(Toplevel):
         w = Button(box, text="Cancel", width=10, command=self.cancel)
         w.pack(side=LEFT, padx=5, pady=5)
 
-        self.bind("&lt;Return>", self.ok)
-        self.bind("&lt;Escape>", self.cancel)
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
 
         box.pack()
 
@@ -105,11 +107,99 @@ class Dialog(Toplevel):
     def apply(self):
         pass # override
      
-##################################################        
+##################################################
+
+class RefinePoint(Dialog):
+
+    def __init__(self,parent,img,point,size=140,title='Refine Points'):
+        '''Prepare image and scales.'''
+        self.raw_point = point
+        self.new_point = self.raw_point
+        self.point_radius = 3
+        self.side_length = size
+        self.scale = 2.5
+        self.dimension = self.side_length * self.scale
+        self.initial = [size/2,size/2]
+        self.refined = [size/2,size/2]
+        self.img = img
+        template = self.grab_template(size)
+        self.img = ImageTk.PhotoImage(template)
+        Dialog.__init__(self,parent,title)   # draw new window with zoomed in image
+            
+    def grab_template(self,size):
+        width,height = self.img.size
+        x = self.raw_point[1]
+        y = self.raw_point[2]
+        # Convert to numpy array and grab template
+        image = np.array(self.img)
+        b1 = x-size/2
+        b2 = y-size/2
+        if b1 < 0:
+            b1 = 0
+            self.initial[0] = x
+            self.refined[0] = x
+        if b2 < 0:
+            b2 = 0
+            self.initial[1] = y
+            self.refined[1] = y
+        b3 = x+size/2
+        b4 = y+size/2
+        if b3 > width: b3 = width
+        if b4 > height: b4 = height
+        for i in range(2):
+            self.initial[i] *= self.scale
+            self.refined[i] *= self.scale
+        image = image[b2:b4, b1:b3]
+        # Convert back to PIL image and zoom in on template
+        image = Image.fromarray(image)
+        width,height = image.size
+        image = image.resize((int(width*self.scale),int(height*self.scale)),
+                Image.ANTIALIAS)
+        return image
+        
+    def body(self, master):
+        '''Draw Canvas'''
+        self.canvas = Canvas(master,width=self.dimension,height=self.dimension)
+        self.canvas.pack()
+        self.canvas.create_image(0,0,image=self.img,anchor=NW)
+        self.canvas.bind("<Button-1>",self.onClick)
+        self.bind("<z>", self.cancel)
+        self.drawPoints()
+        
+    def onClick(self,event):
+        '''Set the refined point position to the mouse position and redraw the Points.'''
+        self.refined[0] = event.x
+        self.refined[1] = event.y
+        self.drawPoints()
+        
+    def drawPoints(self):
+        '''Clear points on canvas and re-draw the initial and refined points.'''
+        rad = self.point_radius
+        
+        self.canvas.delete('all')
+        self.canvas.create_image(0,0,image=self.img,anchor=NW)
+        
+        # Draw initial point
+        x = self.initial[0]
+        y = self.initial[1]
+        self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
+        
+        # Draw refined point
+        x = self.refined[0]
+        y = self.refined[1]
+        self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
+        
+    def apply(self):
+        xdiff = (self.refined[0] - self.initial[0]) / self.scale
+        ydiff = (self.refined[1] - self.initial[1]) / self.scale
+        self.new_point[1] = self.new_point[1] + xdiff
+        self.new_point[2] = self.new_point[2] + ydiff       
+
+##################################################      
 
 class EditPointKinds(Dialog):
     
-    def __init__(self, parent, imstack, title=None):
+    def __init__(self, parent, imstack, title='Edit Point Kinds'):
         self.stack = imstack
         self.currentpoints = self.stack.point_kind_list
         self.num_added = 0

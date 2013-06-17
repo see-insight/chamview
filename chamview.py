@@ -180,7 +180,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-    print 'ENTER loop'
+#    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Preprocess the ImageStack image
@@ -207,7 +207,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except NameError:
             pass
         
-    print 'EXIT loop'
+#    print 'EXIT loop'
         
     try:
         if chooser.stagedToSave[1] != '':
@@ -215,8 +215,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     except NameError:
         if argOutput != '': imstack.save_points(argOutput)
             
-    print '\n###### FINAL VARIABLE VALUES ######\n'
-    print_var_info()
+#    print '\n###### FINAL VARIABLE VALUES ######\n'
+#    print_var_info()
 
     
     #Run System Inspector
