@@ -108,7 +108,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
     #Load point kind and point position files
     imstack.get_point_kinds(argPKind)
-    if argPPos != '': imstack.load_points(argPPos)
+    if argPPos != '': 
+        pointsReceived = imstack.load_points(argPPos)
+        if not(pointsReceived):
+             raise Usage('No valid points file found in "'+argPPos+'"')
 
     #Load the Chooser subclass instance
     chooser = vocab.getChooser(argChooser)
