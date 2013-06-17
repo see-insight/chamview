@@ -174,16 +174,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
 
         
-    #print_var_info() ***************************************************************************
+#    print_var_info() #***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
-    #print 'call chooser'
+    print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
-    #print 'exit chooser'
+    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-#    print 'ENTER loop'
+    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Preprocess the ImageStack image
@@ -192,12 +192,12 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
             
-        #print_var_info()*************************************************************************
+#        print_var_info() #*************************************************************************
         
         #Give this result to the chooser to get the "real" point
-        #print 'call chooser'
+        print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-        #print 'exit chooser'
+        print 'exit chooser'
 
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
@@ -210,7 +210,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except NameError:
             pass
         
-#    print 'EXIT loop'
+    print 'EXIT loop'
         
     try:
         if chooser.stagedToSave[1] != '':
