@@ -47,7 +47,8 @@ class Kinav(Predictor):
 		        pf = veloc(p0, p1, p2)
 		    else:
 		        #Case when points are not in order, better take average
-		        pf = (p0 + p1 + p2) / 3
+		        #of last two points
+		        pf = (p1 + p2) / 2
 		    return pf
 		        
 		def veloc(p0, p1, p2):
