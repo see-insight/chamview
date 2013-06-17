@@ -70,7 +70,9 @@ class BasicGui(Chooser):
 
     def teardown(self):
         '''Close the GUI window.'''
-        self.quit()
+        self.imstack.exit = True
+        self.stagedToSave[0] = True
+        self.end_update_loop()
 
     def choose(self,stack,predicted,predictor_name):
         '''Enter a new GUI update loop.'''
@@ -314,8 +316,7 @@ class BasicGui(Chooser):
         self.editedPointKinds = True    #used to tell implementors if the point kinds were edited
         self.added = 0
         self.deleted = []
-        dialog_window = support.EditPointKinds(self.master,self.imstack,
-                                        'Edit Point Kinds')
+        dialog_window = support.EditPointKinds(self.master,self.imstack)
         self.added, self.deleted = dialog_window.result
         
         if self.added > 0 or self.deleted != []:
@@ -365,9 +366,11 @@ class BasicGui(Chooser):
         self.master.bind('<Shift-p>',self.togglePredictions)
         self.master.bind('<q>',self.cyclePredictions)
         self.master.bind('<e>',self.cyclePredictions)
+        self.master.bind('<z>',self.zoom_in)
         self.master.bind('<Button-3>',self.cyclePredictions)
         self.master.bind('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
+        self.canvas.bind("<Double-Button-1>",self.onDoubleClick)
 
     def incPointKind(self,event=''):
         self.update_points()
@@ -430,13 +433,30 @@ class BasicGui(Chooser):
     def onClick(self,event):
         '''Set the current pointkind's position in the current frame to the mouse
         position and redraw it.'''
+        self.store_mouse_position(event)
+#        print '****ACTIVE POINT after onClick:****\n', self.activePoint
+        self.update_points()
+        self.end_update_loop()
+    
+    # Refine point (zoom feature)
+    def onDoubleClick(self,event):
+        '''Set the current pointkind's position in the current frame to the mouse
+        position and zoom-in for refinement.'''
+        self.store_mouse_position(event)
+        self.zoom_in()
+        self.update_points()
+        self.end_update_loop()
+        
+    def store_mouse_position(self,event):
+        '''Store the x-y coordinates of the mouse in the activePoint'''
         mouseX,mouseY = event.x/self.scale,event.y/self.scale
         self.activePoint[0] = -1 #-1 corresponds to human choice
         self.activePoint[1] = mouseX
         self.activePoint[2] = mouseY
-#        print '****ACTIVE POINT after onClick:****\n', self.activePoint
-        self.update_points()
-        self.end_update_loop()
+        
+    def zoom_in(self,event=''):
+        dialog = support.RefinePoint(self.master,self.imstack.img_current,self.activePoint)
+        self.activePoint = dialog.new_point
 
     def drawCanvas(self):
         if (self.selectedPredictions[self.pointKind] != -1 and

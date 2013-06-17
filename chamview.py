@@ -135,8 +135,13 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                       
     #Picking only some predictors for debugging purposes------------------------
     
+<<<<<<< HEAD
     #predictor = [predictor[0], predictor[1], predictor[5]]
     #predictor_name = [predictor_name[0], predictor_name[1], predictor_name[5]]
+=======
+#    predictor = [predictor[1], predictor[4]]
+#    predictor_name = [predictor_name[1], predictor_name[4]]
+>>>>>>> cc4d16650331183c6625abe5633d43cb9d0d5511
     
     #---------------------------------------------------------------------------
 
@@ -180,7 +185,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-    print 'ENTER loop'
+#    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Preprocess the ImageStack image
@@ -207,7 +212,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except NameError:
             pass
         
-    print 'EXIT loop'
+#    print 'EXIT loop'
         
     try:
         if chooser.stagedToSave[1] != '':
@@ -215,8 +220,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     except NameError:
         if argOutput != '': imstack.save_points(argOutput)
             
-    print '\n###### FINAL VARIABLE VALUES ######\n'
-    print_var_info()
+#    print '\n###### FINAL VARIABLE VALUES ######\n'
+#    print_var_info()
 
     
     #Run System Inspector
