@@ -58,7 +58,9 @@ class PlotData:
     def readFile(self, filename):
         
         #If filename does not exist, return
-        if os.path.exists(filename) == False: return
+        if os.path.exists(filename) == False:
+            print 'FileNotFound'
+            return
         
         #Open file and read each line
         input = open(filename)
