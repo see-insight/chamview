@@ -81,6 +81,9 @@ class Performance(Chooser):
 
     def teardown(self):
 
+        #Define Oracle predictor, build it, and append results to other predictors results
+        self.appendOracle()
+
         #Compute the error by frame for each predictor to plot results in
         #different ways
         self.computeErrorByFrame()
@@ -604,6 +607,44 @@ class Performance(Chooser):
                 self.errorFrame[pred][frame] = sum(self.y[pred][frame])
         #Divide over the number of point kinds
         self.errorFrame = self.errorFrame / self.totalPointK  
+        
+    def appendOracle(self):
+        #This method adds a new 2-dimensional array to y with the smallest error
+        #for each frame and point kind. We call this "predictor" Oracle
+        
+        yOracle = zeros((self.totalFrames, self.totalPointK))
+        for i in range(0, self.totalFrames):
+            for j in range(0, self.totalPointK):
+                
+                #Get the minimum error for a frame and a point kind
+                yOracle[i][j] = self.minError(i, j)
+                
+        #Add new name to predictors
+        self.name.append('Oracle')
+        self.totalPredictors += 1
+        #Add an extra array in x and errorKindX
+        self.x.append(arange(0,self.totalFrames,1))
+        self.errorKindX.append(arange(0,self.totalPointK,1) + 1)
+        #Add new error matrix for Oracle predictor
+        self.y = concatenate((self.y, [yOracle]))
+        
+        #Debugging purposes-----------------------------------------------------
+        print 'name: ', self.name
+        print 'predictors * frames * pointK = ', self.totalPredictors * self.totalFrames * self.totalPointK
+        print 'len(y)= ', len(self.y)
+        print 'len(y[0])= ', len(self.y[0])    
+        #-----------------------------------------------------------------------
+        
+    def minError(self, i, j):
+        #This method return the minimum error for a frame and a point kind
+        
+        minVal = self.y[0][i][j]
+
+        for pred in range(1, self.totalPredictors):
+            if(self.y[pred][i][j] < minVal):
+                minVal = self.y[pred][i][j]
+
+        return minVal
         
     def cutArray(self, array, upperBound):
         '''This method takes an array and every value greater than the upper
