@@ -29,6 +29,11 @@ class TemplateMatch(Predictor):
                 result[pointKind,1] = prediction[1] #Y
                 result[pointKind,2] = prediction[2] #confidence
         #Return all the predictions for this frame
+        
+        #Debugging purposes-----------------------------------------------------
+        print 'result: ', result
+        #-----------------------------------------------------------------------
+        
         return result
 
     def getPointPrediction(self,stack,img,pointKind):
@@ -58,6 +63,11 @@ class Template:
     def findPoint(self,img):
         #Find the XY coordinates of the point to track in img (a numpy array)
         result = match_template(img, self.template)
+        
+        #Debugging purposes-----------------------------------------------------
+        print 'result: ', result
+        #-----------------------------------------------------------------------
+        
         ij = unravel_index(argmax(result), result.shape)
         x, y = ij[::-1]
         confidence = self.confidence(self.template)
