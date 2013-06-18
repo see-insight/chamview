@@ -137,8 +137,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                       
     #Picking only some predictors for debugging purposes------------------------
 
-    #del predictor[-1]
-    #del predictor_name[-1]
+    predictor = [predictor[0], predictor[4]] #del predictor[-1]
+    predictor_name = [predictor_name[0], predictor_name[4]] #del predictor_name[-1]
     
     #---------------------------------------------------------------------------
 
