@@ -193,6 +193,10 @@ class Performance(Chooser):
             for j in range(0,len(yPlot)):            
                 yPlot[j] = self.errorFrame[i][j]
             
+            
+            #Sort errors to avoid annoying graphs
+            yPlot.sort()
+            
             #Cut error by a given upper bound
             yPlot = self.cutArray(yPlot, self.upperB)
             
@@ -201,7 +205,7 @@ class Performance(Chooser):
                 if yPlot[j] >= self.upperB: yVal = self.infVal 
                 else: yVal = yPlot[j]
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yVal) +'\n')
-                        
+            
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
             
@@ -289,6 +293,9 @@ class Performance(Chooser):
                 yPlot = zeros(len(self.y[i]))
                 for frame in range(0,len(yPlot)):            
                     yPlot[frame] = self.y[i][frame][pointK]
+            
+                #Sort errors to avoid annoying graphs
+                yPlot.sort()
             
                 #Cut error by a given upper bound
                 yPlot = self.cutArray(yPlot, self.upperB)
@@ -575,8 +582,8 @@ class Performance(Chooser):
                          zPlot[itr] = newError
                     else:
                         zPlot[itr] = self.upperB
-                    itr += 1
-                    
+                    itr += 1      
+                              
             zPlot = np.array(zPlot).reshape(xPlot.shape)
                     
             ax = fig.gca(projection='3d')
@@ -627,13 +634,6 @@ class Performance(Chooser):
         self.errorKindX.append(arange(0,self.totalPointK,1) + 1)
         #Add new error matrix for Oracle predictor
         self.y = concatenate((self.y, [yOracle]))
-        
-        #Debugging purposes-----------------------------------------------------
-        print 'name: ', self.name
-        print 'predictors * frames * pointK = ', self.totalPredictors * self.totalFrames * self.totalPointK
-        print 'len(y)= ', len(self.y)
-        print 'len(y[0])= ', len(self.y[0])    
-        #-----------------------------------------------------------------------
         
     def minError(self, i, j):
         #This method return the minimum error for a frame and a point kind
