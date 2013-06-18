@@ -465,8 +465,6 @@ class BasicGui(Chooser):
         position and zoom-in for refinement.'''
         self.store_mouse_position(event)
         self.zoom_in()
-        self.update_points()
-        self.end_update_loop()
         
     def store_mouse_position(self,event):
         '''Store the x-y coordinates of the mouse in the activePoint'''
@@ -478,6 +476,8 @@ class BasicGui(Chooser):
     def zoom_in(self,event=''):
         dialog = support.RefinePoint(self.master,self.imstack.img_current,self.activePoint)
         self.activePoint = dialog.new_point
+        self.update_points()
+        self.end_update_loop()
 
     def drawCanvas(self):
         if (self.selectedPredictions[self.pointKind] != -1 and
