@@ -106,6 +106,7 @@ class Performance(Chooser):
         #self.showError3D()
         #self.showROC()
         #self.showAccuracy()
+        #self.showConfidence()
         
         #Show results in text files and in graphs
         self.showErrorByFrame()
@@ -679,12 +680,6 @@ class Performance(Chooser):
             
             #Fill up z axis vector
             itr = 0
-            #Debugging purposes-------------------------------------------------
-            print 'confidence.shape', self.confidence.shape
-            print 'total Predictors: ', self.totalPredictors
-            print 'total Frames: ', self.totalFrames
-            print 'total PointK: ', self.totalPointK
-            #-------------------------------------------------------------------
             for frame in range(0,self.totalFrames):
                 for pointK in range(0,self.totalPointK):
                     zPlot[itr] = self.confidence[i][frame][pointK]
