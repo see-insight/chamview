@@ -17,13 +17,16 @@ class TemplateMatch(Predictor):
         pass
 
     def predict(self,stack,pointsEdited=False):
+        
         #Convert the PIL image to a numpy array
         img = array(stack.img_current.convert('L'))
+        
         #Convert previous image that contains the template
         if stack.img_previous != None:
             imgTemp = array(stack.img_previous.convert('L'))
         else:
             imgTemp = img
+            
         #Get a prediction for each different point kind in this frame
         result = zeros([stack.point_kinds,3])
         if pointsEdited:
@@ -36,14 +39,10 @@ class TemplateMatch(Predictor):
                 result[pointKind,2] = prediction[2] #confidence
         #Return all the predictions for this frame
         
-        #Debugging purposes-----------------------------------------------------
-        ##print 'img: ', img
-        #print 'result of prediction: ', result
-        #-----------------------------------------------------------------------
-        
         return result
 
     def getPointPrediction(self,stack,img,imgTemp, pointKind):
+        
         #Get the Template instance that tracks this point kind
         obj = self.obj[pointKind]
         #Have we looked at the image near the initial point yet?
@@ -59,6 +58,7 @@ class TemplateMatch(Predictor):
             #Otherwise, tell this Template instance to search for this part
             #of the image in future predictions
             obj.train(imgTemp,x,y)
+            
         #Find the point in the current image
         return obj.findPoint(img)
 
@@ -66,6 +66,7 @@ class TemplateMatch(Predictor):
 class Template:
     def __init__(self):
         self.hasInitialPoint = False
+        
         #Define a constant size for the template
         self.size = 200
 
@@ -73,40 +74,13 @@ class Template:
         #Find the XY coordinates of the point to track in img (a numpy array)
         result = match_template(img, self.template)
         
-        #Debugging purposes-----------------------------------------------------
-        #print 'img dimensions: ', img.shape
-        #print 'template dimensions: ', self.template.shape
-        #print 'result dimensions: ', result.shape
-        #
-        ##Save data to file
-        #fo = open('templateMatch_Test.txt','w')
-        #
-        #fo.write('Image Array:\n')
-        #for i in range(0,len(img)):
-        #    for j in range(0, len(img[0])):
-        #        fo.write(str(img[i][j]) + ', ')
-        #    fo.write('\n\n')
-        #    
-        #fo.write('Template Array:\n')
-        #for i in range(0,len(self.template)):
-        #    for j in range(0, len(self.template[0])):
-        #        fo.write(str(self.template[i][j]) + ', ')
-        #    fo.write('\n\n')
-        #
-        #fo.write('Result Array:\n')
-        #for i in range(0,len(result)):
-        #    for j in range(0, len(result[0])):
-        #        fo.write(str(result[i][j]) + ', ')
-        #    fo.write('\n\n')
-        #    
-        #print 'wrote into file'
-        #-----------------------------------------------------------------------
-        
         ij = unravel_index(argmax(result), result.shape)
         x, y = ij[::-1]
+        
         #Add size / 2 to match with img
         x = x + self.size / 2
         y = y + self.size / 2
+
         confidence = self.confidence(self.template)
         return [x,y,confidence]
 
@@ -119,14 +93,9 @@ class Template:
         b2 = y-self.size/2
         if b1 < 0: b1 = 0
         if b2 < 0: b2 = 0
+        
         bounds = [b1, b2, x+self.size/2, y+self.size/2]
         self.template = img[bounds[1]:bounds[3], bounds[0]:bounds[2]]
-        
-        #Debuggging purposes----------------------------------------------------
-        #print '(x,y)= ', str(x), ' ', str(y)
-        #print 'bounds: ', bounds  
-        #print 'template: ', self.template
-        #-----------------------------------------------------------------------
         
     def confidence(self, template):
         '''After thinking further, not a correct way of measuring confidence.
