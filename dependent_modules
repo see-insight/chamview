@@ -1,0 +1,21 @@
+*** DEPENDENT MODULES ***
+python-tk
+python-imaging-tk
+tix
+numpy
+scipy
+matplotlib
+Cython
+scikit-image
+
+* Install using Ubuntu Software Center
+	python-tk
+	tix
+	numpy
+	scipy
+	matplotlib
+	Cython
+
+* Install in terminal
+	sudo apt-get install python-imaging-tk
+	sudo pip install scikit-image
