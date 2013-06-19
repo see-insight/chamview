@@ -104,6 +104,7 @@ class Template:
         #Takes the sum of all pixel values, divides it by the area to find
         #average pixel value
         avg_val = sum(template)/template.size
+        
         #Converts array into essentially 1 dimension so that 2 while loops
         #are not needed
         tmp_reshape = template.reshape(template.size)
