@@ -99,6 +99,8 @@ class Performance(Chooser):
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
         self.fo.write(self.upperBoundL + str(self.upperB) + '\n')
         
+        #TURN ON OR OFF THE GRAPHS THAT NEED TO BE DISPLAYED
+        
         #Possible graphs that can be used in a future
         #self.showAccuracyConfidence()
         #self.showError3D()
@@ -215,7 +217,7 @@ class Performance(Chooser):
         title('Error on Prediction\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
         xlabel('Frame')
-        ylabel('Number of Pixels')
+        ylabel('Number of Pixels')      
         plt.legend(self.name)
         plt.show()
         
@@ -656,3 +658,54 @@ class Performance(Chooser):
                 array[i] = upperBound
                 
         return array
+        
+    def showConfidence(self):
+        #This method shows a graph with predictor confidence
+        
+        #For each predictor
+        for i in range(0,self.totalPredictors):
+        
+            self.numPlots += 1
+            #Define a new figure
+            fig = plt.figure(self.numPlots)    
+                    
+            #Define arrays for all axis
+            xPlot = arange(0,self.totalFrames)
+            yPlot = arange(0,self.totalPointK)
+            
+            xPlot, yPlot = np.meshgrid(xPlot, yPlot)
+                                
+            zPlot = zeros(self.totalFrames * self.totalPointK)
+            
+            #Fill up z axis vector
+            itr = 0
+            #Debugging purposes-------------------------------------------------
+            print 'confidence.shape', self.confidence.shape
+            print 'total Predictors: ', self.totalPredictors
+            print 'total Frames: ', self.totalFrames
+            print 'total PointK: ', self.totalPointK
+            #-------------------------------------------------------------------
+            for frame in range(0,self.totalFrames):
+                for pointK in range(0,self.totalPointK):
+                    zPlot[itr] = self.confidence[i][frame][pointK]
+                    itr += 1      
+                              
+            zPlot = np.array(zPlot).reshape(xPlot.shape)
+                    
+            ax = fig.gca(projection='3d')
+            
+            surf = ax.plot_surface(xPlot, yPlot, zPlot, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+
+            ax.zaxis.set_major_locator(LinearLocator(10))
+            ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+            fig.colorbar(surf, shrink=0.5, aspect=5)
+            
+            #Messages for plot
+            title('Confidence of Predictor: ' + self.name[i])
+            xlabel('Frames')
+            ylabel('Point Kinds')
+            plt.legend(self.name)
+            
+            plt.show()
+     
