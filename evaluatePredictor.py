@@ -37,7 +37,7 @@ def main(argc,argv):
     argGroundT = ''
     argOutput = 'Performance_Report.txt'
     argPKind = ''
-    argPredictor = ''
+    argPredictor = []
     argPreproc = ''
     argUpBound = 50
     argTruePos = 5
@@ -65,7 +65,7 @@ def main(argc,argv):
             elif opt in ('-o', '--output'):
                 argOutput = arg   
             elif opt in ('-r', '--predictor'):
-                argPredictor = arg
+                argPredictor.append(arg)
             elif opt in ('-u', '--upBound'):
                 argUpBound = arg
             elif opt in ('-t', '--truePos'):
@@ -104,10 +104,11 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     
     command = ["./chamview.py", "-c", "Performance"]
 
-    #Get predictor name
-    if argPredictor != '':
-        command.append("-r")
-        command.append(argPredictor)
+    #Get predictor names
+    if len(argPredictor) > 0:
+        for p in argPredictor:
+            command.append("-r")
+            command.append(argPredictor)
     
     #Get path for frames
     if argFrameDir != '':
