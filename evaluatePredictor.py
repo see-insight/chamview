@@ -81,7 +81,7 @@ def main(argc,argv):
         if argSavedGraph != '':
             
             #Plot dataset from a text file
-            pd = PlotData(argSavedGraph)
+            pd = PlotData(argSavedGraph, argUpBound)
             pd.plotSavedG()
             
         elif argMetadata != '':
