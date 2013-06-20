@@ -48,7 +48,7 @@ def main(argc,argv):
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     argSysInspector = False
-    argPred = ''
+    argPred = []
     argEvaluate = ''
     try:
         try:
@@ -81,7 +81,7 @@ def main(argc,argv):
             elif opt in ('-w', '--inspectout'):
                 argSysInspector = arg
             elif opt in ('-r', '--predictor'):
-                argPred = arg
+                argPred.append(arg)
             elif opt in ('-e', '--evaluate'):
                 argEvaluate = arg
         if argOutput == '':
@@ -134,13 +134,18 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #---------------------------------------------------------------------------
     
     #Load the Predictor needed for user
-    if argPred != '':
-        try:
-            predIndex = predictor_name.index(argPred)
-            predictor = [predictor[predIndex]]
-            predictor_name = [predictor_name[predIndex]]
-        except Exception:
-            pass #Continue with the same predictors      
+    if len(argPred) > 0:
+        newPredictor = []
+        newPredictor_name = []
+        for p in argPred:
+            try:
+                predIndex = predictor_name.index(p)
+                newPredictor.append(predictor[predIndex])
+                newPredictor_name.append(predictor_name[predIndex])
+            except Exception:
+                pass #Continue with the same predictors      
+        predictor = newPredictor
+        predictor_name = newPredictor_name
                       
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
