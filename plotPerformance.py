@@ -348,7 +348,17 @@ class PlotData:
         if isinstance(time, basestring) and ':' in time:
             #Case when time is in HH:MM:SS format
             tSplit = time.split(':')
-            return tSplit[0] + ' hrs ' + tSplit[1] + ' min ' + tSplit[2] + ' s'
+            
+            strTime = ''
+            if int(tSplit[0]) > 0:
+                strTime += tSplit[0] + ' hrs '
+            if int(tSplit[1]) > 0:
+                strTime += tSplit[1] + ' min '
+            if int(tSplit[2]) > 0:
+                strTime += tSplit[2] + ' sec '
+            
+            return strTime
+            
         else:
             time = int(time * 100) / 100.0
             seconds = time % 60
