@@ -7,6 +7,7 @@
 Usage options:
     -h --help       Print this help message
     -i --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
+    -k --pkind      Point kind file. Default is (defaultPointKinds.txt)
     -g --dirGT      Ground Truth data directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
     -o --output     Output file. Default is (Performance_Report.txt)
     -p --predictor  Predictor Name. Default is all predictors
@@ -34,6 +35,7 @@ def main(argc,argv):
     argFrameDir = './dataSets/ChamB_LB/frames'
     argGroundT = './dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt'
     argOutput = 'Performance_Report.txt'
+    argPKind = 'defaultPointKinds.txt'
     argPredictor = ''
     argUpBound = 50
     argTruePos = 5
@@ -41,9 +43,9 @@ def main(argc,argv):
     argMetadata = ''
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:u:t:s:m:', ['help','dirImg=',
+            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:u:t:s:m:k:', ['help','dirImg=',
                          'dirGT=','output=', 'predictor=','upBound=','truePos=',
-                         'savedGraph=', 'metadata='])
+                         'savedGraph=', 'metadata=', 'pkind='])
        
         except getopt.error, msg:
             raise Usage(msg)
@@ -53,7 +55,9 @@ def main(argc,argv):
                 print __doc__
                 sys.exit(0)
             elif opt in ('-i', '--dirImg'):
-               argFrameDir = arg
+                argFrameDir = arg
+            elif opt in ('-k', '--pkind'):
+                argPKind = arg
             elif opt in ('-g', '--dirGT'):
                 argGroundT = arg
             elif opt in ('-o', '--output'):
@@ -84,7 +88,7 @@ def main(argc,argv):
             
         else:
             #compute errors and then plot
-            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos)
+            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -92,22 +96,23 @@ def main(argc,argv):
         return 2
 
 
-def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos):
+def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind):
     
     command = ["./chamview.py", "-c", "Performance", "-r"]
-
     #Get predictor name
     command.append(argPredictor)
     
     command.append("-d")    
-    
     #Get path for frames
     command.append(argFrameDir)    
     
     command.append("-p")    
-    
     #Get ground truth path
     command.append(argGroundT)    
+   
+    #Add pointK directory
+    command.append("-k")
+    command.append(argPKind)
    
     #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos
     argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) 
