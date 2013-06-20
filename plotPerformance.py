@@ -139,7 +139,7 @@ class PlotData:
                     xlabel('Point Kind')
                     ylabel('Number of Pixels')
                     
-                elif graphTitle == 'PERCENTAGE OF ERROR\n':
+                elif graphTitle == 'PERCENTAGE OF POINTS\n':
                     
                     title(graphTitle + '(For a given error from 1 to ' + 
                     str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
