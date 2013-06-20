@@ -108,7 +108,7 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     if len(argPredictor) > 0:
         for p in argPredictor:
             command.append("-r")
-            command.append(argPredictor)
+            command.append(p)
     
     #Get path for frames
     if argFrameDir != '':
