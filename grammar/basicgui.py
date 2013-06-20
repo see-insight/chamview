@@ -56,7 +56,8 @@ class BasicGui(Chooser):
         self.deleted = []   # indices of point types deleted during cycle
         self.editedPointKinds = False   # true if point kinds were edited in the update loop
         self.stagedToSave = [False,'']    # [0] true if the user clicked the save button (will save after exiting update loop)
-                                                    # [1] name of file to save to
+                                          # [1] name of file to save to
+        self.zoom_factor = 3
         #Choosing a prediction to use
         self.showPredictions = True     # yes or no to automatically show point predictions
         self.selectedPredictions = []    # store where point came from last frame for each point kind (-1:user, 0 to # of predictors: predictor index)
@@ -139,6 +140,14 @@ class BasicGui(Chooser):
         self.filemenu.add_command(label='Open', command=self.open)
         self.filemenu.add_command(label='Save As', command=self.save_as)
         self.filemenu.add_command(label='Save', command=self.save)
+        self.filemenu.add_separator()
+        zoommenu = Menu(self.filemenu)
+        self.filemenu.add_cascade(label='Zoom Factor', menu=zoommenu)
+        zoommenu.add_command(label='4',command=lambda x=4:self.set_zoom(x))
+        zoommenu.add_command(label='3.5',command=lambda x=3.5:self.set_zoom(x))
+        zoommenu.add_command(label='3',command=lambda x=3:self.set_zoom(x))
+        zoommenu.add_command(label='2.5',command=lambda x=2.5:self.set_zoom(x))
+        zoommenu.add_command(label='2',command=lambda x=2:self.set_zoom(x))
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit', command=self.quit)
         self.topmenu.add_command(label='Help', command=self.showHelp)
@@ -474,10 +483,13 @@ class BasicGui(Chooser):
         self.activePoint[2] = mouseY
         
     def zoom_in(self,event=''):
-        dialog = support.RefinePoint(self.master,self.imstack.img_current,self.activePoint)
+        dialog = support.RefinePoint(self.master,self.imstack.img_current,self.activePoint,self.zoom_factor)
         self.activePoint = dialog.new_point
         self.update_points()
         self.end_update_loop()
+        
+    def set_zoom(self,new_factor):
+		self.zoom_factor = new_factor
 
     def drawCanvas(self):
         if (self.selectedPredictions[self.pointKind] != -1 and

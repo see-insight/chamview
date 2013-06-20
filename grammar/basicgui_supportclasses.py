@@ -115,13 +115,13 @@ class Dialog(Toplevel):
 
 class RefinePoint(Dialog):
 
-    def __init__(self,parent,img,point,size=140,title='Refine Points'):
+    def __init__(self,parent,img,point,factor,size=140,title='Refine Points'):
         '''Prepare image and scales.'''
         self.raw_point = point
         self.new_point = self.raw_point
         self.point_radius = 3
         self.side_length = size
-        self.scale = 2.5
+        self.scale = factor
         self.dimension = self.side_length * self.scale
         self.initial = [size/2,size/2]
         self.refined = [size/2,size/2]
