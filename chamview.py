@@ -126,6 +126,13 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
     
+    #Picking only some predictors for debugging purposes------------------------
+
+    predictor = predictor[1:]
+    predictor_name = predictor_name[1:]
+    
+    #---------------------------------------------------------------------------
+    
     #Load the Predictor needed for user
     if argPred != '':
         try:
@@ -135,13 +142,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except Exception:
             pass #Continue with the same predictors      
                       
-    #Picking only some predictors for debugging purposes------------------------
-
-    predictor = predictor[1:]
-    predictor_name = predictor_name[1:]
-    
-    #---------------------------------------------------------------------------
-
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
 
