@@ -41,6 +41,7 @@ class Performance(Chooser):
         self.totalPredictors = 0 #Number of predictors
         self.totalFrames = 0 #Keep track of the number of frames of dataset
         self.totalPointK = 0 #Keep track of the number of point kinds of dataset
+        self.maxDistance = 0 #Contains the maximum distance between two point in a frame
         
         self.filledLists = False
         self.numImagesTested = 0 #Keeps track of the number of images tested
@@ -91,13 +92,11 @@ class Performance(Chooser):
         #Open a text file to save results
         self.fo = open(self.outputName,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
-        self.fo.write('(We do not care about errors above ' + str(self.upperB) + 
-                      ' pixels and they are written as ' + self.infVal + ')\n')        
+               
         #Save important values in text file
         self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
         self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
-        self.fo.write(self.upperBoundL + str(self.upperB) + '\n')
         
         #TURN ON OR OFF THE GRAPHS THAT NEED TO BE DISPLAYED
         
@@ -144,6 +143,10 @@ class Performance(Chooser):
             self.totalPointK = stack.point_kinds
             self.totalPredictors = len(predictor_name)
 
+        #Compute maximum distance of current image
+        maxD = (stack.img_current.size[0]**2 + stack.img_current.size[1]**2)**0.5
+        if maxD > self.maxDistance: self.maxDistance = maxD         
+        
         #Get the accuracy of each predictor
         for pred in range(0,len(self.name)):
             
@@ -154,8 +157,8 @@ class Performance(Chooser):
                 yGT = stack.point[stack.current_frame, pKind, 1]
                 
                 if xGT == 0 and yGT == 0:
-                    #If point has no ground truth, make the distance the largest possible
-                    dist = self.upperB + 1
+                    #If point has no ground truth, do not count it, put -1
+                    dist = -1
                 else:
                     #Get distance between predicted and ground truth
                     dx = predicted[pred, pKind, 0] - xGT
@@ -173,7 +176,9 @@ class Performance(Chooser):
         stack.next()
         self.numImagesTested += 1
         
-        if self.numImagesTested == stack.total_frames: stack.exit = True              
+        if self.numImagesTested == stack.total_frames:
+            
+            stack.exit = True              
                                  
     def showErrorByFrame(self):
                 
@@ -196,19 +201,16 @@ class Performance(Chooser):
             for j in range(0,len(yPlot)):            
                 yPlot[j] = self.errorFrame[i][j]
             
-            
-            #Sort errors to avoid annoying graphs
-            yPlot.sort()
+            #Save data to file
+            for j in range(0,self.x[i].shape[0]):
+                self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yPlot[j]) +'\n')
             
             #Cut error by a given upper bound
             yPlot = self.cutArray(yPlot, self.upperB)
             
-            #Save data to file
-            for j in range(0,self.x[i].shape[0]):
-                if yPlot[j] >= self.upperB: yVal = self.infVal 
-                else: yVal = yPlot[j]
-                self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+ str(yVal) +'\n')
-            
+            #Sort errors to avoid annoying graphs
+            yPlot.sort()
+        
             #Plot the error in the subplot
             plt.plot(self.x[i],yPlot)
             
@@ -241,19 +243,24 @@ class Performance(Chooser):
             yPlot = zeros(self.totalPointK)
             
             for pointK in range(0,len(yPlot)):
+                count = 0 #Variable that counts errors well computed
                 for frame in range(0,self.totalFrames):
-                    yPlot[pointK] += self.y[i][frame][pointK]            
-            #Divide over the number of frames
-            yPlot = yPlot / len(self.y[i])  
+                    err = self.y[i][frame][pointK]
+                    if err >= 0:    
+                        yPlot[pointK] += err
+                        count += 1            
+                if count == 0:
+                    yPlot[pointK] = -1
+                else:
+                    #Divide over the number of frames
+                    yPlot[pointK] /= count
+        
+            #Save data to file
+            for j in range(0,self.errorKindX[i].shape[0]):
+                self.fo.write('  ' + self.pointKList[j] +','+str(yPlot[j])+'\n')
         
             #Cut error by a given upper bound
             yPlot = self.cutArray(yPlot, self.upperB)    
-                                      
-            #Save data to file
-            for j in range(0,self.errorKindX[i].shape[0]):
-                if yPlot[j] >= self.upperB: yVal = self.infVal
-                else: yVal = yPlot[j]
-                self.fo.write('  ' + self.pointKList[j] +','+str(yVal)+'\n')
             
             #Plot error
             xPlot = arange(self.totalPointK)
@@ -294,20 +301,18 @@ class Performance(Chooser):
         
                 #Get the error by frame array at position i
                 yPlot = zeros(len(self.y[i]))
-                for frame in range(0,len(yPlot)):            
+                for frame in range(0,len(yPlot)):          
                     yPlot[frame] = self.y[i][frame][pointK]
-            
-                #Sort errors to avoid annoying graphs
-                yPlot.sort()
-            
-                #Cut error by a given upper bound
-                yPlot = self.cutArray(yPlot, self.upperB)
             
                 #Save data to file
                 for j in range(0,self.x[i].shape[0]):
-                    if yPlot[j] >= self.upperB: yVal = self.infVal
-                    else: yVal = yPlot[j]
-                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yVal)+'\n')
+                    self.fo.write('   ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
+            
+                #Cut error by a given upper bound
+                yPlot = self.cutArray(yPlot, self.upperB)
+                
+                #Sort errors to avoid annoying graphs
+                yPlot.sort()
             
                 #Plot the error in the subplot
                 plt.plot(self.x[i],yPlot, lw = 1)
@@ -345,14 +350,18 @@ class Performance(Chooser):
             
             for frame in range(0,self.totalFrames):
                 for pointK in range(0,self.totalPointK):
-                    errors[itr] = self.y[i][frame][pointK]
-                    itr += 1
+                    error = self.y[i][frame][pointK]
+                    if error >= 0:
+                        errors[itr] = error 
+                        itr += 1
+
+            errors = errors[0:itr]
             
             #Sort errors array
             errors.sort()
             
-            yPlot = zeros(self.upperB + 1)
-            xPlot = arange(0,self.upperB + 1,1)
+            yPlot = zeros(int(self.maxDistance))
+            xPlot = arange(0,int(self.maxDistance), 1)
             
             #Define two variables that traverse errors and yPlot arrays
             err = 0
@@ -372,9 +381,13 @@ class Performance(Chooser):
                 yPlot[j] = 100 
             
             #Save data to file
-            for j in range(0,xPlot.shape[0]):
+            for j in range(0, xPlot.shape[0]):
                 self.fo.write('  ' + str(xPlot[j]).zfill(4)+','+str(yPlot[j])+'\n')
                         
+            #Take only the important part to plot
+            xPlot = xPlot[:self.upperB + 1]
+            yPlot = yPlot[:self.upperB + 1]
+            
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot, lw = 1)
             
@@ -613,10 +626,23 @@ class Performance(Chooser):
         self.errorFrame = zeros((len(self.name), self.totalFrames))
         
         for pred in range(0,len(self.errorFrame)):
+
             for frame in range(0,len(self.errorFrame[0])):
-                self.errorFrame[pred][frame] = sum(self.y[pred][frame])
-        #Divide over the number of point kinds
-        self.errorFrame = self.errorFrame / self.totalPointK  
+
+                count = 0 #Variable that counts the number of errors well computed
+                for pointK in range(0, self.totalPointK):
+
+                    err = self.y[pred][frame][pointK]
+
+                    if err >= 0:  
+                        self.errorFrame[pred][frame] += err
+                        count += 1
+                        
+                #Divide over the number of errors computed
+                if count == 0:
+                    self.errorFrame[pred][frame] = -1
+                else:
+                    self.errorFrame[pred][frame] /= count
         
     def appendOracle(self):
         #This method adds a new 2-dimensional array to y with the smallest error
@@ -655,7 +681,7 @@ class Performance(Chooser):
         
         for i in range(0,len(array)):
             
-            if array[i] > upperBound:
+            if array[i] > upperBound or array[i] < 0:
                 array[i] = upperBound
                 
         return array
@@ -703,4 +729,3 @@ class Performance(Chooser):
             plt.legend(self.name)
             
             plt.show()
-     
