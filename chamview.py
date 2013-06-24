@@ -133,7 +133,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     
     #---------------------------------------------------------------------------
     
-    #Load the Predictor needed for user
+    #Load the Predictors needed for user
     if len(argPred) > 0:
         newPredictor = []
         newPredictor_name = []
