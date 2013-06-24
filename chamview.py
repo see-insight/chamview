@@ -48,7 +48,7 @@ def main(argc,argv):
     argPKind = 'defaultPointKinds.txt'
     argPPos = ''
     argSysInspector = False
-    argPred = ''
+    argPred = []
     argEvaluate = ''
     try:
         try:
@@ -81,7 +81,7 @@ def main(argc,argv):
             elif opt in ('-w', '--inspectout'):
                 argSysInspector = arg
             elif opt in ('-r', '--predictor'):
-                argPred = arg
+                argPred.append(arg)
             elif opt in ('-e', '--evaluate'):
                 argEvaluate = arg
         if argOutput == '':
@@ -126,22 +126,27 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
     
-    #Load the Predictor needed for user
-    if argPred != '':
-        try:
-            predIndex = predictor_name.index(argPred)
-            predictor = [predictor[predIndex]]
-            predictor_name = [predictor_name[predIndex]]
-        except Exception:
-            pass #Continue with the same predictors      
-                      
     #Picking only some predictors for debugging purposes------------------------
 
-    #predictor = [predictor[0], predictor[4]] #del predictor[-1]
-    #predictor_name = [predictor_name[0], predictor_name[4]] #del predictor_name[-1]
+    predictor = predictor[1:]
+    predictor_name = predictor_name[1:]
     
     #---------------------------------------------------------------------------
-
+    
+    #Load the Predictor needed for user
+    if len(argPred) > 0:
+        newPredictor = []
+        newPredictor_name = []
+        for p in argPred:
+            try:
+                predIndex = predictor_name.index(p)
+                newPredictor.append(predictor[predIndex])
+                newPredictor_name.append(predictor_name[predIndex])
+            except Exception:
+                pass #Continue with the same predictors      
+        predictor = newPredictor
+        predictor_name = newPredictor_name
+                      
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
 
@@ -176,9 +181,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 #    print_var_info() #***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
-    print 'call chooser'
+#    print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
-    print 'exit chooser'
+#    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
@@ -194,9 +199,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 #        print_var_info() #*************************************************************************
         
         #Give this result to the chooser to get the "real" point
-        print 'call chooser'
+#       print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-        print 'exit chooser'
+#       print 'exit chooser'
 
         if chooser.editedPointKinds:    
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)

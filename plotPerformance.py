@@ -15,7 +15,7 @@ import string
 
 class PlotData:
     
-    def __init__(self,directory=''):
+    def __init__(self,directory='', upBound=50):
 
         #Attributes
         self.numPlots = 0
@@ -38,7 +38,7 @@ class PlotData:
         self.numPredictors = 0
         self.numFrames = 0
         self.numPointK = 0
-        self.upperB = 0
+        self.upperB = upBound
         
         
     def plotSavedG(self):
@@ -106,8 +106,17 @@ class PlotData:
                         newX, newY = self.getXY(self.fileArr[itr])
                         xPlot.append(newX)
                         yPlot.append(float(newY))
-                        itr += 1  
-                        
+                        itr += 1                          
+                   
+                    #Sort yPlot to avoid annoying graphs
+                    yPlot.sort()     
+                    
+                    #Cut yPlot to values less or equal than upper Bound
+                    if graphTitle != 'PERCENTAGE OF ERROR\n':
+                        for i in range(0, len(yPlot)):
+                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB       
+                                                        
+                                                                                            
                     if graphTitle == 'ERROR BY POINT KIND\n':
                         
                         #Plot error with bars if it is by point kinds
@@ -130,7 +139,7 @@ class PlotData:
                     xlabel('Point Kind')
                     ylabel('Number of Pixels')
                     
-                elif graphTitle == 'PERCENTAGE OF ERROR\n':
+                elif graphTitle == 'PERCENTAGE OF POINTS\n':
                     
                     title(graphTitle + '(For a given error from 1 to ' + 
                     str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
@@ -165,7 +174,7 @@ class PlotData:
                
     def getXY(self, line):
         xy = line.split(',')         
-        if xy[1] == self.infVal + '\n':
+        if (xy[1] == self.infVal + '\n') or (xy[1] == '-1.0\n'):
             xy[1] = self.upperB
         return xy[0], xy[1]
         
@@ -180,7 +189,7 @@ class PlotData:
         input = open(filename)
         
         #Define a boolean variables that tell us what values have been obtained        
-        pred = fram = pointK = uB = False
+        pred = fram = pointK = False
 
         for line in input:
             #Get number of predictors, frames, and point kinds
@@ -196,12 +205,8 @@ class PlotData:
                 arr = line.split()
                 self.numPointK = int(arr[len(arr)-1])
                 pointK = True
-            if line.startswith(self.upperBoundL):
-                arr = line.split()
-                self.upperB = int(arr[len(arr)-1])
-                uB = True
             
-            if pred and fram and pointK and uB: break
+            if pred and fram and pointK: break
             
     def getPerformanceAtt(self):
         #Create a new performance object
@@ -216,7 +221,6 @@ class PlotData:
         self.numPredictorsL = per.numPredictorsL
         self.numFramesL = per.numFramesL
         self.numPointKL = per.numPointKL
-        self.upperBoundL = per.upperBoundL
         self.infVal = per.infVal
         
     #Method that plots information from Metadata file
@@ -348,7 +352,17 @@ class PlotData:
         if isinstance(time, basestring) and ':' in time:
             #Case when time is in HH:MM:SS format
             tSplit = time.split(':')
-            return tSplit[0] + ' hrs ' + tSplit[1] + ' min ' + tSplit[2] + ' s'
+            
+            strTime = ''
+            if int(tSplit[0]) > 0:
+                strTime += tSplit[0] + ' hrs '
+            if int(tSplit[1]) > 0:
+                strTime += tSplit[1] + ' min '
+            if int(tSplit[2]) > 0:
+                strTime += tSplit[2] + ' sec '
+            
+            return strTime
+            
         else:
             time = int(time * 100) / 100.0
             seconds = time % 60

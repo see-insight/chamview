@@ -6,10 +6,12 @@
 
 Usage options:
     -h --help       Print this help message
-    -i --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
-    -g --dirGT      Ground Truth data directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
+    -d- --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
+    -i --prep       Preprocessor subclass. Default is (none)
+    -k --pkind      Point kind file. Default is (defaultPointKinds.txt)
+    -p --dirGT      Ground Truth points directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
+    -r --predictor  Predictor Name. Default is all predictors
     -o --output     Output file. Default is (Performance_Report.txt)
-    -p --predictor  Predictor Name. Default is all predictors
     -u --upBound    Determines the upper bound of results we can see. Default is 50
     -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5
     -s --savedGraph Data results previously saved in text file that is used to graph.
@@ -17,7 +19,7 @@ Usage options:
 
 Example: 
     
-    $ evaluatePredictor.py -i ./images/Chameleon -g ./images/points.txt -o ./results.txt
+    $ evaluatePredictor.py -d ./images/Chameleon -p ./images/points.txt -o ./results.txt
 
 """
 import subprocess
@@ -31,19 +33,21 @@ class Usage(Exception):
 
 def main(argc,argv):
     #Default arguments
-    argFrameDir = './dataSets/ChamB_LB/frames'
-    argGroundT = './dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt'
+    argFrameDir = ''
+    argGroundT = ''
     argOutput = 'Performance_Report.txt'
-    argPredictor = ''
+    argPKind = ''
+    argPredictor = []
+    argPreproc = ''
     argUpBound = 50
     argTruePos = 5
     argSavedGraph = ''
     argMetadata = ''
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hi:g:o:p:u:t:s:m:', ['help','dirImg=',
-                         'dirGT=','output=', 'predictor=','upBound=','truePos=',
-                         'savedGraph=', 'metadata='])
+            opts, args = getopt.getopt(argv[1:], 'hd:i:p:o:r:u:t:s:m:k:', ['help','dirImg=',
+                         'prep=', 'dirGT=','output=', 'predictor=','upBound=','truePos=',
+                         'savedGraph=', 'metadata=', 'pkind='])
        
         except getopt.error, msg:
             raise Usage(msg)
@@ -52,14 +56,16 @@ def main(argc,argv):
             if opt in ('-h', '--help'):
                 print __doc__
                 sys.exit(0)
-            elif opt in ('-i', '--dirImg'):
-               argFrameDir = arg
-            elif opt in ('-g', '--dirGT'):
+            elif opt in ('-d', '--dirImg'):
+                argFrameDir = arg
+            elif opt in ('-i', '--prep'):
+                argPreproc = arg
+            elif opt in ('-p', '--dirGT'):
                 argGroundT = arg
             elif opt in ('-o', '--output'):
-                argOutput = arg
-            elif opt in ('-p', '--predictor'):
-                argPredictor = arg
+                argOutput = arg   
+            elif opt in ('-r', '--predictor'):
+                argPredictor.append(arg)
             elif opt in ('-u', '--upBound'):
                 argUpBound = arg
             elif opt in ('-t', '--truePos'):
@@ -68,12 +74,14 @@ def main(argc,argv):
                 argSavedGraph = arg
             elif opt in ('-m', '--metadata'):
                 argMetadata = arg
+            elif opt in ('-k', '--pkind'):
+                argPKind = arg
 
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
             
             #Plot dataset from a text file
-            pd = PlotData(argSavedGraph)
+            pd = PlotData(argSavedGraph, argUpBound)
             pd.plotSavedG()
             
         elif argMetadata != '':
@@ -84,7 +92,7 @@ def main(argc,argv):
             
         else:
             #compute errors and then plot
-            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos)
+            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -92,28 +100,40 @@ def main(argc,argv):
         return 2
 
 
-def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos):
+def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc):
     
-    command = ["./chamview.py", "-c", "Performance", "-r"]
+    command = ["./chamview.py", "-c", "Performance"]
 
-    #Get predictor name
-    command.append(argPredictor)
-    
-    command.append("-d")    
+    #Get predictor names
+    if len(argPredictor) > 0:
+        for p in argPredictor:
+            command.append("-r")
+            command.append(p)
     
     #Get path for frames
-    command.append(argFrameDir)    
+    if argFrameDir != '':
+        command.append("-d")       
+        command.append(argFrameDir)
     
-    command.append("-p")    
+    #Add preprocessor
+    if argPreproc != '':
+        command.append("-i")
+        command.append(argPreproc)
     
     #Get ground truth path
-    command.append(argGroundT)    
+    if argGroundT != '':    
+        command.append("-p")    
+        command.append(argGroundT)    
    
-    #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos
-    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) 
+    #Add pointK directory
+    if argPKind != '':
+        command.append("-k")
+        command.append(argPKind)
       
     #Add evaluate argument
     command.append("-e")
+    #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos
+    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) 
     command.append(argEvaluate)
    
     #Call subprocess 

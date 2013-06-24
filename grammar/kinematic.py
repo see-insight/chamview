@@ -51,6 +51,35 @@ class Kinematic(Predictor):
 			pf[0] = (p2[0] + v2[0] * t + a[0] * (t**2))
 			pf[1] = (p2[1] + v2[1] * t + a[1] * (t**2))
 			return pf
+			
+		def getDistance(p, q):
+                    return ((p[0] - q[0])**2 + (p[1] - q[1])**2)**0.5
+			
+		def getConfidence(pf):
+	                '''After thinking further, not a correct way of measuring confidence.
+                        Still needs revision.
+                        '''
+                     
+                        #Get distance between p0, p1, p2, pf
+                        dist01 = getDistance(self.p0, self.p1)
+                        dist12 = getDistance(self.p1, self.p2)
+                        dist2f = getDistance(self.p2, pf)
+                        
+                        #Compute ratios between one distance and the previous one
+                        if dist01 == 0:
+                            ratio1 = dist12
+                        else:
+                            ratio1 = dist12 / dist01
+                            
+                        if dist12 == 0:
+                            ratio2 = dist2f
+                        else:
+                            ratio2 = dist2f / dist12
+
+                        #Confidence increases if the ratios between
+                        #the distances p1p2-p0p1 and p1p2-p2pf are the same
+                        return 1 / (1 + abs(ratio2 - ratio1))
+			
 		for i in range(0,stack.point_kinds):
 			# this loop runs for every point kind. ex: snout, left front leg, etc.
 			
@@ -76,10 +105,10 @@ class Kinematic(Predictor):
 				current[1] = self.p3[1]
 				#calls velocity function
 				pf= veloc(self.p0,self.p1,self.p2)
-				confidence = 0.0
+				
 				result[i,0] = pf[0]
 				result[i,1] = pf[1]
-				result[i,2] = confidence
+				result[i,2] = getConfidence(pf)
 				
 			if ((stack.current_frame) < 2):
 				for i in range(0,stack.current_frame):
@@ -96,6 +125,7 @@ class Kinematic(Predictor):
 			#Need at least 3 frames of points to predict
                         #Return zeros to avoid getting nan values
 			return zeros([stack.point_kinds,3])
+
 		
 
 		
