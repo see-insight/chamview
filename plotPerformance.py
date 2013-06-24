@@ -106,25 +106,20 @@ class PlotData:
                         newX, newY = self.getXY(self.fileArr[itr])
                         xPlot.append(newX)
                         yPlot.append(float(newY))
-                        itr += 1                          
-                   
-                    #Sort yPlot to avoid annoying graphs
-                    if graphTitle != 'ERROR BY POINT KIND\n' and graphTitle != 'PERCENTAGE OF POINTS\n':
-                        yPlot.sort()     
+                        itr += 1                           
                     
                     if graphTitle == 'PERCENTAGE OF POINTS\n':
                         
                         #Only take the important part of the data
                         yPlot = yPlot[0:self.upperB]
                         xPlot = xPlot[0:self.upperB]
+                        plt.plot(xPlot, yPlot)
 
-                    else:
+                    elif graphTitle == 'ERROR BY POINT KIND\n':
                         
                         #Cut yPlot to values less or equal than upper Bound
                         for i in range(0, len(yPlot)):
-                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB       
-                            
-                    if graphTitle == 'ERROR BY POINT KIND\n':
+                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB
                         
                         #Plot error with bars if it is by point kinds
                         i = len(predictors) - 1
@@ -135,8 +130,12 @@ class PlotData:
                         
                     else:
                         
+                        yPlot.sort() #Sort yPlot to avoid annoying graphs
+                        #Cut yPlot to values less or equal than upper Bound
+                        for i in range(0, len(yPlot)):
+                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB   
                         #Plot the error in the subplot
-                        plt.plot(xPlot,yPlot)
+                        plt.plot(xPlot, yPlot)
                                                         
                 
                 #Choose the correct labels for x and y axis
