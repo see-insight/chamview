@@ -109,14 +109,21 @@ class PlotData:
                         itr += 1                          
                    
                     #Sort yPlot to avoid annoying graphs
-                    yPlot.sort()     
+                    if graphTitle != 'ERROR BY POINT KIND\n' and graphTitle != 'PERCENTAGE OF POINTS\n':
+                        yPlot.sort()     
                     
-                    #Cut yPlot to values less or equal than upper Bound
-                    if graphTitle != 'PERCENTAGE OF ERROR\n':
+                    if graphTitle == 'PERCENTAGE OF POINTS\n':
+                        
+                        #Only take the important part of the data
+                        yPlot = yPlot[0:self.upperB]
+                        xPlot = xPlot[0:self.upperB]
+
+                    else:
+                        
+                        #Cut yPlot to values less or equal than upper Bound
                         for i in range(0, len(yPlot)):
                             if yPlot[i] > self.upperB: yPlot[i] = self.upperB       
-                                                        
-                                                                                            
+                            
                     if graphTitle == 'ERROR BY POINT KIND\n':
                         
                         #Plot error with bars if it is by point kinds
@@ -130,6 +137,7 @@ class PlotData:
                         
                         #Plot the error in the subplot
                         plt.plot(xPlot,yPlot)
+                                                        
                 
                 #Choose the correct labels for x and y axis
                 if graphTitle == 'ERROR BY POINT KIND\n':
@@ -165,7 +173,7 @@ class PlotData:
                     + str(self.upperB) + ' pixels')
                     xlabel('Frame')
                     ylabel('Number of Pixels')
-                    
+                  
                 plt.legend(predictors)
                 plt.show()
         
@@ -316,6 +324,9 @@ class PlotData:
         x = arange(len(predictorUse))
         bar(x, yPlot)
         xticks( x + 0.4, xPlot )
+        font = {'family' : 'normal',
+        'size'   : 16}
+        matplotlib.rc('font', **font)
         title('Use of Predictors\nPoints modified: ' + str(pointsModified))
         show()
 
