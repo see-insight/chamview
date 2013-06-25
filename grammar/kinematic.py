@@ -110,10 +110,6 @@ class Kinematic(Predictor):
 		#needs at least 3 frames of points to predict. after frames are 0(stack.current_frame is an array),1, 2 a prediction will be displayed on the 4th screen 
 		if stack.current_frame > 2:	
 			
-			#Debugging purposes----------------------------------------------------
-			print 'resultKinematic: ', result
-			#----------------------------------------------------------------------
-			
 			return result
 			
 		else:
