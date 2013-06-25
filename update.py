@@ -4,7 +4,6 @@
 #   Created by Aaron Beckett 06/17/2013
 #
 
-import os
 import subprocess
 
 subprocess.call(['git','pull','--all'])
