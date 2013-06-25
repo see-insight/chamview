@@ -2,7 +2,6 @@
 #June 14, 2013
 from Grammar import Predictor
 from numpy import *
-import random
 from imagestack import ImageStack
 
 
@@ -79,9 +78,7 @@ class Kinav(Predictor):
 				#deleted: stack.advance_frame(-1)
 				self.p0[0]= stack.point[((stack.current_frame) - 3 ),i,0]
 				self.p0[1]= stack.point[((stack.current_frame) - 3 ),i,1]
-				current = [0,0]
-				current[0] = self.p3[0]
-				current[1] = self.p3[1]
+				
 				#calls pred function
 				pf= pred(self.p0,self.p1,self.p2)
 				confidence = 0.0
@@ -89,7 +86,7 @@ class Kinav(Predictor):
 				result[i,1] = pf[1]
 				result[i,2] = confidence
 				
-			if ((stack.current_frame) < 2):
+			else:
 				for i in range(0,stack.current_frame):
 					result[i,0] = 0.0
 					result[i,1] = 0.0
