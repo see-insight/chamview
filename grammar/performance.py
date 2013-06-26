@@ -104,13 +104,13 @@ class Performance(Chooser):
         #self.showAccuracyConfidence()
         #self.showError3D()
         #self.showROC()
-        #self.showAccuracy()
         #self.showConfidence()
         
         #Show results in text files and in graphs
         self.showErrorByFrame()
         self.showErrorByPointKind()
         self.showErrorEachPointK()
+        self.showAccuracy()
         self.showPercentageError()
         
         #Close text file
@@ -386,9 +386,10 @@ class Performance(Chooser):
             #Take only the important part to plot
             xPlot = xPlot[:self.upperB + 1]
             yPlot = yPlot[:self.upperB + 1]
-            
+
             #Plot the error in the subplot
             plt.plot(xPlot,yPlot, lw = 1)
+            plt.scatter(xPlot, yPlot, s=5)
             
         #Write division into file
         self.fo.write(self.division)
@@ -417,13 +418,22 @@ class Performance(Chooser):
             
             self.fo.write(' ' + self.predLabel + self.name[i] + '\n')
             
-            #Get the error by frame array at position i
-            yPlot = self.errorFrame[i]
+            #Define y-array for plot
+            yPlot = zeros(self.totalFrames)
             
-            #Add one to the errors in order to get inverse
-            yPlot = yPlot + 1
-            #Take the inverse of the result
-            yPlot = yPlot ** -1
+            for frame in range(0, self.totalFrames): 
+
+                for pointK in range(0, self.totalPointK):
+                    if self.y[i][frame][pointK] <= self.tpBound:
+                        yPlot[frame] += 1
+                
+                #Add previous accuracy
+                yPlot[frame] += yPlot[frame - 1] * frame * self.totalPointK
+                #Compute new accuracy
+                yPlot[frame] /= (frame + 1) * self.totalPointK 
+
+            #Sort array to get a nice graph
+            yPlot.sort()
             
             #Save data to file
             for j in range(0,self.x[i].shape[0]):
@@ -435,7 +445,7 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division) 
   
-        title('ACCURACY ON PREDICTION\n')
+        title(gName + '\nThis graph shows how accuracy changes through frames')
         xlabel('Frame')
         ylabel('Accuracy')
         plt.legend(self.name)
@@ -453,24 +463,30 @@ class Performance(Chooser):
         plt.figure(self.numPlots)
         
         #Define a 3-dimensional array that will contain accuracy * Confidence
-        accConfidence = zeros((len(self.y), self.totalFrames, self.totalPointK))
+        accConfidence = zeros((len(self.y) - 1, self.totalFrames, self.totalPointK))
         
         for pred in range(0,len(accConfidence)):
             for frame in range(0,len(accConfidence[0])):
                 for pointK in range(0,len(accConfidence[0][0])):
-                    error = self.y[pred][frame][pointK]
-                    conf = self.confidence[pred][frame][pointK]
-                    accConfidence[pred][frame][pointK] = ((error+1)**-1)*conf
+                    if self.y[pred][frame][pointK] < self.tpBound:
+                        conf = self.confidence[pred][frame][pointK]
+                        accConfidence[pred][frame][pointK] = conf
         
         #Define a 2-dimensional array that contains the average of accConfidence
         #for each frame
-        yaccConf = zeros((len(self.y), self.totalFrames))
+        yaccConf = zeros((len(accConfidence), self.totalFrames))
         for pred in range(0,len(yaccConf)):
+            
             for frame in range(0,len(yaccConf[0])):
                 yaccConf[pred][frame] = sum(accConfidence[pred][frame])
+                
+                #Add previous accuracy
+                yaccConf[pred][frame] += yaccConf[pred][frame - 1] * frame * self.totalPointK
+                #Compute new accuracy
+                yaccConf[pred][frame] /= (frame + 1) * self.totalPointK
         
         #Go through each predictor
-        for i in range(0,len(self.name)):
+        for i in range(0,len(yaccConf)):
             
             self.fo.write(' ' + self.predLabel + self.name[i])
             
@@ -481,7 +497,7 @@ class Performance(Chooser):
             for j in range(0,self.x[i].shape[0]):
                 self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
-            #Plot the error in the subplot
+            #Plot the error 
             plt.plot(self.x[i], yPlot, lw = 1)
             
         #Write division into file
