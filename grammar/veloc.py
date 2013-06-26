@@ -14,7 +14,7 @@ class Veloc(Predictor):
 	
     def teardown(self) :
 	
-        pass
+        pass 
 	
     def predict(self,stack,pointsEdited=False) :
 		
