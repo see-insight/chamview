@@ -33,6 +33,7 @@ class PlotData:
         self.numPointKL = ''
         self.infVal = ''
         self.fileArr = [] #Contains the data from text file
+        self.oracleN = ''
         
         #Attributes that are obtained from text file
         self.numPredictors = 0
@@ -120,11 +121,11 @@ class PlotData:
                             yPlot = yPlot[0:self.upperB]
                             xPlot = xPlot[0:self.upperB]
                         
-                        if pred != 'Oracle':
+                        if pred != self.oracleN:
                             plt.plot(xPlot, yPlot)
                             plt.scatter(xPlot, yPlot, s=5)
                         else:
-                            plt.plot(xPlot, yPlot, color = 'k')
+                            plt.plot(xPlot, yPlot, '--', color = 'k')
 
                     elif graphTitle == 'ERROR BY POINT KIND\n':
                         
@@ -137,7 +138,7 @@ class PlotData:
                         x = arange(self.numPointK)
                         width = 1.0 / self.numPredictors
                         
-                        if pred != 'Oracle':
+                        if pred != self.oracleN:
                             plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
                         else:
                             plt.bar(x + width * i, yPlot, width, color='k')
@@ -152,7 +153,7 @@ class PlotData:
                             if yPlot[i] > self.upperB: yPlot[i] = self.upperB   
                         #Plot the error in the subplot
                         
-                        if pred != 'Oracle':
+                        if pred != self.oracleN:
                             plt.plot(xPlot, yPlot)
                         else:
                             plt.plot(xPlot, yPlot, '--', color = 'k')
@@ -249,6 +250,7 @@ class PlotData:
         self.numFramesL = per.numFramesL
         self.numPointKL = per.numPointKL
         self.infVal = per.infVal
+        self.oracleN = per.oracleN
         
     #Method that plots information from Metadata file
     def plotMeta(self):
