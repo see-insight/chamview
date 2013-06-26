@@ -104,7 +104,12 @@ class PlotData:
 
                     while not(self.predLabel in self.fileArr[itr] or self.fileArr[itr] == self.division or self.pointKLabel in self.fileArr[itr]):
                         newX, newY = self.getXY(self.fileArr[itr])
-                        xPlot.append(newX)
+
+                        try:
+                            xPlot.append(int(newX))
+                        except ValueError:
+                            xPlot.append(newX)
+                            
                         yPlot.append(float(newY))
                         itr += 1                           
                     
@@ -114,7 +119,9 @@ class PlotData:
                         if self.upperB < len(yPlot):
                             yPlot = yPlot[0:self.upperB]
                             xPlot = xPlot[0:self.upperB]
-                        plt.plot(xPlot, yPlot)
+                        
+                        plt.plot(xPlot, yPlot, lw=1)
+                        plt.scatter(xPlot, yPlot, s=5)
 
                     elif graphTitle == 'ERROR BY POINT KIND\n':
                         
