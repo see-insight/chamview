@@ -120,8 +120,11 @@ class PlotData:
                             yPlot = yPlot[0:self.upperB]
                             xPlot = xPlot[0:self.upperB]
                         
-                        plt.plot(xPlot, yPlot, lw=1)
-                        plt.scatter(xPlot, yPlot, s=5)
+                        if pred != 'Oracle':
+                            plt.plot(xPlot, yPlot)
+                            plt.scatter(xPlot, yPlot, s=5)
+                        else:
+                            plt.plot(xPlot, yPlot, color = 'k')
 
                     elif graphTitle == 'ERROR BY POINT KIND\n':
                         
@@ -132,8 +135,13 @@ class PlotData:
                         #Plot error with bars if it is by point kinds
                         i = len(predictors) - 1
                         x = arange(self.numPointK)
-                        width = 0.2
-                        plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
+                        width = 1.0 / self.numPredictors
+                        
+                        if pred != 'Oracle':
+                            plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
+                        else:
+                            plt.bar(x + width * i, yPlot, width, color='k')
+                        
                         plt.xticks( x + 0.5,  xPlot)
                         
                     else:
@@ -143,7 +151,11 @@ class PlotData:
                         for i in range(0, len(yPlot)):
                             if yPlot[i] > self.upperB: yPlot[i] = self.upperB   
                         #Plot the error in the subplot
-                        plt.plot(xPlot, yPlot)
+                        
+                        if pred != 'Oracle':
+                            plt.plot(xPlot, yPlot)
+                        else:
+                            plt.plot(xPlot, yPlot, '--', color = 'k')
                                                         
                 
                 #Choose the correct labels for x and y axis
@@ -195,7 +207,7 @@ class PlotData:
         
     def getPredictor(self, line):
         idx = line.index(self.predLabel) + len(self.predLabel)
-        return line[idx:]
+        return line[idx:-1]
         
     def getNumbers(self, filename):
         
