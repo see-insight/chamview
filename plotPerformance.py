@@ -38,7 +38,7 @@ class PlotData:
         self.numPredictors = 0
         self.numFrames = 0
         self.numPointK = 0
-        self.upperB = upBound
+        self.upperB = int(upBound)
         
         
     def plotSavedG(self):
@@ -111,8 +111,9 @@ class PlotData:
                     if graphTitle == 'PERCENTAGE OF POINTS\n':
                         
                         #Only take the important part of the data
-                        yPlot = yPlot[0:self.upperB]
-                        xPlot = xPlot[0:self.upperB]
+                        if self.upperB < len(yPlot):
+                            yPlot = yPlot[0:self.upperB]
+                            xPlot = xPlot[0:self.upperB]
                         plt.plot(xPlot, yPlot)
 
                     elif graphTitle == 'ERROR BY POINT KIND\n':
@@ -294,8 +295,9 @@ class PlotData:
     
     #Plot information given by metadata file
     def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
-        plt.figure()
-        title('METADATA INFORMATION', size = 24)
+        fig = plt.figure()
+        ax = fig.add_axes([0., 0., 1., 1.])
+        text(.25, .9, 'METADATA INFORMATION', size = 24)
         
         text(0.05, 0.5, 'Total Points: ' + str(totalPoints) + '\n'
               'Points Modified: ' + str(pointsModified) + '\n'
@@ -305,6 +307,7 @@ class PlotData:
               'Time Per Point: ' + self.getTime(timePerPoint) + '\n'
               'Time Per Frame: ' + self.getTime(timePerFrame) + '\n',
               verticalalignment = 'center', size = 22)
+        ax.set_axis_off()
         show()                            
     
     #This method plots how many time each predictor was used for annotating points
@@ -323,9 +326,6 @@ class PlotData:
         x = arange(len(predictorUse))
         bar(x, yPlot)
         xticks( x + 0.4, xPlot )
-        font = {'family' : 'normal',
-        'size'   : 16}
-        matplotlib.rc('font', **font)
         title('Use of Predictors\nPoints modified: ' + str(pointsModified))
         show()
 
