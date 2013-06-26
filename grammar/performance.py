@@ -60,6 +60,7 @@ class Performance(Chooser):
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
         self.infVal = 'INF' #Label that indicates the error is very large
         #Define an array that saves all the graph names
+        self.oracleN = 'Oracle'
         self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF POINTS\n']
         self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
         self.graphNames.append('ACCURACY IN PREDICTION\n')
@@ -211,7 +212,7 @@ class Performance(Chooser):
             yPlot.sort()
         
             #Plot the error in the subplot
-            if self.name[i] != 'Oracle':
+            if self.name[i] != self.oracleN:
                 plt.plot(self.x[i], yPlot)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k')
@@ -268,7 +269,7 @@ class Performance(Chooser):
             xPlot = arange(self.totalPointK)
             width = 1.0 / self.totalPredictors
             
-            if self.name[i] != 'Oracle':
+            if self.name[i] != self.oracleN:
                 plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
             else:
                 plt.bar(xPlot + width * i, yPlot, width, color='k')
@@ -322,7 +323,7 @@ class Performance(Chooser):
                 yPlot.sort()
             
                 #Plot the error in the subplot
-                if self.name[i] != 'Oracle':                                    
+                if self.name[i] != self.oracleN:                                    
                     plt.plot(self.x[i],yPlot, lw = 1)
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
@@ -399,7 +400,7 @@ class Performance(Chooser):
             yPlot = yPlot[:self.upperB + 1]
 
             #Plot the error in the subplot
-            if self.name[i] != 'Oracle':                
+            if self.name[i] != self.oracleN:                
                 plt.plot(xPlot,yPlot, lw = 1)
                 plt.scatter(xPlot, yPlot, s=5)
             else:
@@ -454,7 +455,7 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            if self.name[i] != 'Oracle':                
+            if self.name[i] != self.oracleN:                
                 plt.plot(self.x[i], yPlot, lw = 1)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
@@ -515,7 +516,7 @@ class Performance(Chooser):
                 self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error 
-            if self.name[i] != 'Oracle':
+            if self.name[i] != self.oracleN:
                 plt.plot(self.x[i], yPlot, lw = 1)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
@@ -691,7 +692,7 @@ class Performance(Chooser):
                 yOracle[i][j] = self.minError(i, j)
                 
         #Add new name to predictors
-        self.name.append('Oracle')
+        self.name.append(self.oracleN)
         self.totalPredictors += 1
         #Add an extra array in x and errorKindX
         self.x.append(arange(0,self.totalFrames,1))
