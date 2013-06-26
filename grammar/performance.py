@@ -211,7 +211,10 @@ class Performance(Chooser):
             yPlot.sort()
         
             #Plot the error in the subplot
-            plt.plot(self.x[i],yPlot)
+            if self.name[i] != 'Oracle':
+                plt.plot(self.x[i], yPlot)
+            else:
+                plt.plot(self.x[i], yPlot, '--', color = 'k')
             
         #Write division into file
         self.fo.write(self.division)
@@ -263,8 +266,13 @@ class Performance(Chooser):
             
             #Plot error
             xPlot = arange(self.totalPointK)
-            width = 0.2
-            plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            width = 1.0 / self.totalPredictors
+            
+            if self.name[i] != 'Oracle':
+                plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            else:
+                plt.bar(xPlot + width * i, yPlot, width, color='k')
+                
             plt.xticks( xPlot + 0.5,  self.pointKList)
             
         #Write division into file
@@ -314,7 +322,10 @@ class Performance(Chooser):
                 yPlot.sort()
             
                 #Plot the error in the subplot
-                plt.plot(self.x[i],yPlot, lw = 1)
+                if self.name[i] != 'Oracle':                                    
+                    plt.plot(self.x[i],yPlot, lw = 1)
+                else:
+                    plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
             title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
                   +str(self.upperB)+' pixels')
@@ -388,8 +399,11 @@ class Performance(Chooser):
             yPlot = yPlot[:self.upperB + 1]
 
             #Plot the error in the subplot
-            plt.plot(xPlot,yPlot, lw = 1)
-            plt.scatter(xPlot, yPlot, s=5)
+            if self.name[i] != 'Oracle':                
+                plt.plot(xPlot,yPlot, lw = 1)
+                plt.scatter(xPlot, yPlot, s=5)
+            else:
+                plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
             
         #Write division into file
         self.fo.write(self.division)
@@ -440,7 +454,10 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot, lw = 1)
+            if self.name[i] != 'Oracle':                
+                plt.plot(self.x[i], yPlot, lw = 1)
+            else:
+                plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
            
         #Write division into file
         self.fo.write(self.division) 
@@ -498,7 +515,10 @@ class Performance(Chooser):
                 self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error 
-            plt.plot(self.x[i], yPlot, lw = 1)
+            if self.name[i] != 'Oracle':
+                plt.plot(self.x[i], yPlot, lw = 1)
+            else:
+                plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
         #Write division into file
         self.fo.write(self.division)
