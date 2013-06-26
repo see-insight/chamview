@@ -56,7 +56,7 @@ class Performance(Chooser):
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
-        self.numPointKL = 'Numboer_of_Point_Kinds: ' #Label for number of point kinds
+        self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
         self.infVal = 'INF' #Label that indicates the error is very large
         #Define an array that saves all the graph names
@@ -186,9 +186,8 @@ class Performance(Chooser):
         gName = 'ERROR BY FRAME'
         self.fo.write('\n' + gName + '\n')
         
+        #Define a new figure
         self.numPlots += 1
-        
-        #Define a initial figure
         plt.figure(self.numPlots)
         
         #Go through each predictor
@@ -222,7 +221,7 @@ class Performance(Chooser):
         xlabel('Frame')
         ylabel('Number of Pixels')      
         plt.legend(self.name)
-        plt.show()
+        plt.show()                  
         
     def showErrorByPointKind(self):
         
