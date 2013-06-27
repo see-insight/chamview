@@ -27,6 +27,7 @@ class ImageStack:
     def __init__(self,directory=''):
         #Called upon instance creation
         self.point = zeros((0,0,2))
+        self.predictions = zeros((0,0,0,3))
         self.point_kind_list = []
         self.point_kinds = 0
         self.point_sources = []
@@ -198,6 +199,38 @@ class ImageStack:
             self.point_sources[frame][kind_index] = -1
         file_in.close()
         
+    def load_predictions(self, filename):
+        
+        if os.path.exists(filename) == False: return
+        file_in = open(filename) #Open file
+
+        fileArr = file_in.readlines()
+        
+        for i in range(0, len(fileArr)):
+            if not(fileArr[i].startswith('#')):
+                fileArr = fileArr[i:]
+                break
+        
+        numFrames = int(fileArr[0])
+        numPredictors = int(fileArr[1])
+        numPointK = int(fileArr[2])
+        
+        #Define array
+        self.predictions = zeros((numFrames, numPredictors, numPointK, 3))
+        
+        #Get predictors
+        predictors = []
+        for i in range(3, numPredictors):
+            predictors.append(fileArr[i])
+        
+        fileArr = fileArr[3 + numPredictors:]
+        
+        for i in range(0, len(fileArr)):
+            line = fileArr[itr].split(',')
+            self.predictions[int(line[0])][int(line[1])][int(line[2])][0] = int(line[3])
+            self.predictions[int(line[0])][int(line[1])][int(line[2])][1] = int(line[4])
+            self.predictions[int(line[0])][int(line[1])][int(line[2])][2] = int(line[5])
+            
     def point_empty(self, frame, point_kind):
         '''Return true if the x,y coordinates for the given point kind on the 
         given frame are (0,0).'''
@@ -273,6 +306,35 @@ class ImageStack:
                     str(int(self.point[frame,kind_index,1]))+','+'\n')
         file_out.close()
         print "points saved to "+filename
+        
+    def save_predictions(self, filename, predictor_name):
+        #Save all predictions computed when running Chamview
+        #The format is the following: frame number, predictor, point kind, row, column
+        #Note that this will overwrite any existing file without warning
+        
+        #Open a new text file to save predictions
+        predPoints = open(filename, 'w')  
+        predPoints.write('#PREDICTED POINTS\n')
+        predPoints.write('#frame, predictor, pointKind, row, column, confidence\n')
+        predPoints.write(str(self.total_frames) + '\n')
+        predPoints.write(str(len(predictor_name)) + '\n')
+        predPoints.write(str(self.point_kinds) + '\n')
+        
+        #Save predictors name
+        for i in range(0,len(predictor_name)):
+            predPoints.write(predictor_name[i] + '\n')
+    
+        #Save predictions
+        for frame in range(0, self.total_frames):
+            for pred in range(0, len(predictor_name)):
+                for pointK in range(0, self.point_kinds):
+                    predPoints.write(str(frame)+','+predictor_name[pred]+str(pointK)+','+
+                        self.predictions[frame][pred][pointK][0] +
+                        self.predictions[frame][pred][pointK][1] +
+                        self.predictions[frame][pred][pointK][2] + '\n')
+                        
+        predPoints.close()
+        print 'Predictions have been saved to ', filename
 
     def show(self):
         #A method for debugging. Displays the current frame
