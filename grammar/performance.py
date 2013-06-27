@@ -13,10 +13,9 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 
-'''This file implements classes where the performance of predictors
-is computed using different techniques.
+'''This file implements classes where the performance of predictors is computed.
 Input: A stack of images, ground truth data, and a predictor
-Output: A list and graphs that shows the performance of predictors
+Output: A list and graphs that show the performance of predictors
 '''
 
 class Performance(Chooser):
