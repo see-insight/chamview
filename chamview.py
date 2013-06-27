@@ -125,14 +125,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
-    
-    #Picking only some predictors for debugging purposes------------------------
+      
+    #Debugging purposes----------------------------------------------------------------------- 
+      
+    #this maybe in the beginning of the program 
+    argPredictions = True #REMOVE THIS LINE
+    if argPredictions != '':
+        imstack.load_predictions('predicted_points.txt')
+        
+    #----------------------------------------------------------------------------------------
 
-    #predictor = predictor[1:]
-    #predictor_name = predictor_name[1:]
-    
-    #---------------------------------------------------------------------------
-    
     #Load the Predictors needed for user
     if len(argPred) > 0:
         newPredictor = []
@@ -186,16 +188,30 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 #    print 'exit chooser'
     if chooser.editedPointKinds:    
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
-
+        
     print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
+        
         #Preprocess the ImageStack image
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
+                                     
         #Give each predictor the current image stack and get a prediction back
         for i in range(0,len(predictor)):
             predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
             
+        #Debugging purposes---------------------------------------------------------------------
+        #WORKING IN THIS PART OF THE CODE
+            for j in range(0, len(predict_point[0])):
+                predStr = str(predict_point[i][j][0]) + ',' + str(predict_point[i][j][1])
+                predArray[imstack.current_frame][i][j] = predStr
+    
+        #Change True for a variable that tells us if user want to take predictions previously saved      
+        if True:
+            predict_point = imstack.predictions[imstack.current_frame]
+                
+        #---------------------------------------------------------------------------------------
+                                                                                
 #        print_var_info() #*************************************************************************
         
         #Give this result to the chooser to get the "real" point
@@ -215,6 +231,13 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             pass
         
     print 'EXIT loop'
+    
+    #Debugging purposes---------------------------------------------------------------------
+    #Save points predicted in a text file
+    savePredictions = True #REMOVE THIS LINE
+    if savePredictions:
+        imstack.save_predictions('predicted_points.txt')
+    #---------------------------------------------------------------------------------------
         
     try:
         if chooser.stagedToSave[1] != '':
