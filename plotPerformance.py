@@ -33,12 +33,13 @@ class PlotData:
         self.numPointKL = ''
         self.infVal = ''
         self.fileArr = [] #Contains the data from text file
+        self.oracleN = ''
         
         #Attributes that are obtained from text file
         self.numPredictors = 0
         self.numFrames = 0
         self.numPointK = 0
-        self.upperB = upBound
+        self.upperB = int(upBound)
         
         
     def plotSavedG(self):
@@ -104,32 +105,59 @@ class PlotData:
 
                     while not(self.predLabel in self.fileArr[itr] or self.fileArr[itr] == self.division or self.pointKLabel in self.fileArr[itr]):
                         newX, newY = self.getXY(self.fileArr[itr])
-                        xPlot.append(newX)
+
+                        try:
+                            xPlot.append(int(newX))
+                        except ValueError:
+                            xPlot.append(newX)
+                            
                         yPlot.append(float(newY))
-                        itr += 1                          
-                   
-                    #Sort yPlot to avoid annoying graphs
-                    yPlot.sort()     
+                        itr += 1                           
                     
-                    #Cut yPlot to values less or equal than upper Bound
-                    if graphTitle != 'PERCENTAGE OF ERROR\n':
+                    if graphTitle == 'PERCENTAGE OF POINTS\n':
+                        
+                        #Only take the important part of the data
+                        if self.upperB < len(yPlot):
+                            yPlot = yPlot[0:self.upperB]
+                            xPlot = xPlot[0:self.upperB]
+                        
+                        if pred != self.oracleN:
+                            plt.plot(xPlot, yPlot)
+                            plt.scatter(xPlot, yPlot, s=5)
+                        else:
+                            plt.plot(xPlot, yPlot, '--', color = 'k')
+
+                    elif graphTitle == 'ERROR BY POINT KIND\n':
+                        
+                        #Cut yPlot to values less or equal than upper Bound
                         for i in range(0, len(yPlot)):
-                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB       
-                                                        
-                                                                                            
-                    if graphTitle == 'ERROR BY POINT KIND\n':
+                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB
                         
                         #Plot error with bars if it is by point kinds
                         i = len(predictors) - 1
                         x = arange(self.numPointK)
-                        width = 0.2
-                        plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
+                        width = 1.0 / self.numPredictors
+                        
+                        if pred != self.oracleN:
+                            plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
+                        else:
+                            plt.bar(x + width * i, yPlot, width, color='k')
+                        
                         plt.xticks( x + 0.5,  xPlot)
                         
                     else:
                         
+                        yPlot.sort() #Sort yPlot to avoid annoying graphs
+                        #Cut yPlot to values less or equal than upper Bound
+                        for i in range(0, len(yPlot)):
+                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB   
                         #Plot the error in the subplot
-                        plt.plot(xPlot,yPlot)
+                        
+                        if pred != self.oracleN:
+                            plt.plot(xPlot, yPlot)
+                        else:
+                            plt.plot(xPlot, yPlot, '--', color = 'k')
+                                                        
                 
                 #Choose the correct labels for x and y axis
                 if graphTitle == 'ERROR BY POINT KIND\n':
@@ -165,7 +193,7 @@ class PlotData:
                     + str(self.upperB) + ' pixels')
                     xlabel('Frame')
                     ylabel('Number of Pixels')
-                    
+                  
                 plt.legend(predictors)
                 plt.show()
         
@@ -180,7 +208,7 @@ class PlotData:
         
     def getPredictor(self, line):
         idx = line.index(self.predLabel) + len(self.predLabel)
-        return line[idx:]
+        return line[idx:-1]
         
     def getNumbers(self, filename):
         
@@ -222,6 +250,7 @@ class PlotData:
         self.numFramesL = per.numFramesL
         self.numPointKL = per.numPointKL
         self.infVal = per.infVal
+        self.oracleN = per.oracleN
         
     #Method that plots information from Metadata file
     def plotMeta(self):
@@ -287,8 +316,9 @@ class PlotData:
     
     #Plot information given by metadata file
     def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
-        plt.figure()
-        title('METADATA INFORMATION', size = 24)
+        fig = plt.figure()
+        ax = fig.add_axes([0., 0., 1., 1.])
+        text(.25, .9, 'METADATA INFORMATION', size = 24)
         
         text(0.05, 0.5, 'Total Points: ' + str(totalPoints) + '\n'
               'Points Modified: ' + str(pointsModified) + '\n'
@@ -298,6 +328,7 @@ class PlotData:
               'Time Per Point: ' + self.getTime(timePerPoint) + '\n'
               'Time Per Frame: ' + self.getTime(timePerFrame) + '\n',
               verticalalignment = 'center', size = 22)
+        ax.set_axis_off()
         show()                            
     
     #This method plots how many time each predictor was used for annotating points

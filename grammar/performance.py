@@ -56,10 +56,11 @@ class Performance(Chooser):
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
-        self.numPointKL = 'Numboer_of_Point_Kinds: ' #Label for number of point kinds
+        self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
         self.infVal = 'INF' #Label that indicates the error is very large
         #Define an array that saves all the graph names
+        self.oracleN = 'Oracle'
         self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF POINTS\n']
         self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
         self.graphNames.append('ACCURACY IN PREDICTION\n')
@@ -104,13 +105,13 @@ class Performance(Chooser):
         #self.showAccuracyConfidence()
         #self.showError3D()
         #self.showROC()
-        #self.showAccuracy()
         #self.showConfidence()
         
         #Show results in text files and in graphs
         self.showErrorByFrame()
         self.showErrorByPointKind()
         self.showErrorEachPointK()
+        self.showAccuracy()
         self.showPercentageError()
         
         #Close text file
@@ -186,9 +187,8 @@ class Performance(Chooser):
         gName = 'ERROR BY FRAME'
         self.fo.write('\n' + gName + '\n')
         
+        #Define a new figure
         self.numPlots += 1
-        
-        #Define a initial figure
         plt.figure(self.numPlots)
         
         #Go through each predictor
@@ -212,7 +212,10 @@ class Performance(Chooser):
             yPlot.sort()
         
             #Plot the error in the subplot
-            plt.plot(self.x[i],yPlot)
+            if self.name[i] != self.oracleN:
+                plt.plot(self.x[i], yPlot)
+            else:
+                plt.plot(self.x[i], yPlot, '--', color = 'k')
             
         #Write division into file
         self.fo.write(self.division)
@@ -222,7 +225,7 @@ class Performance(Chooser):
         xlabel('Frame')
         ylabel('Number of Pixels')      
         plt.legend(self.name)
-        plt.show()
+        plt.show()                  
         
     def showErrorByPointKind(self):
         
@@ -264,8 +267,13 @@ class Performance(Chooser):
             
             #Plot error
             xPlot = arange(self.totalPointK)
-            width = 0.2
-            plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            width = 1.0 / self.totalPredictors
+            
+            if self.name[i] != self.oracleN:
+                plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
+            else:
+                plt.bar(xPlot + width * i, yPlot, width, color='k')
+                
             plt.xticks( xPlot + 0.5,  self.pointKList)
             
         #Write division into file
@@ -315,7 +323,10 @@ class Performance(Chooser):
                 yPlot.sort()
             
                 #Plot the error in the subplot
-                plt.plot(self.x[i],yPlot, lw = 1)
+                if self.name[i] != self.oracleN:                                    
+                    plt.plot(self.x[i],yPlot, lw = 1)
+                else:
+                    plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
             title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
                   +str(self.upperB)+' pixels')
@@ -387,9 +398,13 @@ class Performance(Chooser):
             #Take only the important part to plot
             xPlot = xPlot[:self.upperB + 1]
             yPlot = yPlot[:self.upperB + 1]
-            
+
             #Plot the error in the subplot
-            plt.plot(xPlot,yPlot, lw = 1)
+            if self.name[i] != self.oracleN:                
+                plt.plot(xPlot,yPlot, lw = 1)
+                plt.scatter(xPlot, yPlot, s=5)
+            else:
+                plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
             
         #Write division into file
         self.fo.write(self.division)
@@ -418,25 +433,37 @@ class Performance(Chooser):
             
             self.fo.write(' ' + self.predLabel + self.name[i] + '\n')
             
-            #Get the error by frame array at position i
-            yPlot = self.errorFrame[i]
+            #Define y-array for plot
+            yPlot = zeros(self.totalFrames)
             
-            #Add one to the errors in order to get inverse
-            yPlot = yPlot + 1
-            #Take the inverse of the result
-            yPlot = yPlot ** -1
+            for frame in range(0, self.totalFrames): 
+
+                for pointK in range(0, self.totalPointK):
+                    if self.y[i][frame][pointK] <= self.tpBound:
+                        yPlot[frame] += 1
+                
+                #Add previous accuracy
+                yPlot[frame] += yPlot[frame - 1] * frame * self.totalPointK
+                #Compute new accuracy
+                yPlot[frame] /= (frame + 1) * self.totalPointK 
+
+            #Sort array to get a nice graph
+            yPlot.sort()
             
             #Save data to file
             for j in range(0,self.x[i].shape[0]):
                 self.fo.write('  ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
             #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot, lw = 1)
+            if self.name[i] != self.oracleN:                
+                plt.plot(self.x[i], yPlot, lw = 1)
+            else:
+                plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
            
         #Write division into file
         self.fo.write(self.division) 
   
-        title('ACCURACY ON PREDICTION\n')
+        title(gName + '\nThis graph shows how accuracy changes through frames')
         xlabel('Frame')
         ylabel('Accuracy')
         plt.legend(self.name)
@@ -454,24 +481,30 @@ class Performance(Chooser):
         plt.figure(self.numPlots)
         
         #Define a 3-dimensional array that will contain accuracy * Confidence
-        accConfidence = zeros((len(self.y), self.totalFrames, self.totalPointK))
+        accConfidence = zeros((len(self.y) - 1, self.totalFrames, self.totalPointK))
         
         for pred in range(0,len(accConfidence)):
             for frame in range(0,len(accConfidence[0])):
                 for pointK in range(0,len(accConfidence[0][0])):
-                    error = self.y[pred][frame][pointK]
-                    conf = self.confidence[pred][frame][pointK]
-                    accConfidence[pred][frame][pointK] = ((error+1)**-1)*conf
+                    if self.y[pred][frame][pointK] < self.tpBound:
+                        conf = self.confidence[pred][frame][pointK]
+                        accConfidence[pred][frame][pointK] = conf
         
         #Define a 2-dimensional array that contains the average of accConfidence
         #for each frame
-        yaccConf = zeros((len(self.y), self.totalFrames))
+        yaccConf = zeros((len(accConfidence), self.totalFrames))
         for pred in range(0,len(yaccConf)):
+            
             for frame in range(0,len(yaccConf[0])):
                 yaccConf[pred][frame] = sum(accConfidence[pred][frame])
+                
+                #Add previous accuracy
+                yaccConf[pred][frame] += yaccConf[pred][frame - 1] * frame * self.totalPointK
+                #Compute new accuracy
+                yaccConf[pred][frame] /= (frame + 1) * self.totalPointK
         
         #Go through each predictor
-        for i in range(0,len(self.name)):
+        for i in range(0,len(yaccConf)):
             
             self.fo.write(' ' + self.predLabel + self.name[i])
             
@@ -482,8 +515,11 @@ class Performance(Chooser):
             for j in range(0,self.x[i].shape[0]):
                 self.fo.write(' ' + str(self.x[i][j]).zfill(4)+','+str(yPlot[j])+'\n')
             
-            #Plot the error in the subplot
-            plt.plot(self.x[i], yPlot, lw = 1)
+            #Plot the error 
+            if self.name[i] != self.oracleN:
+                plt.plot(self.x[i], yPlot, lw = 1)
+            else:
+                plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
         #Write division into file
         self.fo.write(self.division)
@@ -656,7 +692,7 @@ class Performance(Chooser):
                 yOracle[i][j] = self.minError(i, j)
                 
         #Add new name to predictors
-        self.name.append('Oracle')
+        self.name.append(self.oracleN)
         self.totalPredictors += 1
         #Add an extra array in x and errorKindX
         self.x.append(arange(0,self.totalFrames,1))
