@@ -169,14 +169,14 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         for frame in imstack.point_sources:
             print frame
         #print '****CURRENT FRAME:****\n', imstack.current_frame
-        print '****ACTIVE POINT:****\n', chooser.activePoint
+        #print '****ACTIVE POINT:****\n', chooser.activePoint
         print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
         #print '****POINT KINDS:****\n', imstack.point_kind_list
         #print '****POINT KINDS ADDED:****\n', chooser.added
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
 
 
-#    print_var_info() #*********************************************************
+    print_var_info() #*********************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
@@ -215,7 +215,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                 points = predictor[i].predict(imstack, ptKindsEdited)
                 predict_point[i] = points
 
-#        print_var_info() #*****************************************************
+        print_var_info() #*****************************************************
 
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)

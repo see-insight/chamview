@@ -95,11 +95,14 @@ class BasicGui(Chooser):
             self.editedPointKinds = False
 
         #set activePoint[]
-        self.activePoint[0] = self.imstack.point_sources[self.imstack.current_frame][self.pointKind]
+        source = self.imstack.point_sources[self.imstack.current_frame][self.pointKind]
+        #if source != -1:
+        #    source = self.predictor_name.index(source)
+        self.activePoint[0] = source
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
 #        print self.imstack.point[self.imstack.current_frame,self.pointKind,0], ',', self.imstack.point[self.imstack.current_frame,self.pointKind,1]
-#        print '****ACTIVE POINT after choose:****\n', self.activePoint
+        print '****ACTIVE POINT in choose:****\n', self.activePoint
 
         #Draw new frame and predictions
         self.drawCanvas()
@@ -408,14 +411,15 @@ class BasicGui(Chooser):
         self.updateActivePred()
 
         if self.activePoint[0] != -1:
+            adjusted_index = self.calc_adjusted_index(self.predictor_name[self.activePoint[0]])
             # store predicted coordinates in activePoint
-            self.activePoint[1] = self.predicted[self.activePoint[0],self.pointKind,0]
-            self.activePoint[2] = self.predicted[self.activePoint[0],self.pointKind,1]
+            self.activePoint[1] = self.predicted[adjusted_index,self.pointKind,0]
+            self.activePoint[2] = self.predicted[adjusted_index,self.pointKind,1]
         else:
             # no prediction or point data stored
             self.activePoint[1] = 0
             self.activePoint[2] = 0
-#        print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
+        print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
 
         # clear saved data for point because predictions are being examined
         self.selectedPredictions[self.pointKind] = -1
@@ -426,15 +430,31 @@ class BasicGui(Chooser):
 
     def incActivePred(self):
         self.activePoint[0] += 1
-        if self.activePoint[0] > len(self.predicted)-1:
-            self.activePoint[0] = -1
+        if self.activePoint[0] > len(self.predictor_name)-1:
+            self.activePoint[0] = 0
+        while self.predictor_name[self.activePoint[0]] not in self.displayedPredictors:
+            self.activePoint[0] += 1
+            if self.activePoint[0] > len(self.predictor_name)-1:
+                self.activePoint[0] = 0
         self.updateActivePred()
 
     def decActivePred(self):
         self.activePoint[0] -= 1
-        if self.activePoint[0] < -1:
-            self.activePoint[0] = len(self.predicted)-1
+        if self.activePoint[0] < 0:
+            self.activePoint[0] = len(self.predictor_name)-1
+        while self.predictor_name[self.activePoint[0]] not in self.displayedPredictors:
+            self.activePoint[0] -= 1
+            if self.activePoint[0] < 0:
+                self.activePoint[0] = len(self.predictor_name)-1
         self.updateActivePred()
+
+    def calc_adjusted_index(self,predictor):
+        index = 0
+        for pred in self.predictor_name:
+            if pred == predictor:
+                return index
+            elif pred in self.displayedPredictors:
+                index += 1
 
     def updateActivePred(self):
         '''Set the predlist's selection.'''
@@ -488,7 +508,7 @@ class BasicGui(Chooser):
         '''Set the current pointkind's position in the current frame to the mouse
         position and redraw it.'''
         self.store_mouse_position(event)
-#        print '****ACTIVE POINT after onClick:****\n', self.activePoint
+        print '****ACTIVE POINT after onClick:****\n', self.activePoint
         self.update_points()
         self.end_update_loop()
 
@@ -519,15 +539,18 @@ class BasicGui(Chooser):
         if (self.selectedPredictions[self.pointKind] != -1 and
         self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
             i = self.selectedPredictions[self.pointKind]
-            x = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,0]
-            y = self.predicted[self.selectedPredictions[self.pointKind],self.pointKind,1]
+            adjusted_index = self.calc_adjusted_index(self.predictor_name[i])
+            x = self.predicted[adjusted_index,self.pointKind,0]
+            y = self.predicted[adjusted_index,self.pointKind,1]
             self.activePoint[0] = i
             self.activePoint[1] = x
             self.activePoint[2] = y
             self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
             self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
+            #if i != -1:
+            #    i = self.predictor_name[i]
             self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = i
-#        print '****ACTIVE POINT after drawCanvas:****\n', self.activePoint
+        print '****ACTIVE POINT after drawCanvas:****\n', self.activePoint
         #Clear out any existing points
         self.canvas.delete('all')
         #If the photo hasn't been set yet then do so
@@ -578,12 +601,13 @@ class BasicGui(Chooser):
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
+        adjusted_index = self.calc_adjusted_index(self.predictor_name[self.activePoint[0]])
         for pred in self.predicted[:]:
             cnt = cnt+1
             x = pred[self.pointKind,0] * self.scale
             y = pred[self.pointKind,1] * self.scale
             color='yellow'
-            if cnt == self.activePoint[0]:
+            if cnt == adjusted_index:
                 color='blue'
             #If it didn't return a point, don't draw anything
             if not(x == 0 and y == 0):
@@ -679,6 +703,8 @@ class BasicGui(Chooser):
         self.selectedPredictions[self.pointKind] = i
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = x
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = y
+        #if i != -1:
+        #    i = self.predictor_name[i]
         self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = i
         self.imstack.set_label(L)
 
