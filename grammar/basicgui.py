@@ -411,7 +411,7 @@ class BasicGui(Chooser):
         self.updateActivePred()
 
         if self.activePoint[0] != -1:
-            adjusted_index = self.calc_adjusted_index(self.predictor_name[self.activePoint[0]])
+            adjusted_index = self.adjusted_index(self.predictor_name[self.activePoint[0]])
             # store predicted coordinates in activePoint
             self.activePoint[1] = self.predicted[adjusted_index,self.pointKind,0]
             self.activePoint[2] = self.predicted[adjusted_index,self.pointKind,1]
@@ -448,13 +448,22 @@ class BasicGui(Chooser):
                 self.activePoint[0] = len(self.predictor_name)-1
         self.updateActivePred()
 
-    def calc_adjusted_index(self,predictor):
+    def adjusted_index(self,predictor):
         index = 0
         for pred in self.predictor_name:
             if pred == predictor:
                 return index
-            elif pred in self.displayedPredictors:
+            elif pred in self.activePredictors:
                 index += 1
+
+    def calc_real_index(self, adjusted_index):
+        index = -1
+        for i in range(adjusted_index + 1):
+            index += 1
+            while self.predictor_name[index] not in self.activePredictors:
+                index += 1
+        return index
+
 
     def updateActivePred(self):
         '''Set the predlist's selection.'''
@@ -539,7 +548,7 @@ class BasicGui(Chooser):
         if (self.selectedPredictions[self.pointKind] != -1 and
         self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
             i = self.selectedPredictions[self.pointKind]
-            adjusted_index = self.calc_adjusted_index(self.predictor_name[i])
+            adjusted_index = self.adjusted_index(self.predictor_name[i])
             x = self.predicted[adjusted_index,self.pointKind,0]
             y = self.predicted[adjusted_index,self.pointKind,1]
             self.activePoint[0] = i
@@ -601,17 +610,20 @@ class BasicGui(Chooser):
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
-        adjusted_index = self.calc_adjusted_index(self.predictor_name[self.activePoint[0]])
+        adjusted_index = self.adjusted_index(self.predictor_name[self.activePoint[0]])
         for pred in self.predicted[:]:
             cnt = cnt+1
-            x = pred[self.pointKind,0] * self.scale
-            y = pred[self.pointKind,1] * self.scale
-            color='yellow'
-            if cnt == adjusted_index:
-                color='blue'
-            #If it didn't return a point, don't draw anything
-            if not(x == 0 and y == 0):
-                self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
+            real_index = self.calc_real_index(cnt)
+            display = self.predictor_name[real_index] in self.displayedPredictors
+            if display:
+                x = pred[self.pointKind,0] * self.scale
+                y = pred[self.pointKind,1] * self.scale
+                color='yellow'
+                if cnt == adjusted_index:
+                    color='blue'
+                #If it didn't return a point, don't draw anything
+                if not(x == 0 and y == 0):
+                    self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill=color)
 
     def drawPoints(self):
         '''Draw the selected points in this frame. The current pointkind is in red
