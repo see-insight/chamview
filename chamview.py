@@ -209,8 +209,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                 if predictor_name[i] in chooser.activePredictors:
                     count += 1
                     points = predictor[i].predict(imstack, ptKindsEdited)
-                    if predictor_name[i] in chooser.displayedPredictors:
-                        predict_point[count] = points
+                    predict_point[count] = points
             except NameError:
                 points = predictor[i].predict(imstack, ptKindsEdited)
                 predict_point[i] = points
