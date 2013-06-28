@@ -40,7 +40,7 @@ class BasicGui(Chooser):
     circle_radius = 3
     #How large each frame should be scaled to
     canvas_width = 800
-    canvas_height = 600
+    canvas_height = 550
 
     def setup(self):
         '''Set instance variables and create the GUI.'''
@@ -158,23 +158,25 @@ class BasicGui(Chooser):
         self.filemenu.add_command(label='Exit', command=self.quit)
         self.topmenu.add_command(label='Help', command=self.showHelp)
         #Grid manager:
+        #       Frame label on top
         #       Annotation buttons, point kinds, and predictors on left
         #       Image and navigation buttons on right
-        self.frameL = Frame(self.master,height=BasicGui.canvas_height)
+        self.tagframe = Frame(self.master)
+        self.tagframe.pack(fill=X)
+        self.mainframe = Frame(self.master)
+        self.frameL = Frame(self.mainframe)
         self.frameL.pack(side=LEFT,fill=Y)
-        self.frameR = Frame(self.master)
+        self.frameR = Frame(self.mainframe)
         self.frameR.pack(side=LEFT,fill=BOTH)
         self.frameR.config(borderwidth=3,relief=GROOVE)
+        self.mainframe.pack(fill=BOTH)
 
         ###frameL###
         #Tix Balloon for hover-over help
         self.balloon = Tix.Balloon(self.master)
-        #Separator line
-        self.lineframe = Frame(self.frameL, height=15)
-        self.lineframe.grid(row=0,column=0,columnspan=3,rowspan=1)
         #Annotation frame
         self.aframe = Frame(self.frameL)
-        self.aframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=15)
+        self.aframe.grid(row=0,column=0,columnspan=3,rowspan=1,pady=15)
         #Delete button
         self.button_del = Button(self.aframe,text='Delete',command=self.delete)
         self.balloon.bind_widget(self.button_del,
@@ -192,7 +194,7 @@ class BasicGui(Chooser):
         self.button_cleara.grid(row=1,column=1,sticky='WE')
         #Save and Help frame
         self.shframe = Frame(self.frameL)
-        self.shframe.grid(row=2,column=0,columnspan=3,rowspan=1,pady=5)
+        self.shframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=5)
         #Save button
         self.button_save = Button(self.shframe,text='Save Points',command=self.save)
         self.balloon.bind_widget(self.button_save,
@@ -205,16 +207,16 @@ class BasicGui(Chooser):
         self.button_help.grid(row=0,column=1,sticky=W)
         #Point Types Label and edit button
         self.pt_label = Label(self.frameL,text='Point Types',height=4,anchor=S)
-        self.pt_label.grid(row=3,column=1)
+        self.pt_label.grid(row=2,column=1)
         self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
         self.balloon.bind_widget(self.pt_edit,
             balloonmsg='Click to edit the available point kinds.')
-        self.pt_edit.grid(row=3,column=2,sticky=S)
+        self.pt_edit.grid(row=2,column=2,sticky=S)
         #Listbox used to select point kind
         self.pointlist = Listbox(self.frameL,width=15,height=10,selectmode=SINGLE)
-        self.pointlist.grid(row=4,column=1,columnspan=2)
+        self.pointlist.grid(row=3,column=1,columnspan=2)
         self.pt_scroll = Scrollbar(self.frameL,orient=VERTICAL)
-        self.pt_scroll.grid(row=4,column=0,sticky=NS)
+        self.pt_scroll.grid(row=3,column=0,sticky=NS)
         self.pt_scroll.config(command=self.pointlist.yview,width=15)
         self.pointlist.config(yscrollcommand=self.pt_scroll.set)
         self.pointlist.bind('<<ListboxSelect>>',self.setPointKind)
@@ -223,19 +225,19 @@ class BasicGui(Chooser):
         self.button_clearp = Button(self.frameL,text='Clear Point Kind',command=self.clearPointKind)
         self.balloon.bind_widget(self.button_clearp,
             balloonmsg='Clears selected point kind from all frames.')
-        self.button_clearp.grid(row=5,column=1,columnspan=2)
+        self.button_clearp.grid(row=4,column=1,columnspan=2)
         #Predictors Label and edit button
         self.pd_label = Label(self.frameL,text='Predictors',height=3,anchor=S)
-        self.pd_label.grid(row=6,column=1)
+        self.pd_label.grid(row=5,column=1)
         self.pd_info = Button(self.frameL,text='Edit',command=self.predictorsInfo)
         self.balloon.bind_widget(self.pd_info,
             balloonmsg='NOT IMPLEMENTED--will display predictor stats.')
-        self.pd_info.grid(row=6,column=2,sticky=S)
+        self.pd_info.grid(row=5,column=2,sticky=S)
         #Listbox used to show predictors
         self.predlist= Listbox(self.frameL,width=15,height=10,selectmode=SINGLE)
-        self.predlist.grid(row=7,column=1,columnspan=2)
+        self.predlist.grid(row=6,column=1,columnspan=2)
         self.pd_scroll = Scrollbar(self.frameL,orient=VERTICAL)
-        self.pd_scroll.grid(row=7,column=0,sticky=NS)
+        self.pd_scroll.grid(row=6,column=0,sticky=NS)
         self.pd_scroll.config(command=self.predlist.yview,width=15)
         self.predlist.config(yscrollcommand=self.pd_scroll.set)
         self.predlist.bind('<<ListboxSelect>>',self.setActivePred)
@@ -270,18 +272,6 @@ class BasicGui(Chooser):
         label_framenum.grid(row=0,column=2,sticky=W)
         label_framenum.config(borderwidth=0)
         Label(self.fframe,text='\t\t').grid(row=0,column=3)
-        #Frame Tag
-        label = Label(self.fframe,text='Label')
-        label.grid(row=0,column=4,sticky=E)
-        self.tag = Entry(self.fframe,textvariable=self.currentTag)
-        self.tag.grid(row=0,column=5,sticky=W)
-        self.tag.config(borderwidth=2,relief=SUNKEN)
-        self.tag.bind("<FocusIn>", lambda e: self.tag.grab_set())
-        self.tag.bind("<KeyRelease-Return>", lambda e: self.master.focus_set())
-        self.tag.bind("<FocusOut>", lambda e: self.tag.grab_release())
-        #Search Tags
-        search_button = Button(self.fframe,text='GoTo',command=self.searchFrames)
-        search_button.grid(row=0,column=6)
         #Navigation frame
         self.navframe = Frame(self.frameR)
         self.navframe.pack()
@@ -315,6 +305,19 @@ class BasicGui(Chooser):
         self.nav_button = Button(self.navframe,text='Last',
                             command=lambda x=-1: self.navigate(x))
         self.nav_button.grid(row=0,column=7,padx=7)
+
+        ### tagframe ###
+        #Search Tags button
+        search_button = Button(self.tagframe,text='GoTo',command=self.searchFrames)
+        search_button.pack(side=RIGHT)
+        #Frame Tag Entry box
+        self.tag = Entry(self.tagframe,textvariable=self.currentTag)
+        self.tag.pack(side=RIGHT)
+        self.tag.config(borderwidth=2,relief=SUNKEN)
+        self.tag.bind("<KeyRelease-Return>", self.mainframe.focus_set)
+        #Tag label
+        label = Label(self.tagframe,text='Label')
+        label.pack(side=RIGHT)
 
 #****** Point Kind Functions ******
 
@@ -502,20 +505,20 @@ class BasicGui(Chooser):
 #****** Key Bindings ******
 
     def createKeyBindings(self):   # *** here's the problem ***
-        self.master.bind('<Down>',self.incPointKind, '+')
-        self.master.bind('<Up>',self.decPointKind)
-        self.master.bind('<s>',self.incPointKind, '+')
-        self.master.bind('<w>',self.decPointKind, '+')
-        self.master.bind('<Left>',self.prev)
-        self.master.bind('<Right>',self.next)
-        self.master.bind('<a>',self.prev)
-        self.master.bind('<d>',self.next)
-        self.master.bind('<Shift-p>',self.togglePredictions)
-        self.master.bind('<q>',self.cyclePredictions)
-        self.master.bind('<e>',self.cyclePredictions)
-        self.master.bind('<z>',self.zoom_in)
-        self.master.bind('<Button-3>',self.cyclePredictions)
-        self.master.bind('<Delete>',self.delete)
+        self.mainframe.bind('<Down>',self.incPointKind)
+        self.mainframe.bind('<Up>',self.decPointKind)
+        self.mainframe.bind('<s>',self.incPointKind)
+        self.mainframe.bind('<w>',self.decPointKind)
+        self.mainframe.bind('<Left>',self.prev)
+        self.mainframe.bind('<Right>',self.next)
+        self.mainframe.bind('<a>',self.prev)
+        self.mainframe.bind('<d>',self.next)
+        self.mainframe.bind('<Shift-p>',self.togglePredictions)
+        self.mainframe.bind('<q>',self.cyclePredictions)
+        self.mainframe.bind('<e>',self.cyclePredictions)
+        self.mainframe.bind('<z>',self.zoom_in)
+        self.mainframe.bind('<Button-3>',self.cyclePredictions)
+        self.mainframe.bind('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
         self.canvas.bind("<Double-Button-1>",self.onDoubleClick)
 

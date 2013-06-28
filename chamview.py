@@ -174,7 +174,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print '****POINT KINDS:****\n', imstack.point_kind_list
         #print '****POINT KINDS ADDED:****\n', chooser.added
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
-
+        print '****FRAME LABELS:****\n', imstack.label_list
 
     print_var_info() #*********************************************************
 
