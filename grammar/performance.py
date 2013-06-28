@@ -32,7 +32,7 @@ class Performance(Chooser):
         self.y = [] #Error from ground-truth
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
-        self.outputName = 'Performance_Report.txt' #Name of output file
+        self.outputName = '' #Name of output directory
         
         #Variables from Image Stack class
         self.name = [] #Name of predictor
@@ -79,6 +79,10 @@ class Performance(Chooser):
         if parameters[0] != '': self.outputName = parameters[0]
         if parameters[1] != '': self.upperB = int(parameters[1])
         if parameters[2] != '': self.tpBound = int(parameters[2])
+        
+        #Make outputName correct
+        if self.outputName != '':
+            self.outputName = self.outputName + '/'
 
     def teardown(self):
 
@@ -89,8 +93,11 @@ class Performance(Chooser):
         #different ways
         self.computeErrorByFrame()
         
+        #Define path to text file to save results
+        outTextFile = self.outputName + 'Performance_Results.txt'
+        
         #Open a text file to save results
-        self.fo = open(self.outputName,'w')
+        self.fo = open(outTextFile,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
                
         #Save important values in text file
@@ -115,7 +122,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
-        print 'Report saved to ' + self.outputName
+        print 'Results saved to ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
         
@@ -224,7 +231,11 @@ class Performance(Chooser):
         xlabel('Frame')
         ylabel('Number of Pixels')      
         plt.legend(self.name)
-        plt.show()                  
+        
+        #Save figure
+        plt.savefig(self.outputName + 'errorByFrame.jpg')
+        
+        plt.show()                 
         
     def showErrorByPointKind(self):
         
