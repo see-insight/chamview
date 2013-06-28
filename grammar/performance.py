@@ -233,7 +233,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + 'errorByFrame.jpg')
+        plt.savefig(self.outputName + gName + '.jpg')
         
         plt.show()                 
         
@@ -294,6 +294,10 @@ class Performance(Chooser):
         xlabel('Point Kind')
         ylabel('Distance in Pixels')
         plt.legend(self.name, prop = {'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
         plt.show()
 
     def showErrorEachPointK(self):
@@ -342,7 +346,10 @@ class Performance(Chooser):
                   '\nThis graph shows errors less or equal than ' + str(self.upperB)+' pixels')
             xlabel('Frame')
             ylabel('Distance in Pixels')
-            plt.legend(self.name)
+            plt.legend(self.name, prop={'size':8})
+        
+            #Save figure
+            plt.savefig(self.outputName + gName + '.jpg')
         
             plt.show()
         
@@ -424,7 +431,11 @@ class Performance(Chooser):
               'points with at most that error)') 
         xlabel('Distance in Pixels')
         ylabel('Percentage of Points')
-        plt.legend(self.name)
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
         plt.show()
         
     def showAccuracy(self):
@@ -476,7 +487,11 @@ class Performance(Chooser):
         title(gName + '\nThis graph shows how accuracy changes through frames')
         xlabel('Frame')
         ylabel('Accuracy')
-        plt.legend(self.name)
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
         plt.show()
         
     def showAccuracyConfidence(self):
@@ -537,7 +552,11 @@ class Performance(Chooser):
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
         ylabel('Accuracy * Confidence')
-        plt.legend(self.name)
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
         plt.show()     
         
     def showROC(self):
@@ -612,7 +631,11 @@ class Performance(Chooser):
               'A predictor is better if its curve is above other')
         xlabel('False Positive Rate')
         ylabel('True Positive Rate')
-        plt.legend(self.name)
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
         plt.show()          
       
     def showError3D(self):
@@ -661,7 +684,10 @@ class Performance(Chooser):
             title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name)
+            plt.legend(self.name, prop={'size':8})
+        
+            #Save figure
+            plt.savefig(self.outputName + gName + '.jpg')
             
             plt.show() 
                             
@@ -772,6 +798,9 @@ class Performance(Chooser):
             title('Confidence of Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name)
+            plt.legend(self.name, prop={'size':8})
+        
+            #Save figure
+            plt.savefig(self.outputName + gName + '.jpg')
             
             plt.show()
