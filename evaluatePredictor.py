@@ -5,15 +5,15 @@
 """Evaluator for Chamview predictors
 
 Usage options:
-    -h --help       Print this help message
-    -d- --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
-    -i --prep       Preprocessor subclass. Default is (none)
-    -k --pkind      Point kind file. Default is (defaultPointKinds.txt)
-    -p --dirGT      Ground Truth points directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
-    -r --predictor  Predictor Name. Default is all predictors
-    -o --output     Output file. Default is (Performance_Report.txt)
-    -u --upBound    Determines the upper bound of results we can see. Default is 50
-    -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5
+    -h --help       Print this help message.
+    -d- --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames).
+    -i --prep       Preprocessor subclass. Default is (none).
+    -k --pkind      Point kind file. Default is (defaultPointKinds.txt).
+    -p --dirGT      Ground Truth points directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt).
+    -r --predictor  Predictor Name. Default is all predictors.
+    -o --output     Output directory where results are saved. Default is current directory.
+    -u --upBound    Determines the upper bound of results we can see. Default is 50.
+    -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5.
     -s --savedGraph Data results previously saved in text file that is used to graph.
     -m --metadata   Directory of metadata to plot graphs using the information there.
 
@@ -35,7 +35,7 @@ def main(argc,argv):
     #Default arguments
     argFrameDir = ''
     argGroundT = ''
-    argOutput = 'Performance_Report.txt'
+    argOutput = ''
     argPKind = ''
     argPredictor = []
     argPreproc = ''
