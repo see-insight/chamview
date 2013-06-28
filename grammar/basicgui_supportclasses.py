@@ -8,26 +8,26 @@ from PIL import Image, ImageTk
 
 
 class StatusBar(Frame):
-    
+
     def __init__(self, master):
         Frame.__init__(self, master)
         self.label = Label(self, bd=1, relief=GROOVE)
         self.label.pack(fill=X)
-        
+
     def set(self, format, *args):
         self.label.config(text=format % args)
         self.label.update_idletasks()
-        
+
     def clear(self):
         self.label.config(text='')
         self.label.update_idletasks()
-        
-        
-##################################################
 
 
-class Dialog(Toplevel): 
-           
+################################################################################
+
+
+class Dialog(Toplevel):
+
     def __init__(self, parent, title = None):
         Toplevel.__init__(self, parent)
         self.transient(parent)
@@ -108,9 +108,9 @@ class Dialog(Toplevel):
 
     def apply(self):
         pass # override
-        
-     
-##################################################
+
+
+################################################################################
 
 
 class RefinePoint(Dialog):
@@ -129,7 +129,7 @@ class RefinePoint(Dialog):
         template = self.grab_template(size)
         self.img = ImageTk.PhotoImage(template)
         Dialog.__init__(self,parent,title)   # draw new window with zoomed in image
-            
+
     def grab_template(self,size):
         width,height = self.img.size
         x = self.raw_point[1]
@@ -160,7 +160,7 @@ class RefinePoint(Dialog):
         image = image.resize((int(width*self.scale),int(height*self.scale)),
                 Image.ANTIALIAS)
         return image
-        
+
     def body(self, master):
         '''Draw Canvas'''
         self.canvas = Canvas(master,width=self.dimension,height=self.dimension)
@@ -169,42 +169,42 @@ class RefinePoint(Dialog):
         self.canvas.bind("<Button-1>",self.onClick)
         self.bind("<z>", self.cancel)
         self.drawPoints()
-        
+
     def onClick(self,event):
         '''Set the refined point position to the mouse position and redraw the Points.'''
         self.refined[0] = event.x
         self.refined[1] = event.y
         self.drawPoints()
-        
+
     def drawPoints(self):
         '''Clear points on canvas and re-draw the initial and refined points.'''
         rad = self.point_radius
-        
+
         self.canvas.delete('all')
         self.canvas.create_image(0,0,image=self.img,anchor=NW)
-        
+
         # Draw initial point
         x = self.initial[0]
         y = self.initial[1]
         self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='green')
-        
+
         # Draw refined point
         x = self.refined[0]
         y = self.refined[1]
         self.canvas.create_oval((x-rad,y-rad,x+rad,y+rad),fill='red')
-        
+
     def apply(self):
         xdiff = (self.refined[0] - self.initial[0]) / self.scale
         ydiff = (self.refined[1] - self.initial[1]) / self.scale
         self.new_point[1] = self.new_point[1] + xdiff
-        self.new_point[2] = self.new_point[2] + ydiff   
-            
+        self.new_point[2] = self.new_point[2] + ydiff
 
-##################################################  
-    
+
+################################################################################
+
 
 class EditPointKinds(Dialog):
-    
+
     def __init__(self, parent, imstack, title='Edit Point Kinds'):
         self.stack = imstack
         self.currentpoints = self.stack.point_kind_list
@@ -212,12 +212,12 @@ class EditPointKinds(Dialog):
         self.deleted_indices = []
         self.result = (self.num_added,self.deleted_indices)
         Dialog.__init__(self,parent,title)
-        
+
     def body(self, master):
         '''Create dialog body. Return widget that should have initial focus.'''
         #Tix Balloon for hover-over help
         self.balloon = Tix.Balloon(master)
-        
+
         self.topframe = Frame(master)
         self.topframe.grid(row=0,padx=15,pady=15)
         self.listbox = Listbox(self.topframe,width=45,relief=SUNKEN)
@@ -225,17 +225,17 @@ class EditPointKinds(Dialog):
         for kind in self.currentpoints:
             self.listbox.insert(END,kind)
         self.listbox.bind('<<ListboxSelect>>',self.highlight)
-        self.default = Button(self.topframe, text="Default", width=10, 
+        self.default = Button(self.topframe, text="Default", width=10,
                                 command=self.revert_to_default)
         self.balloon.bind_widget(self.default,
             balloonmsg='Resets the point kinds to the default.')
         self.default.pack(side=LEFT,padx=5, pady=5)
-        self.maked = Button(self.topframe, text="Make Default", width=10, 
+        self.maked = Button(self.topframe, text="Make Default", width=10,
                                 command=self.set_as_default)
         self.balloon.bind_widget(self.maked,
             balloonmsg='Sets the current point kinds as the default point kinds.')
         self.maked.pack(side=LEFT, padx=5, pady=5)
-        
+
         self.bottomframe = Frame(master,height=70,width=295)
         self.bottomframe.grid(row=1,padx=15,pady=15)
         self.ptkind = StringVar()
@@ -247,7 +247,7 @@ class EditPointKinds(Dialog):
         self.add.pack(side=LEFT,fill=Y)
         self.delete = Button(self.bottomframe,text='Delete',command=self.delete)
         self.delete.pack(side=LEFT,fill=Y)
-        
+
     def highlight(self,event=''):
         #Set the listbox's selection
         try:
@@ -257,21 +257,21 @@ class EditPointKinds(Dialog):
         self.listbox.selection_set(self.point)
         self.listbox.see(self.point)
         self.listbox.activate(self.point)
-        
+
     def revert_to_default(self,event=''):
         self.deleted_indices = range(len(self.currentpoints))
         self.listbox.delete(0,END)
         self.stack.get_point_kinds(List=list(self.listbox.get(0,END)))
         self.num_added = self.stack.point_kinds
         self.ok()
-        
+
     def set_as_default(self,event=''):
         if os.path.exists('defaultPointKinds.txt') == False: return
         file_out = open('defaultPointKinds.txt', 'w')
         for point_kind in self.listbox.get(0,END):
             file_out.write(point_kind + '\n')
         file_out.close()
-        
+
     def add(self,event=''):
         self.listbox.select_clear(ACTIVE)
         self.listbox.insert(END,self.ptkind.get())
@@ -280,7 +280,7 @@ class EditPointKinds(Dialog):
         self.listbox.see(self.point)
         self.listbox.activate(self.point)
         self.num_added += 1
-        
+
     def delete(self,event=''):
         try:
             original_index = self.currentpoints.index(self.listbox.get(ACTIVE))
@@ -288,15 +288,89 @@ class EditPointKinds(Dialog):
         except ValueError:
             self.num_added -= 1
         self.listbox.delete(ACTIVE)
-        
+
     def ok(self,event=None):
         self.stack.deletePointKinds(self.deleted_indices)
         self.stack.addPointKinds(self.num_added)
         self.stack.get_point_kinds(List=list(self.listbox.get(0,END)))
         Dialog.ok(self)
-        
+
     def apply(self):
-        self.result = (self.num_added, 
-                       self.deleted_indices)
+        self.result = (self.num_added, self.deleted_indices)
+
+
+################################################################################
+
+
+class PredictorWindow(Dialog):
+
+    def __init__(self,parent,preds,active_preds,displayed_preds,title='Predictor Information'):
+        self.all_ = preds
+        print 'initial lists'
+        print active_preds
+        print displayed_preds
+        self.active = set(active_preds[:])
+        self.displayed = set(displayed_preds[:])
+        print 'lists in window'
+        print self.active
+        print self.displayed
+        self.result = (active_preds, displayed_preds)
+        Dialog.__init__(self,parent,title)
+
+    def body(self, master):
+        for i in range(len(self.all_)):
+            pred = self.all_[i]
+            widget = self.add_predictor(master, pred)
+            col = int(i / 8.0)
+            r = i % 8
+            widget.grid(row=r, column=col, sticky='EW')
+        return master
+
+    def add_predictor(self, master, predictor):
+        frame = Frame(master)
+        label = Label(frame, text=predictor)
+        label.pack(side=LEFT)
+        combo = Tix.ComboBox(frame)
+        combo.insert(END,'Enabled & Displayed')
+        combo.insert(END,'Enabled')
+        combo.insert(END,'Disabled')
+        if (predictor in self.active) and (predictor in self.displayed):
+            combo.config(value='Enabled & Displayed')
+        elif predictor in self.active and predictor not in self.displayed:
+            combo.config(value='Enabled')
+        else:
+            combo.config(value='Disabled')
+        func = lambda e='': self.update(predictor, combo['selection'])
+        combo.config(command=func)
+        combo.pack(side=RIGHT)
+        return frame
+
+    def update(self, predictor, status):
+        if status == 'Enabled & Displayed':
+            self.enable(predictor)
+            self.display(predictor)
+        elif status == 'Enabled':
+            self.enable(predictor)
+            self.display(predictor, 'off')
+        else:
+            self.disable(predictor)
+
+    def enable(self, predictor):
+        self.active.add(predictor)
+
+    def display(self, predictor, setting='on'):
+        if setting == 'on':
+            self.displayed.add(predictor)
+        elif setting == 'off':
+            self.displayed.discard(predictor)
+
+    def disable(self, predictor):
+        self.active.discard(predictor)
+        self.displayed.discard(predictor)
+
+    def apply(self):
+        self.result = (list(self.active), list(self.displayed))
+        print self.result[0]
+        print self.result[1]
 
 
