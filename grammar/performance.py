@@ -122,7 +122,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
-        print 'Results saved to ' + self.outputName
+        print 'Results saved in ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
         
@@ -226,11 +226,11 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        title('Error on Prediction\nThis graph shows errors less or equal than '
+        title('Average Distance in Pixels by Frame\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
         xlabel('Frame')
-        ylabel('Number of Pixels')      
-        plt.legend(self.name)
+        ylabel('Distance in Pixels')      
+        plt.legend(self.name, prop={'size':8})
         
         #Save figure
         plt.savefig(self.outputName + 'errorByFrame.jpg')
@@ -289,11 +289,11 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
             
-        title('Error by Point Kind\nThis graph shows errors less or equal than '
+        title('Average Distance in Pixels by Point Kind\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
         xlabel('Point Kind')
-        ylabel('Number of Pixels')
-        plt.legend(self.name)
+        ylabel('Distance in Pixels')
+        plt.legend(self.name, prop = {'size':8})
         plt.show()
 
     def showErrorEachPointK(self):
@@ -338,10 +338,10 @@ class Performance(Chooser):
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
-            title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
-                  +str(self.upperB)+' pixels')
+            title('Distance in Pixels. Point Kind: ' + self.pointKList[pointK]+
+                  '\nThis graph shows errors less or equal than ' + str(self.upperB)+' pixels')
             xlabel('Frame')
-            ylabel('Number of Pixels')
+            ylabel('Distance in Pixels')
             plt.legend(self.name)
         
             plt.show()
@@ -422,7 +422,7 @@ class Performance(Chooser):
         title('Percentage of Points\n(For a given error from 1 to ' + 
               str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
               'points with at most that error)') 
-        xlabel('Error in Pixels')
+        xlabel('Distance in Pixels')
         ylabel('Percentage of Points')
         plt.legend(self.name)
         plt.show()
