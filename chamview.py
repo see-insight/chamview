@@ -181,12 +181,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
 
-    try:
-        if chooser.editedPointKinds:
-            predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
-    except NameError:
-        pass
-
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
         #Preprocess the ImageStack image
@@ -203,7 +197,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
         #Give each predictor the current image stack and get a prediction back
         #from each active predictor
-        for i in range(0,len(predictor)):
+        for i in range(len(predictor)):
             try:
                 if predictor_name[i] in chooser.activePredictors:
                     predict_point[i] = predictor[i].predict(imstack,ptKindsEdited)

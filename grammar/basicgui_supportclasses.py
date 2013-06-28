@@ -306,14 +306,8 @@ class PredictorWindow(Dialog):
 
     def __init__(self,parent,preds,active_preds,displayed_preds,title='Predictor Information'):
         self.all_ = preds
-        print 'initial lists'
-        print active_preds
-        print displayed_preds
         self.active = set(active_preds[:])
         self.displayed = set(displayed_preds[:])
-        print 'lists in window'
-        print self.active
-        print self.displayed
         self.result = (active_preds, displayed_preds)
         Dialog.__init__(self,parent,title)
 
@@ -332,12 +326,12 @@ class PredictorWindow(Dialog):
         label.pack(side=LEFT)
         combo = Tix.ComboBox(frame)
         combo.insert(END,'Enabled & Displayed')
-        combo.insert(END,'Enabled')
+        combo.insert(END,'Enabled Only')
         combo.insert(END,'Disabled')
         if (predictor in self.active) and (predictor in self.displayed):
             combo.config(value='Enabled & Displayed')
         elif predictor in self.active and predictor not in self.displayed:
-            combo.config(value='Enabled')
+            combo.config(value='Enabled Only')
         else:
             combo.config(value='Disabled')
         func = lambda e='': self.update(predictor, combo['selection'])
@@ -349,7 +343,7 @@ class PredictorWindow(Dialog):
         if status == 'Enabled & Displayed':
             self.enable(predictor)
             self.display(predictor)
-        elif status == 'Enabled':
+        elif status == 'Enabled Only':
             self.enable(predictor)
             self.display(predictor, 'off')
         else:
@@ -370,7 +364,5 @@ class PredictorWindow(Dialog):
 
     def apply(self):
         self.result = (list(self.active), list(self.displayed))
-        print self.result[0]
-        print self.result[1]
 
 

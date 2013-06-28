@@ -72,7 +72,7 @@ class BasicGui(Chooser):
     def teardown(self):
         '''Close the GUI window.'''
         self.imstack.exit = True
-        self.save()
+#        self.save()
         self.end_update_loop()
 
     def choose(self,stack,predicted,predictor_name):
@@ -548,11 +548,9 @@ class BasicGui(Chooser):
                             self.imstack.point_kind_list[self.pointKind],0,0)
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for and there is no point selected
-        if ((self.imstack.current_frame == self.predictedFrame
+        if (self.imstack.current_frame == self.predictedFrame
                 and
-             self.imstack.point_empty(self.imstack.current_frame,self.pointKind))
-                or
-             self.showPredictions):
+            self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
             self.drawPredictions()
         #Draw the selected point for every point kind in this frame
         self.drawPoints()
@@ -579,6 +577,7 @@ class BasicGui(Chooser):
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
+        print self.predicted
         for pred in self.predicted[:]:
             cnt = cnt+1
             x = pred[self.pointKind,0] * self.scale
