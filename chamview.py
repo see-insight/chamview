@@ -195,14 +195,25 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         if ptKindsEdited:
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
+        #Reset predict_point array
+        try:
+            predict_point = zeros((len(chooser.activePredictors),imstack.point_kinds,3))
+        except NameError:
+            predict_point = zeros((len(predictor),imstack.point_kinds,3))
+
         #Give each predictor the current image stack and get a prediction back
         #from each active predictor
+        count = -1
         for i in range(len(predictor)):
             try:
                 if predictor_name[i] in chooser.activePredictors:
-                    predict_point[i] = predictor[i].predict(imstack,ptKindsEdited)
+                    count += 1
+                    points = predictor[i].predict(imstack, ptKindsEdited)
+                    if predictor_name[i] in chooser.displayedPredictors:
+                        predict_point[count] = points
             except NameError:
-                predict_point[i] = predictor[i].predict(imstack,ptKindsEdited)
+                points = predictor[i].predict(imstack, ptKindsEdited)
+                predict_point[i] = points
 
 #        print_var_info() #*****************************************************
 

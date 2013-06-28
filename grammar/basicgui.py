@@ -58,7 +58,7 @@ class BasicGui(Chooser):
         self.saveFile = ''    # name of file to save to
         self.zoom_factor = 3
         #Choosing a prediction to use
-        self.showPredictions = True     # yes or no to automatically show point predictions
+        self.forcePredDisplay = False    # yes or no to automatically show point predictions
         self.selectedPredictions = []    # store where point came from last frame for each point kind (-1:user, 0 to # of predictors: predictor index)
         self.activePoint = [-1,0,0] # [predictor index, x, y] of selected predictor (to be stored in imstack.point if frame/point type is changed)
         #Intitialize GUI, but don't show it yet
@@ -548,9 +548,11 @@ class BasicGui(Chooser):
                             self.imstack.point_kind_list[self.pointKind],0,0)
         #Draw predictions of the current point kind in yellow if we're on the
         #frame that the predictions are for and there is no point selected
-        if (self.imstack.current_frame == self.predictedFrame
+        if ((self.imstack.current_frame == self.predictedFrame
                 and
-            self.imstack.point_empty(self.imstack.current_frame,self.pointKind)):
+            self.imstack.point_empty(self.imstack.current_frame,self.pointKind))
+                or
+            self.forcePredDisplay):
             self.drawPredictions()
         #Draw the selected point for every point kind in this frame
         self.drawPoints()
@@ -572,12 +574,10 @@ class BasicGui(Chooser):
         self.currentTag.set(str(self.imstack.label_list[self.imstack.current_frame]))
 
     def drawPredictions(self):
-        if not self.showPredictions: return
         rad = BasicGui.circle_radius
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
-        print self.predicted
         for pred in self.predicted[:]:
             cnt = cnt+1
             x = pred[self.pointKind,0] * self.scale
