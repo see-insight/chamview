@@ -399,17 +399,19 @@ class BasicGui(Chooser):
         except IndexError:
             pass
         self.updateActivePred()
+        self.updateActivePointCoordinates()
+        self.clearSavedPoint()
+        self.drawCanvas()
 
-    def cyclePredictions(self,event=''):
-        '''Cycle through the predicted points to choose one to save as the point.'''
-        if not self.madePointkindList: return
-        self.predlist.select_clear(self.activePoint[0])
-        if(event.char=='q'):
-            self.decActivePred()
-        elif(event.char=='e' or event.num==3):
-            self.incActivePred()
-        self.updateActivePred()
+    def updateActivePred(self):
+        '''Set the predlist's selection.'''
+        self.predlist.select_clear(0,END)
+        if self.activePoint[0] != -1:
+            self.predlist.select_set(self.activePoint[0])
+            self.predlist.see(self.activePoint[0])
+            self.predlist.activate(self.activePoint[0])  # underline
 
+    def updateActivePointCoordinates(self):
         if self.activePoint[0] != -1:
             adjusted_index = self.adjusted_index(self.predictor_name[self.activePoint[0]])
             # store predicted coordinates in activePoint
@@ -421,11 +423,26 @@ class BasicGui(Chooser):
             self.activePoint[2] = 0
         print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
 
+    def clearSavedPoint(self):
         # clear saved data for point because predictions are being examined
         self.selectedPredictions[self.pointKind] = -1
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = -1
+
+    def cyclePredictions(self,event=''):
+        '''Cycle through the predicted points to choose one to save as the point.'''
+        if not self.madePointkindList: return
+        self.predlist.select_clear(self.activePoint[0])
+        if(event.char=='q'):
+            self.decActivePred()
+        elif(event.char=='e' or event.num==3):
+            self.incActivePred()
+
+        self.updateActivePred()
+        self.updateActivePointCoordinates()
+        self.clearSavedPoint()
+
         self.drawCanvas()
 
     def incActivePred(self):
@@ -463,15 +480,6 @@ class BasicGui(Chooser):
             while self.predictor_name[index] not in self.activePredictors:
                 index += 1
         return index
-
-
-    def updateActivePred(self):
-        '''Set the predlist's selection.'''
-        self.predlist.select_clear(0,END)
-        if self.activePoint[0] != -1:
-            self.predlist.select_set(self.activePoint[0])
-            self.predlist.see(self.activePoint[0])
-            self.predlist.activate(self.activePoint[0])  # underline
 
     def togglePredictions(self,event=''):
         '''Turn the drawing of predicted points on or off.'''
