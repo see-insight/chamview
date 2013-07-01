@@ -183,7 +183,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
 
-    print_var_info() #*********************************************************
+#    print_var_info() #*********************************************************
 
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
@@ -218,7 +218,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                 points = predictor[i].predict(imstack, ptKindsEdited)
                 predict_point[i] = points
 
-        print_var_info() #*****************************************************
+#        print_var_info() #*****************************************************
 
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)

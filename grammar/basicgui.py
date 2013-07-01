@@ -107,7 +107,14 @@ class BasicGui(Chooser):
         #Draw new frame and predictions
         self.drawCanvas()
         #Show the window and get user input
+        #self.mainframe.focus_force()
+        #print self.master.focus_get()
+        self.tag.event_generate("<Button-1>")
+        self.tag.event_generate("<KeyRelease-Return>")
         self.master.mainloop()
+
+    def t(self,event=''):
+        print 'it worked'
 
     def fillPointkindList(self):
         '''List each point kind in the point kind Listbox'''
@@ -425,7 +432,7 @@ class BasicGui(Chooser):
             # no prediction or point data stored
             self.activePoint[1] = 0
             self.activePoint[2] = 0
-        print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
+#        print '****ACTIVE POINT after cyclePredictions:****\n', self.activePoint
 
     def clearSavedPoint(self):
         # clear saved data for point because predictions are being examined
@@ -488,6 +495,7 @@ class BasicGui(Chooser):
     def togglePredictions(self,event=''):
         '''Turn the drawing of predicted points on or off.'''
         self.showPredictions = not self.showPredictions
+        print self.showPredictions
         self.update_points()
         self.end_update_loop()
 
@@ -503,6 +511,7 @@ class BasicGui(Chooser):
 #****** Key Bindings ******
 
     def createKeyBindings(self):
+        self.master.bind('<<smth>>',self.t)
         self.mainframe.bind('<Down>',self.incPointKind)
         self.mainframe.bind('<Up>',self.decPointKind)
         self.mainframe.bind('<s>',self.incPointKind)
