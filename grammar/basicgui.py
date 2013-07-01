@@ -102,7 +102,7 @@ class BasicGui(Chooser):
         self.activePoint[1] = self.imstack.point[self.imstack.current_frame,self.pointKind,0]
         self.activePoint[2] = self.imstack.point[self.imstack.current_frame,self.pointKind,1]
 #        print self.imstack.point[self.imstack.current_frame,self.pointKind,0], ',', self.imstack.point[self.imstack.current_frame,self.pointKind,1]
-        print '****ACTIVE POINT in choose:****\n', self.activePoint
+#        print '****ACTIVE POINT in choose:****\n', self.activePoint
 
         #Draw new frame and predictions
         self.drawCanvas()
@@ -157,6 +157,7 @@ class BasicGui(Chooser):
         self.filemenu.add_separator()
         self.filemenu.add_command(label='Exit', command=self.quit)
         self.topmenu.add_command(label='Help', command=self.showHelp)
+
         #Grid manager:
         #       Frame label on top
         #       Annotation buttons, point kinds, and predictors on left
@@ -173,23 +174,23 @@ class BasicGui(Chooser):
 
         ###frameL###
         #Tix Balloon for hover-over help
-        self.balloon = Tix.Balloon(self.master)
+        balloon = Tix.Balloon(self.master)
         #Annotation frame
         self.aframe = Frame(self.frameL)
         self.aframe.grid(row=0,column=0,columnspan=3,rowspan=1,pady=15)
         #Delete button
         self.button_del = Button(self.aframe,text='Delete',command=self.delete)
-        self.balloon.bind_widget(self.button_del,
+        balloon.bind_widget(self.button_del,
             balloonmsg='Deletes current point kind\'s selection from current frame.')
         self.button_del.grid(row=0,column=0,columnspan=2,ipadx=15)
         #Clear Frame button
         self.button_clearf = Button(self.aframe,text='Clear Frame',command=self.clearFrame)
-        self.balloon.bind_widget(self.button_clearf,
+        balloon.bind_widget(self.button_clearf,
             balloonmsg='Deletes all points on the current frame.')
         self.button_clearf.grid(row=1,column=0,sticky='WE')
         #Clear All button
         self.button_cleara = Button(self.aframe,text='Clear All Frames',command=self.clearAll)
-        self.balloon.bind_widget(self.button_cleara,
+        balloon.bind_widget(self.button_cleara,
             balloonmsg='Deletes all points from all frames.')
         self.button_cleara.grid(row=1,column=1,sticky='WE')
         #Save and Help frame
@@ -197,19 +198,19 @@ class BasicGui(Chooser):
         self.shframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=5)
         #Save button
         self.button_save = Button(self.shframe,text='Save Points',command=self.save)
-        self.balloon.bind_widget(self.button_save,
+        balloon.bind_widget(self.button_save,
             balloonmsg='Saves all point data to text file.')
         self.button_save.grid(row=0,column=0,sticky=E)
         #Help button
         self.button_help = Button(self.shframe,text='Help',command=self.showHelp)
-        self.balloon.bind_widget(self.button_help,
+        balloon.bind_widget(self.button_help,
             balloonmsg='Display help window.')
         self.button_help.grid(row=0,column=1,sticky=W)
         #Point Types Label and edit button
         self.pt_label = Label(self.frameL,text='Point Types',height=4,anchor=S)
         self.pt_label.grid(row=2,column=1)
         self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
-        self.balloon.bind_widget(self.pt_edit,
+        balloon.bind_widget(self.pt_edit,
             balloonmsg='Click to edit the available point kinds.')
         self.pt_edit.grid(row=2,column=2,sticky=S)
         #Listbox used to select point kind
@@ -223,15 +224,15 @@ class BasicGui(Chooser):
         self.pointlist.focus()
         #Clear Point Kind button
         self.button_clearp = Button(self.frameL,text='Clear Point Kind',command=self.clearPointKind)
-        self.balloon.bind_widget(self.button_clearp,
+        balloon.bind_widget(self.button_clearp,
             balloonmsg='Clears selected point kind from all frames.')
         self.button_clearp.grid(row=4,column=1,columnspan=2)
         #Predictors Label and edit button
         self.pd_label = Label(self.frameL,text='Predictors',height=3,anchor=S)
         self.pd_label.grid(row=5,column=1)
         self.pd_info = Button(self.frameL,text='Edit',command=self.predictorsInfo)
-        self.balloon.bind_widget(self.pd_info,
-            balloonmsg='NOT IMPLEMENTED--will display predictor stats.')
+        balloon.bind_widget(self.pd_info,
+            balloonmsg='Choose which predictors are enabled and disabled.')
         self.pd_info.grid(row=5,column=2,sticky=S)
         #Listbox used to show predictors
         self.predlist= Listbox(self.frameL,width=15,height=10,selectmode=SINGLE)
@@ -291,7 +292,7 @@ class BasicGui(Chooser):
         self.nav_button = Button(self.navframe,text='Previous',command=self.prev)
         self.nav_button.grid(row=0,column=3,padx=7)
         #Next button
-        self.nav_button = Button(self.navframe,text='Next',command=self.next)
+        self.nav_button = Button(self.navframe,text='Next',command=self.next_)
         self.nav_button.grid(row=0,column=4,padx=7)
         #Next 10 button
         self.nav_button = Button(self.navframe,text='+10',
@@ -314,7 +315,7 @@ class BasicGui(Chooser):
         self.tag = Entry(self.tagframe,textvariable=self.currentTag)
         self.tag.pack(side=RIGHT)
         self.tag.config(borderwidth=2,relief=SUNKEN)
-        self.tag.bind("<KeyRelease-Return>", self.mainframe.focus_set)
+        self.tag.bind("<KeyRelease-Return>", lambda e:self.mainframe.focus_set())
         #Tag label
         label = Label(self.tagframe,text='Label')
         label.pack(side=RIGHT)
@@ -363,7 +364,7 @@ class BasicGui(Chooser):
         self.editedPointKinds = True    #used to tell predictors if the point kinds were edited
         self.added = 0
         self.deleted = []
-        window = support.EditPointKinds(self.master,self.imstack)
+        window = support.EditPointKinds(self.mainframe,self.imstack)
         self.added, self.deleted = window.result
 
         if self.added > 0 or self.deleted != []:
@@ -492,10 +493,7 @@ class BasicGui(Chooser):
 
     def predictorsInfo(self,event=''):
         '''Window displaying accuracy info about each predictor.'''
-        print 'basicgui pred lists'
-        print self.activePredictors
-        print self.displayedPredictors
-        window = support.PredictorWindow(self.master,
+        window = support.PredictorWindow(self.mainframe,
                                          self.predictor_name,
                                          self.activePredictors,
                                          self.displayedPredictors)
@@ -504,15 +502,15 @@ class BasicGui(Chooser):
 
 #****** Key Bindings ******
 
-    def createKeyBindings(self):   # *** here's the problem ***
+    def createKeyBindings(self):
         self.mainframe.bind('<Down>',self.incPointKind)
         self.mainframe.bind('<Up>',self.decPointKind)
         self.mainframe.bind('<s>',self.incPointKind)
         self.mainframe.bind('<w>',self.decPointKind)
         self.mainframe.bind('<Left>',self.prev)
-        self.mainframe.bind('<Right>',self.next)
+        self.mainframe.bind('<Right>',self.next_)
         self.mainframe.bind('<a>',self.prev)
-        self.mainframe.bind('<d>',self.next)
+        self.mainframe.bind('<d>',self.next_)
         self.mainframe.bind('<Shift-p>',self.togglePredictions)
         self.mainframe.bind('<q>',self.cyclePredictions)
         self.mainframe.bind('<e>',self.cyclePredictions)
@@ -528,7 +526,7 @@ class BasicGui(Chooser):
         '''Set the current pointkind's position in the current frame to the mouse
         position and redraw it.'''
         self.store_mouse_position(event)
-        print '****ACTIVE POINT after onClick:****\n', self.activePoint
+#        print '****ACTIVE POINT after onClick:****\n', self.activePoint
         self.update_points()
         self.end_update_loop()
 
@@ -570,7 +568,7 @@ class BasicGui(Chooser):
             #if i != -1:
             #    i = self.predictor_name[i]
             self.imstack.point_sources[self.imstack.current_frame][self.pointKind] = i
-        print '****ACTIVE POINT after drawCanvas:****\n', self.activePoint
+#        print '****ACTIVE POINT after drawCanvas:****\n', self.activePoint
         #Clear out any existing points
         self.canvas.delete('all')
         #If the photo hasn't been set yet then do so
@@ -664,7 +662,7 @@ class BasicGui(Chooser):
         self.updatePhoto()
         self.end_update_loop()
 
-    def next(self,event=''):
+    def next_(self,event=''):
         '''Move the frame forward by one and draw the correct image and points.'''
         self.update_points()
         self.imstack.next()
@@ -822,7 +820,7 @@ class BasicGui(Chooser):
         message += 'Previous/next image\t\tA/D or L/R arrow\n'
 #        message += 'Choose point kind\t\t1-9\n'
         message += 'Choose point kind\t\tW/S or U/D arrow\n'
-        message += 'Toggle predictions\t\tShift+P\n'
+#        message += 'Toggle predictions\t\tShift+P\n'
         message += 'Cycle chosen prediction\tQ/E or Right-Click\n'
         message += 'Delete selected point\t\t<Del>\n'
         tkMessageBox.showinfo("Chamview Help",message)

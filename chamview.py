@@ -174,12 +174,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         #print '****POINT KINDS:****\n', imstack.point_kind_list
         #print '****POINT KINDS ADDED:****\n', chooser.added
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
+        print '****ACTIVE PREDICTORS:****\n', chooser.activePredictors
+        print '****DISPLAYED PREDICTORS:****\n', chooser.displayedPredictors
         print '****FRAME LABELS:****\n', imstack.label_list
 
-    print_var_info() #*********************************************************
+#    print_var_info() #*********************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
+
+    print_var_info() #*********************************************************
 
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
