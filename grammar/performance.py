@@ -22,7 +22,6 @@ class Performance(Chooser):
     '''It is used to compute the error of predictions and ground-truth points. It
     outpus the difference (in pixels) to file and displays a graph.
     The error is according frames or according kind_point.
-    Usage: ./chamview.py -c Error -d <image directory> -p <ground truth file>
     '''
     
     def setup(self):     
@@ -33,6 +32,8 @@ class Performance(Chooser):
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
         self.outputName = '' #Name of output directory
+        self.showBool = True #Boolean that determines if show or not graphs
+        
         
         #Variables from Image Stack class
         self.name = [] #Name of predictor
@@ -80,6 +81,8 @@ class Performance(Chooser):
         if parameters[1] != '': self.upperB = int(parameters[1])
         if parameters[2] != '': self.tpBound = int(parameters[2])
         
+        if parameters[3] == 'False': self.showBool = False
+        
         #Make outputName correct
         if self.outputName != '':
             self.outputName = self.outputName + '/'
@@ -94,7 +97,7 @@ class Performance(Chooser):
         self.computeErrorByFrame()
         
         #Define path to text file to save results
-        outTextFile = self.outputName + 'Performance_Results.txt'
+        outTextFile = self.outputName + 'Performance_Report.txt'
         
         #Open a text file to save results
         self.fo = open(outTextFile,'w')
@@ -235,7 +238,7 @@ class Performance(Chooser):
         #Save figure
         plt.savefig(self.outputName + gName + '.jpg')
         
-        plt.show()                 
+        if self.showBool: plt.show()                 
         
     def showErrorByPointKind(self):
         
@@ -298,7 +301,7 @@ class Performance(Chooser):
         #Save figure
         plt.savefig(self.outputName + gName + '.jpg')
         
-        plt.show()
+        if self.showBool: plt.show()
 
     def showErrorEachPointK(self):
         
@@ -349,9 +352,9 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            plt.savefig(self.outputName + gName + '.jpg')
+            plt.savefig(self.outputName + gName + str(pointK + 1) + '.jpg')
         
-            plt.show()
+            if self.showBool: plt.show()
         
         #Write division into file
         self.fo.write(self.division)
@@ -436,7 +439,7 @@ class Performance(Chooser):
         #Save figure
         plt.savefig(self.outputName + gName + '.jpg')
         
-        plt.show()
+        if self.showBool: plt.show()
         
     def showAccuracy(self):
                 
@@ -492,7 +495,7 @@ class Performance(Chooser):
         #Save figure
         plt.savefig(self.outputName + gName + '.jpg')
         
-        plt.show()
+        if self.showBool: plt.show()
         
     def showAccuracyConfidence(self):
        
@@ -557,8 +560,8 @@ class Performance(Chooser):
         #Save figure
         plt.savefig(self.outputName + gName + '.jpg')
         
-        plt.show()     
-        
+        if self.showBool: plt.show()     
+    
     def showROC(self):
    
         #Save title in text file and in graphNames array
@@ -636,7 +639,7 @@ class Performance(Chooser):
         #Save figure
         plt.savefig(self.outputName + gName + '.jpg')
         
-        plt.show()          
+        if self.showBool: plt.show()          
       
     def showError3D(self):
         
@@ -689,7 +692,7 @@ class Performance(Chooser):
             #Save figure
             plt.savefig(self.outputName + gName + '.jpg')
             
-            plt.show() 
+            if self.showBool: plt.show() 
                             
 
     def computeErrorByFrame(self):
@@ -803,4 +806,4 @@ class Performance(Chooser):
             #Save figure
             plt.savefig(self.outputName + gName + '.jpg')
             
-            plt.show()
+            if self.showBool: plt.show()
