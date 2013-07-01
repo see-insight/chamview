@@ -21,6 +21,7 @@ class PlotData:
         self.numPlots = 0
         self.file_in = None
         self.directory = directory
+        self.subdirectories = []
         
         #Atribbutes that are obtained from performance class
         self.graphNames = []
@@ -60,12 +61,12 @@ class PlotData:
         
         #If filename does not exist, return
         if os.path.exists(filename) == False:
-            print 'FileNotFound'
+            print 'File Not Found in this directory:', filename
             return
         
         #Open file and read each line
-        input = open(filename)
-        fileArr = input.readlines()
+        inputFile = open(filename)
+        fileArr = inputFile.readlines()
         
         #Find the index i for the first graph name and discard the data before it
         for i in range(0, len(fileArr)):
@@ -214,12 +215,12 @@ class PlotData:
         
         #If file does not exists, return
         if os.path.exists(filename) == False: return        
-        input = open(filename)
+        inputFile = open(filename)
         
         #Define a boolean variables that tell us what values have been obtained        
         pred = fram = pointK = False
 
-        for line in input:
+        for line in inputFile:
             #Get number of predictors, frames, and point kinds
             if line.startswith(self.numPredictorsL):
                 arr = line.split()
@@ -259,8 +260,8 @@ class PlotData:
         if os.path.exists(self.directory) == False: return
         
         #Open file and read each line
-        input = open(self.directory)
-        metaArr = input.readlines()
+        inputFile = open(self.directory)
+        metaArr = inputFile.readlines()
 
         #Obtain each value
         for line in metaArr:
@@ -280,18 +281,31 @@ class PlotData:
             elif line.startswith('FRAMES_MODIFIED'):
                 framesModified = int(line.split()[-1])
                 
-            if line.startswith('TOTAL_TIME'):
+            elif line.startswith('TOTAL_TIME'):
                 totalTime = self.getTime(line.split()[-1])
                 
-            if line.startswith('TIME/POINT'):
+            elif line.startswith('TIME/POINT'):
                 timePerPoint = float(line.split()[-1])
                 
-            if line.startswith('TIME/FRAME'):
+            elif line.startswith('TIME/FRAME'):
                 timePerFrame = float(line.split()[-1])
                 
-            if line.startswith('PREDICTORS'):
+            elif line.startswith('PREDICTORS'):
                 predictors = self.getPred(line)
         
+        #Plot times
+        self.plotTimes(totalPoints, pointsModified, totalFrames, framesModified,
+                       totalTime, timePerPoint, timePerFrame)
+        
+        #Obtain how many points came from each predictor
+        predictorUse = self.getUsePredictors(metaArr, predictors, manualPoints)
+        
+        #Plot how many accepted points came from each predictor and manually
+        self.plotUsePredictors(predictorUse, pointsModified)
+    
+    #Method that obtains the use of the predictors when running chamview
+    def getUsePredictors(self, metaArr, predictors, manualPoints):
+    
         #Define an array to save how many accepted points came from each predictor
         #Put initially the manual points
         predictorUse = [['manual', manualPoints]]
@@ -307,12 +321,7 @@ class PlotData:
                 if p in predictors:
                     predictorUse.append([p, int(line.split()[-1])])
         
-        #Plot times
-        self.plotTimes(totalPoints, pointsModified, totalFrames, framesModified,
-                       totalTime, timePerPoint, timePerFrame)
-        
-        #Plot how many accepted points came from each predictor and manually
-        self.plotUsePredictors(predictorUse, pointsModified)
+        return predictorUse
     
     #Plot information given by metadata file
     def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
@@ -405,6 +414,85 @@ class PlotData:
             if hours > 0: strTime += str(int(hours)) + ' hrs ' 
             if minutes > 0: strTime += str(int(minutes)) + ' min '
             return strTime + str(seconds) + ' s'
+        
+    def plotCompareData(self):
+        '''This method looks for metadata and points files in order to compare evaluations
+        between datasets. It takes self.directory and finds all these two files in subdirectories'''
+
+        #Re-initialize subdirectories
+        self.subdirectories = []
+        #Get all the subdirectories that contain metadata files
+        self.getSubdirectories(self.directory, 'metadata.txt')
+        
+        #Debugging purposes-----------------------------------------------------------------------
+        for i in range(0, len(self.subdirectories)):
+            print 'Dir ', str(i), ':', self.subdirectories[i]
+        #-----------------------------------------------------------------------------------------
+        
+        #Array that saves the information needed to plot for each dataset
+        dataInfo = []
+        
+        for i in range(0, len(self.subdirectories)):
+            dataInfo.append(self.getInfoDatasets(self.subdirectories[i]))
+            
+        #Debugging purposes-------------------------------------------------------------------
+        for i in range(0, len(dataInfo)):
+            print dataInfo[i]
+        #-------------------------------------------------------------------------------------
+        
+    def getInfoDatasets(self, pathFile):
+   
+        #Open file and read each line     
+        metaFile = open(pathFile)
+        metaArr = metaFile.readlines()
+        
+        #Obtain each value
+        for line in metaArr:
+            
+            if line.startswith('POINTS_MODIFIED'):
+                pointsModified = int(line.split()[-1])
+                
+            elif line.startswith('MANUAL_POINTS'):
+                manualPoints = int(line.split()[-1])
+                
+            elif line.startswith('PREDICTORS'):
+                predictors = self.getPred(line)
+                
+        #Obtain how many points came from each predictor
+        predictorUse = self.getUsePredictors(metaArr, predictors, manualPoints)
+        
+        ##############################################################################
+        #WORKING HERE
+        
+        #Debugging purposes-------------------------------------------------------------------
+        for i in range(0, len(predictorUse)):
+            print predictorUse[i]
+        #-------------------------------------------------------------------------------------
+        
+    
+    def getSubdirectories(self, dirData, filename):
+        
+        #Check if exists metadata in current directory
+        metaDir = dirData + '/' + filename
+        
+        if os.path.isfile(metaDir):
+
+            #Add to array of subdirectories
+            self.subdirectories.append(metaDir)
+                        
+        else:
+
+            #Check subdirectories
+
+            #Get all subdirectories
+            subDirs = os.walk(dirData).next()[1]
+            
+            for sub in subDirs:
+
+                newDirData = dirData + '/' + sub
+                
+                #Look in the new subdirectory
+                self.getSubdirectories(newDirData, filename)
         
         
         
