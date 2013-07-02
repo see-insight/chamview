@@ -103,7 +103,7 @@ def main(argc,argv):
             
             #Show graphs to compare evaluations between datasets
             pd = PlotData(argComDataSet)
-            pd.plotCompareData()
+            pd.plotCompareMetas()
             
         else:
             #compute errors and then plot
