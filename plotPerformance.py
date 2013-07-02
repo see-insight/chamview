@@ -430,14 +430,22 @@ class PlotData:
         names = [] #Save datasets name, e.g. ChamB_LB
         types = [] #Save datasets type, e.g. Chameleon, Wings
         pointsM = [] #Save number of points modified
+        timePoint = [] #Saves the average time per point of the analysis
+        timeFrame = [] #Saves the average time per frame of the analysis
+        
         #Get the information of each metadata file
         for i in range(0, len(self.subdirectories)):
-            newInfo, newName, newType, newPointsM = self.getInfoDatasets(self.subdirectories[i])
-            if newInfo != None and newName != None:
-                dataInfo.append(newInfo)
-                names.append(newName)
-                types.append(newType)
-                pointsM.append(newPointsM)
+            infoD = self.getInfoDatasets(self.subdirectories[i])
+            if infoD != None:
+                dataInfo.append(infoD['predictorUse'])
+                names.append(infoD['nameDataset'])
+                types.append(infoD['typeDataset'])
+                pointsM.append(infoD['pointsModified'])
+                timePoint.append(infoD['timePoint'])
+                timeFrame.append(infoD['timeFrame'])
+                
+        #WORKING HERE#########################################################################
+        #JOIN METADATA IF IMAGE DIRECTORIES ARE EQUAL
         
         numDatasets = len(names)
         
@@ -552,14 +560,17 @@ class PlotData:
         metaFile = open(pathFile)
         metaArr = metaFile.readlines()
         
+        #Define a list that will contain all the returned values
+        returnInfo = {}
+        
         #Define boolean variables to know if info was obtained
-        pointsM = manualP = pred = name = False
+        pointsM = manualP = pred = name = timeF = timeP = False
         
         #Obtain each value
         for line in metaArr:
             
             if line.startswith('POINTS_MODIFIED'):
-                pointsModified = int(line.split()[-1])
+                returnInfo['pointsModified'] = int(line.split()[-1])
                 pointsM = True
                 
             elif line.startswith('MANUAL_POINTS'):
@@ -569,8 +580,21 @@ class PlotData:
             elif line.startswith('PREDICTORS'):
                 predictors = self.getPred(line)
                 pred = True
+                
+            elif line.startswith('TIME/FRAME'):
+                returnInfo['timeFrame'] = float(line.split()[-1])
+                timeF = True
+                
+            elif line.startswith('TIME/POINT'):
+                returnInfo['timePoint'] = float(line.split()[-1])
+                timeP = True
             
             elif line.startswith('IMAGE_DIRECTORY'):
+                
+                #Get path to image directory
+                lenLabel = len('IMAGE_DIRECTORY: ')
+                returnInfo['pathImages'] = line[lenLabel:]
+                
                 pathSplit = line.split('/')
                 
                 #Remove no valid directories for pathSplit
@@ -578,16 +602,16 @@ class PlotData:
                 while pathSplit[noValid-1] == '' or pathSplit[noValid-1] == '\n':
                     noValid -= 1
                 
-                nameDataset = pathSplit[-2 + noValid] #Get name of dataset
-                typeDataset = pathSplit[-3 + noValid] #Get dataset type
+                returnInfo['nameDataset'] = pathSplit[-2 + noValid] #Get name of dataset
+                returnInfo['typeDataset'] = pathSplit[-3 + noValid] #Get dataset type
                 name = True
             
-        if not(pointsM and manualP and pred and name): return None
+        if not(pointsM and manualP and pred and timeF and timeP and name): return None
         
         #Obtain how many points came from each predictor
-        predictorUse = self.getUsePredictors(metaArr, predictors, manualPoints)
+        returnInfo['predictorUse'] = self.getUsePredictors(metaArr, predictors, manualPoints)
         
-        return predictorUse, nameDataset, typeDataset, pointsModified
+        return returnInfo
     
     def getSubdirectories(self, dirData, filename):
         
