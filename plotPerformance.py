@@ -21,6 +21,7 @@ class PlotData:
         self.numPlots = 0
         self.file_in = None
         self.directory = directory
+        self.outputName = '' #Name of output directory
         self.subdirectories = []
         
         #Atribbutes that are obtained from performance class
@@ -415,28 +416,28 @@ class PlotData:
             if minutes > 0: strTime += str(int(minutes)) + ' min '
             return strTime + str(seconds) + ' s'
         
-    def plotCompareMetas(self):
+    def compareMetas(self, output):
         '''This method looks for metadata and points files in order to compare evaluations
         between datasets. It takes self.directory and finds all these two files in subdirectories'''
+        
+        self.outputName = output
 
         #Get all the subdirectories that contain metadata files
         self.getSubdirectories(self.directory, 'metadata.txt')
         
-        #Debugging purposes-----------------------------------------------------------------------
-        for i in range(0, len(self.subdirectories)):
-            print 'Dir ', str(i), ':', self.subdirectories[i]
-        print '\n'
-        #-----------------------------------------------------------------------------------------
-        
         #Arrays that saves the information needed to plot for each dataset
-        dataInfo = []
-        names = []
+        dataInfo = [] #Save use of predictors for each dataset
+        names = [] #Save datasets name, e.g. ChamB_LB
+        types = [] #Save datasets type, e.g. Chameleon, Wings
+        pointsM = [] #Save number of points modified
         #Get the information of each metadata file
         for i in range(0, len(self.subdirectories)):
-            newInfo, newName = self.getInfoDatasets(self.subdirectories[i])
+            newInfo, newName, newType, newPointsM = self.getInfoDatasets(self.subdirectories[i])
             if newInfo != None and newName != None:
                 dataInfo.append(newInfo)
                 names.append(newName)
+                types.append(newType)
+                pointsM.append(newPointsM)
         
         numDatasets = len(names)
         
@@ -460,13 +461,62 @@ class PlotData:
                 predName = dataInfo[i][j][0] #Get name of the predictor
                 indexPred = predictors.index(predName) #Get the index of predictor
                 dataInfoG[indexPred][i] = dataInfo[i][j][1] #Put value in correct position
+       
+        #Call methods to graph results 
+        self.plotByDatasetName(numDatasets, numPred, names, predictors, dataInfoG, pointsM)
+        self.plotByDatasetType(numDatasets, numPred, types, predictors, dataInfoG)
+ 
+    def plotByDatasetName(self, numDatasets, numPred, names, predictors, dataInfoG, pointsM):
         
+        #Compute percentage of usage
+        for i in range(0, numPred):
+            for j in range(0, numDatasets):
+                dataInfoG[i][j] = dataInfoG[i][j] * 100.0 / pointsM[j]    
         
-        xPlot = np.arange(numDatasets)    #the x locations for the groups
-        width = 0.5       #width of the bars
+        #Call method for plot stacked bars
+        gName = 'Usage of Predictors'
+        self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 8)
+ 
+    def plotByDatasetType(self, numDatasets, numPred, types, predictors, dataInfoG):
+        
+        #Get list of types
+        typesList = []
+        for i in range(0, len(types)):
+            if types[i] not in typesList:
+                typesList.append(types[i])
+                
+        numTypes = len(typesList)
+        
+        #Join data of the same data type
+        dataByType = zeros((numPred, numTypes)) #Array that contains usage for each data type
+        pointsModType = zeros(numTypes) #Array that contains num points modified for each type
+        for i in range(0, numPred):
+            for j in range(0, numDatasets):
+                
+                #Get index type of current data
+                idx = typesList.index(types[j])
+                
+                #Add the usage of predictor i in dataset j
+                dataByType[i][idx] += dataInfoG[i][j]
+                #Add points modified from dataset j to type idx
+                pointsModType[idx] += dataInfoG[i][j]
+          
+        #Get percentage of usage
+        for i in range(0, numPred):
+            for j in range(0, numTypes):
+                dataByType[i][j] = dataByType[i][j] * 100.0 / pointsModType[j]
+        
+        #Call method for plot stacked bars
+        gName = 'Usage of Predictors by Data Type'
+        self.plotBarsStack(gName, numTypes, typesList, numPred, predictors, dataByType, 0, 10)     
+        
+    def plotBarsStack(self, gName, xLength, names, numPred, predictors, dataInfoG, rot, fontS):
+        
+        xPlot = np.arange(xLength)    #the x locations for the groups
+        width = 0.5                   #width of the bars
         
         #Define a array that will contain the sum of use of predictors for each dataset
-        accumulativeUse = zeros(numDatasets)
+        accumulativeUse = zeros(xLength)
         
         #Define plots
         plt.figure(1)
@@ -476,29 +526,25 @@ class PlotData:
             plots.append(p)
             
             #Add dataInfoF[i] to accumulativeUse array
-            for j in range(0, numDatasets):
+            for j in range(0, xLength):
                 accumulativeUse[j] += dataInfoG[i][j]
         
         plt.ylabel('Percentage for Usage of Predictors')
-        plt.xlabel('Data Sets')
-        plt.title('Usage of Predictors')
-        plt.xticks(xPlot, names, rotation=30)
+        plt.xlabel('Data Sets', fontsize = 12)
+        plt.title(gName)
+        plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
         
         plt.yticks(np.arange(0,100,5))
         plt.legend(predictors, prop = {'size':8})
-
-        plt.show()
-
         
-        #Debugging purposes-------------------------------------------------------------------
-        print 'num predictors:\n', numPred
-        print 'predictors list:\n', predictors
-        print 'dataInfoG:\n', dataInfoG
-        for i in range(0, len(dataInfo)):
-            print 'name:', names[i]
-            print 'dataInfo:', dataInfo[i]
-        print '\nData Info:', dataInfo
-        #-------------------------------------------------------------------------------------
+        #Save figure
+        if not(self.outputName.endswith('/')): self.outputName += '/'
+        figPath = self.outputName + gName + '.jpg'
+        plt.savefig(figPath)
+        print 'Figure saved to:', figPath
+        
+        #Show figure
+        plt.show()
                 
     def getInfoDatasets(self, pathFile):
    
@@ -526,8 +572,14 @@ class PlotData:
             
             elif line.startswith('IMAGE_DIRECTORY'):
                 pathSplit = line.split('/')
-                while pathSplit[-1] == '': pathSplit[:-1]
-                nameDataset = pathSplit[-2]
+                
+                #Remove no valid directories for pathSplit
+                noValid = 0
+                while pathSplit[noValid-1] == '' or pathSplit[noValid-1] == '\n':
+                    noValid -= 1
+                
+                nameDataset = pathSplit[-2 + noValid] #Get name of dataset
+                typeDataset = pathSplit[-3 + noValid] #Get dataset type
                 name = True
             
         if not(pointsM and manualP and pred and name): return None
@@ -535,15 +587,7 @@ class PlotData:
         #Obtain how many points came from each predictor
         predictorUse = self.getUsePredictors(metaArr, predictors, manualPoints)
         
-        #Get percentage of use for each predictor and manual points
-        for i in range(0, len(predictorUse)):
-            predictorUse[i][1] = predictorUse[i][1] * 100.0 / pointsModified
-        
-        #Debugging purposes-------------------------------------------------------------------
-        print predictorUse, '\n\n'
-        #-------------------------------------------------------------------------------------
-        
-        return predictorUse, nameDataset
+        return predictorUse, nameDataset, typeDataset, pointsModified
     
     def getSubdirectories(self, dirData, filename):
         
