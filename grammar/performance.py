@@ -280,7 +280,7 @@ class Performance(Chooser):
             
             #Plot error
             xPlot = arange(self.totalPointK)
-            width = 1.0 / self.totalPredictors
+            width = 1.0 / (self.totalPredictors + 1.5)
             
             if self.name[i] != self.oracleN:
                 plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
