@@ -137,7 +137,7 @@ class PlotData:
                         #Plot error with bars if it is by point kinds
                         i = len(predictors) - 1
                         x = arange(self.numPointK)
-                        width = 1.0 / self.numPredictors
+                        width = 1.0 / (self.numPredictors + 1.5)
                         
                         if pred != self.oracleN:
                             plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
@@ -415,60 +415,135 @@ class PlotData:
             if minutes > 0: strTime += str(int(minutes)) + ' min '
             return strTime + str(seconds) + ' s'
         
-    def plotCompareData(self):
+    def plotCompareMetas(self):
         '''This method looks for metadata and points files in order to compare evaluations
         between datasets. It takes self.directory and finds all these two files in subdirectories'''
 
-        #Re-initialize subdirectories
-        self.subdirectories = []
         #Get all the subdirectories that contain metadata files
         self.getSubdirectories(self.directory, 'metadata.txt')
         
         #Debugging purposes-----------------------------------------------------------------------
         for i in range(0, len(self.subdirectories)):
             print 'Dir ', str(i), ':', self.subdirectories[i]
+        print '\n'
         #-----------------------------------------------------------------------------------------
         
-        #Array that saves the information needed to plot for each dataset
+        #Arrays that saves the information needed to plot for each dataset
         dataInfo = []
-        
+        names = []
+        #Get the information of each metadata file
         for i in range(0, len(self.subdirectories)):
-            dataInfo.append(self.getInfoDatasets(self.subdirectories[i]))
-            
-        #Debugging purposes-------------------------------------------------------------------
-        for i in range(0, len(dataInfo)):
-            print dataInfo[i]
-        #-------------------------------------------------------------------------------------
+            newInfo, newName = self.getInfoDatasets(self.subdirectories[i])
+            if newInfo != None and newName != None:
+                dataInfo.append(newInfo)
+                names.append(newName)
         
+        numDatasets = len(names)
+        
+        #Get the maximum set of predictors possible
+        numPred = 0
+        indexNumPred = -1
+        for i in range(0, numDatasets):
+            if len(dataInfo[i]) > numPred:
+                numPred = len(dataInfo[i])
+                indexNumPred = i
+
+        #Get list of predictors
+        predictors = []
+        for i in range(0, len(dataInfo[indexNumPred])):
+            predictors.append(dataInfo[indexNumPred][i][0])
+        
+        #Define an array that rearrange data info in order to create a graph
+        dataInfoG = zeros((numPred, numDatasets))
+        for i in range(0, numDatasets):
+            for j in range(0, len(dataInfo[i])):
+                predName = dataInfo[i][j][0] #Get name of the predictor
+                indexPred = predictors.index(predName) #Get the index of predictor
+                dataInfoG[indexPred][i] = dataInfo[i][j][1] #Put value in correct position
+        
+        
+        xPlot = np.arange(numDatasets)    #the x locations for the groups
+        width = 0.5       #width of the bars
+        
+        #Define a array that will contain the sum of use of predictors for each dataset
+        accumulativeUse = zeros(numDatasets)
+        
+        #Define plots
+        plt.figure(1)
+        plots = []
+        for i in range(0, numPred):            
+            p = plt.bar(xPlot, dataInfoG[i], width, color=cm.jet(1.*i/numPred), bottom=accumulativeUse)
+            plots.append(p)
+            
+            #Add dataInfoF[i] to accumulativeUse array
+            for j in range(0, numDatasets):
+                accumulativeUse[j] += dataInfoG[i][j]
+        
+        plt.ylabel('Percentage for Usage of Predictors')
+        plt.xlabel('Data Sets')
+        plt.title('Usage of Predictors')
+        plt.xticks(xPlot, names, rotation=30)
+        
+        plt.yticks(np.arange(0,100,5))
+        plt.legend(predictors, prop = {'size':8})
+
+        plt.show()
+
+        
+        #Debugging purposes-------------------------------------------------------------------
+        print 'num predictors:\n', numPred
+        print 'predictors list:\n', predictors
+        print 'dataInfoG:\n', dataInfoG
+        for i in range(0, len(dataInfo)):
+            print 'name:', names[i]
+            print 'dataInfo:', dataInfo[i]
+        print '\nData Info:', dataInfo
+        #-------------------------------------------------------------------------------------
+                
     def getInfoDatasets(self, pathFile):
    
         #Open file and read each line     
         metaFile = open(pathFile)
         metaArr = metaFile.readlines()
         
+        #Define boolean variables to know if info was obtained
+        pointsM = manualP = pred = name = False
+        
         #Obtain each value
         for line in metaArr:
             
             if line.startswith('POINTS_MODIFIED'):
                 pointsModified = int(line.split()[-1])
+                pointsM = True
                 
             elif line.startswith('MANUAL_POINTS'):
                 manualPoints = int(line.split()[-1])
+                manualP = True
                 
             elif line.startswith('PREDICTORS'):
                 predictors = self.getPred(line)
-                
+                pred = True
+            
+            elif line.startswith('IMAGE_DIRECTORY'):
+                pathSplit = line.split('/')
+                while pathSplit[-1] == '': pathSplit[:-1]
+                nameDataset = pathSplit[-2]
+                name = True
+            
+        if not(pointsM and manualP and pred and name): return None
+        
         #Obtain how many points came from each predictor
         predictorUse = self.getUsePredictors(metaArr, predictors, manualPoints)
         
-        ##############################################################################
-        #WORKING HERE
+        #Get percentage of use for each predictor and manual points
+        for i in range(0, len(predictorUse)):
+            predictorUse[i][1] = predictorUse[i][1] * 100.0 / pointsModified
         
         #Debugging purposes-------------------------------------------------------------------
-        for i in range(0, len(predictorUse)):
-            print predictorUse[i]
+        print predictorUse, '\n\n'
         #-------------------------------------------------------------------------------------
         
+        return predictorUse, nameDataset
     
     def getSubdirectories(self, dirData, filename):
         
