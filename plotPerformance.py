@@ -421,33 +421,32 @@ class PlotData:
         between datasets. It takes self.directory and finds all these two files in subdirectories'''
         
         self.outputName = output
+        if output != '' and not(output.endswith('/')): self.outputName += '/'
 
         #Get all the subdirectories that contain metadata files
         self.getSubdirectories(self.directory, 'metadata.txt')
         
         #Arrays that saves the information needed to plot for each dataset
-        dataInfo = [] #Save use of predictors for each dataset
-        names = [] #Save datasets name, e.g. ChamB_LB
-        types = [] #Save datasets type, e.g. Chameleon, Wings
-        pointsM = [] #Save number of points modified
-        timePoint = [] #Saves the average time per point of the analysis
-        timeFrame = [] #Saves the average time per frame of the analysis
+        dataInfo = [] #Saves use of predictors for each dataset
+        addInfo = [] #Saves additional information used to plot
+        
+ 
+        #Add arrays that will contain important information of the datset       
+        for i in range(0, 6): addInfo.append([])
         
         #Get the information of each metadata file
         for i in range(0, len(self.subdirectories)):
             infoD = self.getInfoDatasets(self.subdirectories[i])
             if infoD != None:
                 dataInfo.append(infoD['predictorUse'])
-                names.append(infoD['nameDataset'])
-                types.append(infoD['typeDataset'])
-                pointsM.append(infoD['pointsModified'])
-                timePoint.append(infoD['timePoint'])
-                timeFrame.append(infoD['timeFrame'])
-                
-        #WORKING HERE#########################################################################
-        #JOIN METADATA IF IMAGE DIRECTORIES ARE EQUAL
+                addInfo[0].append(infoD['nameDataset'])
+                addInfo[1].append(infoD['typeDataset'])
+                addInfo[2].append(infoD['pointsModified'])
+                addInfo[3].append(infoD['timePoint'])
+                addInfo[4].append(infoD['timeFrame'])
+                addInfo[5].append(infoD['predUsed'])                       
         
-        numDatasets = len(names)
+        numDatasets = len(addInfo[0])
         
         #Get the maximum set of predictors possible
         numPred = 0
@@ -470,9 +469,236 @@ class PlotData:
                 indexPred = predictors.index(predName) #Get the index of predictor
                 dataInfoG[indexPred][i] = dataInfo[i][j][1] #Put value in correct position
        
-        #Call methods to graph results 
-        self.plotByDatasetName(numDatasets, numPred, names, predictors, dataInfoG, pointsM)
-        self.plotByDatasetType(numDatasets, numPred, types, predictors, dataInfoG)
+        #Split datasets into two sets: predictors and no-predictors
+        predDataInfoG, predAddInfo, noPredDataInfoG, noPredAddInfo = self.splitDatasets(dataInfoG, addInfo)
+        
+        #If one dataset has more than one metadata file, then take average of times and usage
+        predDataInfoG, predAddInfo,  = self.removeRepeatedData(predDataInfoG, predAddInfo)
+        noPredDataInfoG, noPredAddInfo = self.removeRepeatedData(noPredDataInfoG, noPredAddInfo)
+       
+        predNumDatasets = len(predDataInfoG[0])
+        
+        #Call methods to graph results
+        
+        #self.plotByDatasetName(numDatasets, numPred, addInfo[0], predictors, dataInfoG, addInfo[2])
+        #self.plotByDatasetType(numDatasets, numPred, addInfo[1], predictors, dataInfoG)
+        self.plotByDatasetName(predNumDatasets, numPred, predAddInfo[0], predictors, predDataInfoG, predAddInfo[2])
+        self.plotByDatasetType(predNumDatasets, numPred, predAddInfo[1], predictors, predDataInfoG)
+        
+        #Call methods to plot comparison between using predictors and not using them
+        self.plotCompPredName(predAddInfo, noPredAddInfo)
+        self.plotCompPredType(predAddInfo, noPredAddInfo)
+        
+    def plotCompPredType(self,predInfo, noPredInfo):
+
+        #Define an array that will contain all the dataset types from pred or noPred
+        typesD = []
+        numRepPred = [] #Saves the number of repetitions for a dataset type and for predInfo
+        numRepNoPred = [] #Saves the number of repetitions for a dataset type and for noPredInfo
+        #Fill up typesD
+        for i in range(0, len(predInfo[0])):
+            if predInfo[1][i] not in typesD:
+                typesD.append(predInfo[1][i])
+                numRepPred.append(1)
+                numRepNoPred.append(0)
+            else:
+                idx = typesD.index(predInfo[1][i])
+                numRepPred[idx] += 1
+        for i in range(0, len(noPredInfo[0])):
+            if noPredInfo[1][i] not in typesD:
+                typesD.append(noPredInfo[1][i])
+                numRepPred.append(0)
+                numRepNoPred.append(1)
+            else:
+                idx = typesD.index(noPredInfo[1][i])
+                numRepNoPred[idx] += 1
+                
+        #Define two arrays to save timePoint and timeFrame
+        #Index 0 is for pred, 1 i for noPred
+        timePoint = zeros((2, len(typesD)))
+        timeFrame = zeros((2, len(typesD)))
+        #Fill up these arrays
+        for i in range(0, len(predInfo[0])):
+            idx = typesD.index(predInfo[1][i])
+            timePoint[0][idx] += predInfo[3][i] / numRepPred[idx]
+            timeFrame[0][idx] += predInfo[4][i] / numRepPred[idx]
+        for i in range(0, len(noPredInfo[0])):
+            idx = typesD.index(noPredInfo[1][i])
+            timePoint[1][idx] += noPredInfo[3][i] / numRepNoPred[idx]
+            timeFrame[1][idx] += noPredInfo[4][i] / numRepNoPred[idx]
+        
+        legend = ['Predictors', 'No Predictors']
+        gName1 = 'Time per Point for Dataset Type'
+        self.plotConsecutiveBars(typesD, timePoint, gName1, 'Dataset Type', 'Time in seconds', legend, 0)
+        gName2 = 'Time per Frame for Dataset Type'
+        self.plotConsecutiveBars(typesD, timeFrame, gName2, 'Dataset Type', 'Time in seconds', legend, 0)
+        
+        #Debugging purposes-----------------------------------------------------------------
+        #print 'typesD:', typesD
+        #print 'numRepPred:', numRepPred
+        #print 'numRepNoPred:', numRepNoPred
+        #-----------------------------------------------------------------------------------
+              
+    def plotCompPredName(self,predInfo, noPredInfo):
+        
+        #Define an array that will contain all the datasets from pred or noPred
+        namesD = []
+        #Fill up namesD
+        for i in range(0, len(predInfo[0])):
+            if predInfo[0][i] not in namesD:
+                namesD.append(predInfo[0][i])
+        for i in range(0, len(noPredInfo[0])):
+            if noPredInfo[0][i] not in namesD:
+                namesD.append(noPredInfo[0][i])
+        
+        #Define two arrays to save timePoint and timeFrame
+        #Index 0 is for pred, 1 i for noPred
+        timePoint = zeros((2, len(namesD)))
+        timeFrame = zeros((2, len(namesD)))
+        #Fill up these arrays
+        for i in range(0, len(predInfo[0])):
+            idx = namesD.index(predInfo[0][i])
+            timePoint[0][idx] = predInfo[3][i]
+            timeFrame[0][idx] = predInfo[4][i]
+        for i in range(0, len(noPredInfo[0])):
+            idx = namesD.index(noPredInfo[0][i])    
+            timePoint[1][idx] = noPredInfo[3][i]
+            timeFrame[1][idx] = noPredInfo[4][i]    
+            
+        legend = ['Predictors', 'No Predictors']
+        gName1 = 'Time per Point for Each Dataset'
+        self.plotConsecutiveBars(namesD, timePoint, gName1, 'Dataset', 'Time in seconds', legend, 30)
+        gName2 = 'Time per Frame for Each Dataset'
+        self.plotConsecutiveBars(namesD, timeFrame, gName2, 'Dataset', 'Time in seconds', legend, 30)
+        
+    def plotConsecutiveBars(self, xLabels, yPlots, gName, xl, yl, leg, rot):
+        '''This method makes a graph with consecutive bars for each single x value'''
+        
+        xPlot = arange(len(xLabels)) #Array for x axis
+        
+        for i in range(0, len(yPlots)):
+            
+            width = 1.0 / (len(yPlots) + 1.5)
+            plt.bar(xPlot + width * i, yPlots[i], width, color=cm.jet(1.*i/len(xPlot)))             
+            plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot)
+            
+        plt.title(gName)
+        xlabel(xl)
+        ylabel(yl)
+        plt.legend(leg, prop = {'size':10})
+        
+        #Save figure
+        if self.outputName != '':
+            figPath = self.outputName + gName + '.jpg'
+            plt.savefig(figPath)
+            print 'Figure saved to:', figPath
+        
+        #Show figure
+        plt.show()                 
+ 
+    def removeRepeatedData(self, dataInfo, addInfo):
+        
+        #addInfo[0] has the dataset name
+        #Define a new array that has all the names but without repetition
+        names = []
+        numRepetitions = []
+        for i in range(0, len(addInfo[0])):
+            if addInfo[0][i] not in names:
+                names.append(addInfo[0][i])
+                numRepetitions.append(1)
+            else:
+                idx = names.index(addInfo[0][i])
+                numRepetitions[idx] += 1
+      
+        #Define new arrays for dataInfo
+        newDataInfo = zeros((len(dataInfo), len(names)))
+        #Fill up dataInfo
+        for i in range(0, len(dataInfo[0])):
+            idx = names.index(addInfo[0][i])
+            for j in range(0, len(dataInfo)):
+                newDataInfo[j][idx] += dataInfo[j][i]
+        
+        
+        #Define new arrays for addInfo
+        newAddInfo = []
+        newAddInfo.append(names) #Add dataset names list
+
+        newAddInfo.append([]) #Add dataset types array
+        #Fill up types array
+        for i in range(0, len(names)):
+            idx = addInfo[0].index(names[i])
+            typeDataset = addInfo[1][idx]
+            newAddInfo[1].append(typeDataset)
+            
+        #Add pointsModified, timePoint, timeFrame, predUsed
+        for i in range(0, 4): newAddInfo.append(zeros(len(names)))
+        #Fill up remaining arrays
+        for i in range(0, len(addInfo[0])):
+            idx = names.index(addInfo[0][i])
+            for j in range(2, 5):
+                newAddInfo[j][idx] += addInfo[j][i]
+            if addInfo[5][i] > newAddInfo[5][idx]:
+                newAddInfo[5][idx] = addInfo[5][i]
+                
+        #Take average for timePoint, timeFrame
+        for i in range(0, len(newAddInfo[0])):
+            newAddInfo[3][i] /= numRepetitions[i]
+            newAddInfo[4][i] /= numRepetitions[i]
+            
+        
+        #Debugging purposes-----------------------------------------------------------------------
+        #print 'names:\n', names
+        #print 'numRepetitions:\n', numRepetitions
+        #print '\ndataInfo:\n', dataInfo
+        #print 'newDataInfo:\n', newDataInfo
+        #print 'addInfo:\n', addInfo
+        #print 'newAddInfo:\n', newAddInfo
+        #-----------------------------------------------------------------------------------------   
+              
+        return newDataInfo, newAddInfo
+        
+        
+
+    def splitDatasets(self, dataInfoG, addInfo):
+        
+        #Define a new array where analysis with predictors information will be saved
+        pDIG = []
+        for i in range(0, len(dataInfoG)): pDIG.append([])
+        pAI = []
+        for i in range(0, len(addInfo)): pAI.append([])
+        #Define a new array where analysis with no predictors information will be saved
+        noPDIG = []
+        for i in range(0, len(dataInfoG)): noPDIG.append([])
+        noPAI = []
+        for i in range(0, len(addInfo)): noPAI.append([])
+        
+        #Find datasets that didn't use any predictor for the analysis
+        for dataset in range(0, len(addInfo[0])):
+            
+            if addInfo[5][dataset] == 0:
+
+                #Add information to noPDIG and noPAI
+                for i in range(0, len(dataInfoG)):
+                    noPDIG[i].append(dataInfoG[i][dataset])
+                for i in range(0, len(addInfo)):
+                    noPAI[i].append(addInfo[i][dataset])
+            else:
+                
+                #Add information to pDIG and pAI
+                for i in range(0, len(dataInfoG)):
+                    pDIG[i].append(dataInfoG[i][dataset])
+                for i in range(0, len(addInfo)):
+                    pAI[i].append(addInfo[i][dataset])
+                    
+        #Debugging purposes---------------------------------------------------------------------
+        #print 'noPDIG:\n', noPDIG
+        #print 'noPAI:\n', noPAI
+        #print 'pDIG:\n', pDIG
+        #print 'pAI:\n', pAI
+        #---------------------------------------------------------------------------------------
+        
+        return pDIG, pAI, noPDIG, noPAI
+        
  
     def plotByDatasetName(self, numDatasets, numPred, names, predictors, dataInfoG, pointsM):
         
@@ -546,10 +772,10 @@ class PlotData:
         plt.legend(predictors, prop = {'size':8})
         
         #Save figure
-        if not(self.outputName.endswith('/')): self.outputName += '/'
-        figPath = self.outputName + gName + '.jpg'
-        plt.savefig(figPath)
-        print 'Figure saved to:', figPath
+        if self.outputName != '':
+            figPath = self.outputName + gName + '.jpg'
+            plt.savefig(figPath)
+            print 'Figure saved to:', figPath
         
         #Show figure
         plt.show()
@@ -579,6 +805,9 @@ class PlotData:
                 
             elif line.startswith('PREDICTORS'):
                 predictors = self.getPred(line)
+                
+                returnInfo['predUsed'] = len(predictors)
+                
                 pred = True
                 
             elif line.startswith('TIME/FRAME'):
