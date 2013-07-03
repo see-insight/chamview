@@ -852,6 +852,7 @@ class BasicGui(Chooser):
         message += 'Toggle predictions\t<Shift>+p\n'
         message += 'Delete point\t<Del>\n'
         message += 'Zoom in on point\tz\n'
+        message += 'Label frame\tf\n'
         tkMessageBox.showinfo("Chamview Help",message)
 
     def quit(self,event=''):
