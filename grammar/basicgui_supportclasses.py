@@ -2,6 +2,7 @@
 
 import os
 from Tkinter import *
+import tkMessageBox
 import Tix
 import numpy as np
 from PIL import Image, ImageTk
@@ -294,13 +295,14 @@ class EditPointKinds(Dialog):
         self.listbox.delete(ACTIVE)
 
     def ok(self,event=None):
-        self.stack.deletePointKinds(self.deleted_indices)
-        self.stack.addPointKinds(self.num_added)
-        self.stack.get_point_kinds(List=list(self.listbox.get(0,END)))
-        if not self.stack.point_kind_list:
-            self.stack.point_kind_list = ['DEFAULT POINT']
-            self.num_added += 1
-        Dialog.ok(self)
+        if self.listbox.get(0,END) == ():
+            msg = 'There are currently NO point kinds.\nThere must be at least one point kind.\n'
+            tkMessageBox.showerror(title='No Point Kinds', message=msg)
+        else:
+            self.stack.deletePointKinds(self.deleted_indices)
+            self.stack.addPointKinds(self.num_added)
+            self.stack.get_point_kinds(List=list(self.listbox.get(0,END)))
+            Dialog.ok(self)
 
     def apply(self):
         self.result = (self.num_added, self.deleted_indices)
