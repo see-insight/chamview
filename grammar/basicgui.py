@@ -107,10 +107,6 @@ class BasicGui(Chooser):
         #Draw new frame and predictions
         self.drawCanvas()
         #Show the window and get user input
-        #self.mainframe.focus_force()
-        #print self.master.focus_get()
-        self.tag.event_generate("<Button-1>")
-        self.tag.event_generate("<KeyRelease-Return>")
         self.master.mainloop()
 
     def t(self,event=''):
@@ -169,15 +165,11 @@ class BasicGui(Chooser):
         #       Frame label on top
         #       Annotation buttons, point kinds, and predictors on left
         #       Image and navigation buttons on right
-        self.tagframe = Frame(self.master)
-        self.tagframe.pack(fill=X)
-        self.mainframe = Frame(self.master)
-        self.frameL = Frame(self.mainframe)
+        self.frameL = Frame(self.master)
         self.frameL.pack(side=LEFT,fill=Y)
-        self.frameR = Frame(self.mainframe)
+        self.frameR = Frame(self.master)
         self.frameR.pack(side=LEFT,fill=BOTH)
         self.frameR.config(borderwidth=3,relief=GROOVE)
-        self.mainframe.pack(fill=BOTH)
 
         ###frameL###
         #Tix Balloon for hover-over help
@@ -251,6 +243,22 @@ class BasicGui(Chooser):
         self.predlist.bind('<<ListboxSelect>>',self.setActivePred)
 
         ###frameR###
+        #Tag frame
+        tag_frame = Frame(self.frameR)
+        tag_frame.pack(fill=X)
+        #Search Tags button
+        search_button = Button(tag_frame,text='GoTo',command=self.searchFrames)
+        search_button.pack(side=RIGHT)
+        #Frame Tag Entry box
+        self.tag = Entry(tag_frame,textvariable=self.currentTag)
+        self.tag.pack(side=RIGHT)
+        self.tag.config(borderwidth=2,relief=SUNKEN)
+        self.tag.bind("<FocusIn>", lambda e: self.unbindKeys())
+        self.tag.bind("<KeyRelease-Return>", lambda e: self.createKeyBindings())
+        #Tag label
+        label = Label(tag_frame,text='Label')
+        label.pack(side=RIGHT)
+
         #Canvas to display the current frame
         self.canvas = Canvas(self.frameR,width=BasicGui.canvas_width,
             height=BasicGui.canvas_height)
@@ -313,19 +321,6 @@ class BasicGui(Chooser):
         self.nav_button = Button(self.navframe,text='Last',
                             command=lambda x=-1: self.navigate(x))
         self.nav_button.grid(row=0,column=7,padx=7)
-
-        ### tagframe ###
-        #Search Tags button
-        search_button = Button(self.tagframe,text='GoTo',command=self.searchFrames)
-        search_button.pack(side=RIGHT)
-        #Frame Tag Entry box
-        self.tag = Entry(self.tagframe,textvariable=self.currentTag)
-        self.tag.pack(side=RIGHT)
-        self.tag.config(borderwidth=2,relief=SUNKEN)
-        self.tag.bind("<KeyRelease-Return>", lambda e:self.mainframe.focus_set())
-        #Tag label
-        label = Label(self.tagframe,text='Label')
-        label.pack(side=RIGHT)
 
 #****** Point Kind Functions ******
 
@@ -510,22 +505,39 @@ class BasicGui(Chooser):
 #****** Key Bindings ******
 
     def createKeyBindings(self):
-        self.mainframe.bind('<Down>',self.incPointKind)
-        self.mainframe.bind('<Up>',self.decPointKind)
-        self.mainframe.bind('<s>',self.incPointKind)
-        self.mainframe.bind('<w>',self.decPointKind)
-        self.mainframe.bind('<Left>',self.prev)
-        self.mainframe.bind('<Right>',self.next_)
-        self.mainframe.bind('<a>',self.prev)
-        self.mainframe.bind('<d>',self.next_)
-        self.mainframe.bind('<Shift-p>',self.togglePredictions)
-        self.mainframe.bind('<q>',self.cyclePredictions)
-        self.mainframe.bind('<e>',self.cyclePredictions)
-        self.mainframe.bind('<z>',self.zoom_in)
-        self.mainframe.bind('<Button-3>',self.cyclePredictions)
-        self.mainframe.bind('<Delete>',self.delete)
+        self.master.bind('<Down>',self.incPointKind)
+        self.master.bind('<Up>',self.decPointKind)
+        self.master.bind('<s>',self.incPointKind)
+        self.master.bind('<w>',self.decPointKind)
+        self.master.bind('<Left>',self.prev)
+        self.master.bind('<Right>',self.next_)
+        self.master.bind('<a>',self.prev)
+        self.master.bind('<d>',self.next_)
+        self.master.bind('<Shift-p>',self.togglePredictions)
+        self.master.bind('<q>',self.cyclePredictions)
+        self.master.bind('<e>',self.cyclePredictions)
+        self.master.bind('<z>',self.zoom_in)
+        self.master.bind('<Button-3>',self.cyclePredictions)
+        self.master.bind('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
         self.canvas.bind("<Double-Button-1>",self.onDoubleClick)
+        self.master.focus_set()
+
+    def unbindKeys(self):
+        self.master.unbind('<Down>')
+        self.master.unbind('<Up>')
+        self.master.unbind('<s>')
+        self.master.unbind('<w>')
+        self.master.unbind('<Left>')
+        self.master.unbind('<Right>')
+        self.master.unbind('<a>')
+        self.master.unbind('<d>')
+        self.master.unbind('<Shift-p>')
+        self.master.unbind('<q>')
+        self.master.unbind('<e>')
+        self.master.unbind('<z>')
+        self.master.unbind('<Button-3>')
+        self.master.unbind('<Delete>')
 
 #****** Canvas and Point Drawing ******
 
