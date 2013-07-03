@@ -241,6 +241,10 @@ class BasicGui(Chooser):
         self.pd_scroll.config(command=self.predlist.yview,width=15)
         self.predlist.config(yscrollcommand=self.pd_scroll.set)
         self.predlist.bind('<<ListboxSelect>>',self.setActivePred)
+        #Toggle Predictions Button
+        button = Button(self.frameL,text='Toggle Predictions',command=self.togglePredictions)
+        balloon.bind_widget(button,balloonmsg='Turns continuous display of predicted points on/off.')
+        button.grid(row=7,column=1,columnspan=2)
 
         ###frameR###
         #Tag frame
@@ -488,8 +492,9 @@ class BasicGui(Chooser):
 
     def togglePredictions(self,event=''):
         '''Turn the drawing of predicted points on or off.'''
-        self.showPredictions = not self.showPredictions
-        print self.showPredictions
+        self.forcePredDisplay = not self.forcePredDisplay
+        print 'entered'
+        print self.forcePredDisplay
         self.update_points()
         self.end_update_loop()
 
@@ -513,7 +518,7 @@ class BasicGui(Chooser):
         self.master.bind('<Right>',self.next_)
         self.master.bind('<a>',self.prev)
         self.master.bind('<d>',self.next_)
-        self.master.bind('<Shift-p>',self.togglePredictions)
+        self.master.bind('<Shift-P>',self.togglePredictions)
         self.master.bind('<q>',self.cyclePredictions)
         self.master.bind('<e>',self.cyclePredictions)
         self.master.bind('<Button-3>',self.cyclePredictions)
@@ -533,7 +538,7 @@ class BasicGui(Chooser):
         self.master.unbind('<Right>')
         self.master.unbind('<a>')
         self.master.unbind('<d>')
-        self.master.unbind('<Shift-p>')
+        self.master.unbind('<Shift-P>')
         self.master.unbind('<q>')
         self.master.unbind('<e>')
         self.master.unbind('<Button-3>')
