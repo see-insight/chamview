@@ -370,7 +370,7 @@ class BasicGui(Chooser):
         self.editedPointKinds = True    #used to tell predictors if the point kinds were edited
         self.added = 0
         self.deleted = []
-        window = support.EditPointKinds(self.mainframe,self.imstack)
+        window = support.EditPointKinds(self.master,self.imstack)
         self.added, self.deleted = window.result
         if self.added > 0 or self.deleted != []:
             self.pointlist.delete(0,END)
@@ -500,7 +500,7 @@ class BasicGui(Chooser):
 
     def predictorsInfo(self,event=''):
         '''Window displaying accuracy info about each predictor.'''
-        window = support.PredictorWindow(self.mainframe,
+        window = support.PredictorWindow(self.master,
                                          self.predictor_name,
                                          self.activePredictors,
                                          self.displayedPredictors)
