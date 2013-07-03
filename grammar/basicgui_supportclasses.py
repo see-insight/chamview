@@ -69,9 +69,9 @@ class Dialog(Toplevel):
         # standard buttons
         box = Frame(self)
 
-        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+        w = Button(box, text="OK", width=10, command=self.ok)
         w.pack(side=LEFT,padx=5, pady=5)
-        w = Button(box, text="Cancel", width=10, command=self.cancel)
+        w = Button(box, text="Cancel", width=10, command=self.cancel, default=ACTIVE)
         w.pack(side=LEFT, padx=5, pady=5)
 
         self.bind("<Return>", self.ok)
@@ -115,7 +115,7 @@ class Dialog(Toplevel):
 
 class RefinePoint(Dialog):
 
-    def __init__(self,parent,img,point,factor,size=140,title='Refine Points'):
+    def __init__(self,parent,img,point,factor,size=140,title='Refine Point'):
         '''Prepare image and scales.'''
         self.raw_point = point
         self.new_point = self.raw_point
@@ -210,7 +210,7 @@ class EditPointKinds(Dialog):
         self.currentpoints = self.stack.point_kind_list
         self.num_added = 0
         self.deleted_indices = []
-        self.result = (self.num_added,self.deleted_indices)
+        self.result = (0,[])
         Dialog.__init__(self,parent,title)
 
     def body(self, master):
@@ -242,11 +242,14 @@ class EditPointKinds(Dialog):
         self.entry = Entry(self.bottomframe,textvariable=self.ptkind,
                     width=35,relief=SUNKEN)
         self.ptkind.set('Type entry here')
+        self.entry.select_range(0,END)
         self.entry.pack(side=LEFT,fill=Y)
         self.add = Button(self.bottomframe,text='Add',command=self.add)
         self.add.pack(side=LEFT,fill=Y)
         self.delete = Button(self.bottomframe,text='Delete',command=self.delete)
         self.delete.pack(side=LEFT,fill=Y)
+
+        return self.entry
 
     def highlight(self,event=''):
         #Set the listbox's selection
@@ -280,6 +283,7 @@ class EditPointKinds(Dialog):
         self.listbox.see(self.point)
         self.listbox.activate(self.point)
         self.num_added += 1
+        self.entry.select_range(0,END)
 
     def delete(self,event=''):
         try:
@@ -293,6 +297,9 @@ class EditPointKinds(Dialog):
         self.stack.deletePointKinds(self.deleted_indices)
         self.stack.addPointKinds(self.num_added)
         self.stack.get_point_kinds(List=list(self.listbox.get(0,END)))
+        if not self.stack.point_kind_list:
+            self.stack.point_kind_list = ['DEFAULT POINT']
+            self.num_added += 1
         Dialog.ok(self)
 
     def apply(self):

@@ -142,7 +142,7 @@ class BasicGui(Chooser):
     def createGui(self):
         '''Create Tkinter GUI environment for chamview'''
         #Set up application window
-        self.master.title('Tkinter GUI Chooser')
+        self.master.title('Chamview')
         self.master.protocol('WM_DELETE_WINDOW',self.quit)
         #Set up top menu: File Help
         self.topmenu = Menu(self.master)
@@ -214,7 +214,7 @@ class BasicGui(Chooser):
             balloonmsg='Display help window.')
         self.button_help.grid(row=0,column=1,sticky=W)
         #Point Types Label and edit button
-        self.pt_label = Label(self.frameL,text='Point Types',height=4,anchor=S)
+        self.pt_label = Label(self.frameL,text='Points',height=4,anchor=S)
         self.pt_label.grid(row=2,column=1)
         self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
         balloon.bind_widget(self.pt_edit,
@@ -373,7 +373,6 @@ class BasicGui(Chooser):
         self.deleted = []
         window = support.EditPointKinds(self.mainframe,self.imstack)
         self.added, self.deleted = window.result
-
         if self.added > 0 or self.deleted != []:
             self.pointlist.delete(0,END)
             self.fillPointkindList()
@@ -511,7 +510,6 @@ class BasicGui(Chooser):
 #****** Key Bindings ******
 
     def createKeyBindings(self):
-        self.master.bind('<<smth>>',self.t)
         self.mainframe.bind('<Down>',self.incPointKind)
         self.mainframe.bind('<Up>',self.decPointKind)
         self.mainframe.bind('<s>',self.incPointKind)
@@ -826,12 +824,12 @@ class BasicGui(Chooser):
     def showHelp(self,event=''):
         '''Shows basic usage information in a popup window.'''
         message = ''
-        message += 'Previous/next image\t\tA/D or L/R arrow\n'
-#        message += 'Choose point kind\t\t1-9\n'
-        message += 'Choose point kind\t\tW/S or U/D arrow\n'
-#        message += 'Toggle predictions\t\tShift+P\n'
-        message += 'Cycle chosen prediction\tQ/E or Right-Click\n'
-        message += 'Delete selected point\t\t<Del>\n'
+        message += 'Change frame\ta/d or L/R\n'
+        message += 'Change point kind\tw/s or U/D\n'
+        message += 'Cycle predictions\tq/e or R-Click\n'
+        message += 'Toggle predictions\t<Shift>+p\n'
+        message += 'Delete point\t<Del>\n'
+        message += 'Zoom in on point\tz\n'
         tkMessageBox.showinfo("Chamview Help",message)
 
     def quit(self,event=''):
