@@ -13,8 +13,10 @@ Usage options:
     -w --inspectout Same as -s but following arg specifies the name of the file to save to
     -r --predictor  Specify the sole predictor you want to use
     -e --evaluate   Determines if user wants to evaluate predictors and parameters used
-Example:
+    -a --savePred   File to save predictions. Default is (none)
+    -u --usePred    Determines if user wants to use previous predictions in that file
 
+Example:
     $ chamview.py -d ./images/Chameleon -o ./points
 
 """
@@ -47,13 +49,16 @@ def main(argc,argv):
     argSysInspector = False
     argPred = []
     argEvaluate = ''
+    argSavePred = ''
+    argUsePred = ''
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                      'hd:c:i:o:k:p:sw:r:e:',
+                                      'hd:c:i:o:k:p:sw:r:e:a:u:',
                                       ['help','dir=','chooser=','prep=',
-                                      'output=','pkind=','ppos=',
-                                      'inspect','inspectout=','predictor=','evaluate='])
+                                      'output=','pkind=','ppos=','inspect',
+                                      'inspectout=','predictor=','evaluate=',
+                                      'savePred=','usePred='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -81,10 +86,14 @@ def main(argc,argv):
                 argPred.append(arg)
             elif opt in ('-e', '--evaluate'):
                 argEvaluate = arg
+            elif opt in ('-a', '--savePred'):
+                argSavePred = arg
+            elif opt in ('-u', '--usePred'):
+                argUsePred = arg
         if argOutput == '':
             argOutput = argDir+'/points.txt'
 
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, argPred, argEvaluate)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,argPred,argEvaluate,argSavePred,argUsePred)
 
 
     except Usage, err:
@@ -92,7 +101,7 @@ def main(argc,argv):
         print >>sys.stderr, 'For help use --help'
         return 2
 
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector, argPred, argEvaluate):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,argPred,argEvaluate,argSavePred,argUsePred):
 
     #Start timer if argSysInspector
     if argSysInspector: start = timeit.default_timer()
@@ -109,6 +118,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         pointsReceived = imstack.load_points(argPPos)
         if not(pointsReceived): raise Usage('No valid points file found in "'+argPPos+'"')
 
+    #Load predictions previously computed
+    if argUsePred != '':
+        predictionsReceived = imstack.load_predictions(argUsePred)
+        if not(predictionsReceived): raise Usage('No valid predictions file found in "'+argUsePred+'"')
+
     #Load the Chooser subclass instance
     chooser = vocab.getChooser(argChooser)
     chooser.setup()
@@ -123,14 +137,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #Load the Predictor subclass instances
     predictor,predictor_name = vocab.getPredictors()
 
-    #Picking only some predictors for debugging purposes------------------------
-
-    #predictor = predictor[1:]
-    #predictor_name = predictor_name[1:]
-
-    #---------------------------------------------------------------------------
-
-    #Load the Predictor needed for user
+    #Load the Predictors needed for user
     if len(argPred) > 0:
         newPredictor = []
         newPredictor_name = []
@@ -144,6 +151,9 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         predictor = newPredictor
         predictor_name = newPredictor_name
 
+    #Initiate predictions array of imstack
+    if argUsePred == '': imstack.build_predictionsArray(len(predictor))
+
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
 
@@ -154,6 +164,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         if guess != None:
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess
+            #Add to predictions array
+            if argUsePred == '': imstack.predictions[0] = predict_point
 
     #Pass argOutput to chooser if possible
     try:
@@ -187,6 +199,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
+
         #Preprocess the ImageStack image
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
 
@@ -205,18 +218,26 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         except NameError:
             predict_point = zeros((len(predictor),imstack.point_kinds,3))
 
-        #Give each predictor the current image stack and get a prediction back
-        #from each active predictor
-        count = -1
-        for i in range(len(predictor)):
-            try:
-                if predictor_name[i] in chooser.activePredictors:
-                    count += 1
+        if argUsePred == '':
+            #Give each predictor the current image stack and get a prediction back
+            #from each active predictor
+            count = -1
+            for i in range(len(predictor)):
+                try:
+                    if predictor_name[i] in chooser.activePredictors:
+                        count += 1
+                        points = predictor[i].predict(imstack, ptKindsEdited)
+                        predict_point[count] = points
+                except NameError:
                     points = predictor[i].predict(imstack, ptKindsEdited)
-                    predict_point[count] = points
-            except NameError:
-                points = predictor[i].predict(imstack, ptKindsEdited)
-                predict_point[i] = points
+                    predict_point[i] = points
+
+            #Save predictions in predictions array of imstack
+            if imstack.current_frame < imstack.total_frames - 1:
+                imstack.predictions[imstack.current_frame + 1] = predict_point
+        else:
+            #Use predictions previously computed and saved
+            predict_point = imstack.predictions[imstack.current_frame]
 
 #        print_var_info() #*****************************************************
 

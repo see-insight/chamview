@@ -5,17 +5,19 @@
 """Evaluator for Chamview predictors
 
 Usage options:
-    -h --help       Print this help message
-    -d- --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames)
-    -i --prep       Preprocessor subclass. Default is (none)
-    -k --pkind      Point kind file. Default is (defaultPointKinds.txt)
-    -p --dirGT      Ground Truth points directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt)
-    -r --predictor  Predictor Name. Default is all predictors
-    -o --output     Output file. Default is (Performance_Report.txt)
-    -u --upBound    Determines the upper bound of results we can see. Default is 50
-    -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5
+    -h --help       Print this help message.
+    -d- --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames).
+    -i --prep       Preprocessor subclass. Default is (none).
+    -k --pkind      Point kind file. Default is (defaultPointKinds.txt).
+    -p --dirGT      Ground Truth points directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt).
+    -r --predictor  Predictor Name. Default is all predictors.
+    -o --output     Output directory where results are saved. Default is current directory.
+    -u --upBound    Determines the upper bound of results we can see. Default is 50.
+    -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5.
     -s --savedGraph Data results previously saved in text file that is used to graph.
     -m --metadata   Directory of metadata to plot graphs using the information there.
+    -n --dontShow   It indicates that user doesn't want to plot graphs at the moment
+    -c --comDataSet Directory of datasets used to compare evaluations on them
 
 Example: 
     
@@ -35,7 +37,7 @@ def main(argc,argv):
     #Default arguments
     argFrameDir = ''
     argGroundT = ''
-    argOutput = 'Performance_Report.txt'
+    argOutput = ''
     argPKind = ''
     argPredictor = []
     argPreproc = ''
@@ -43,11 +45,14 @@ def main(argc,argv):
     argTruePos = 5
     argSavedGraph = ''
     argMetadata = ''
+    argShow = True
+    argComDataSet = ''
+    
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hd:i:p:o:r:u:t:s:m:k:', ['help','dirImg=',
+            opts, args = getopt.getopt(argv[1:], 'hd:i:p:o:r:u:t:s:m:k:nc:', ['help','dirImg=',
                          'prep=', 'dirGT=','output=', 'predictor=','upBound=','truePos=',
-                         'savedGraph=', 'metadata=', 'pkind='])
+                         'savedGraph=', 'metadata=', 'pkind=', 'dontShow', 'argComDataSet='])
        
         except getopt.error, msg:
             raise Usage(msg)
@@ -76,6 +81,10 @@ def main(argc,argv):
                 argMetadata = arg
             elif opt in ('-k', '--pkind'):
                 argPKind = arg
+            elif opt in ('-n', '--dontShow'):
+                argShow = False
+            elif opt in ('-c', '--comDataSet'):
+                argComDataSet = arg
 
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
@@ -90,9 +99,15 @@ def main(argc,argv):
             pd = PlotData(argMetadata)
             pd.plotMeta()
             
+        elif argComDataSet != '':
+            
+            #Show graphs to compare evaluations between datasets
+            pd = PlotData(argComDataSet)
+            pd.compareMetas(argOutput)
+            
         else:
             #compute errors and then plot
-            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc)
+            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -100,7 +115,7 @@ def main(argc,argv):
         return 2
 
 
-def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc):
+def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow):
     
     command = ["./chamview.py", "-c", "Performance"]
 
@@ -133,9 +148,9 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     #Add evaluate argument
     command.append("-e")
     #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos
-    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) 
+    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) + '-' + str(argShow)
     command.append(argEvaluate)
-   
+    
     #Call subprocess 
     subprocess.call(command)   
     

@@ -13,17 +13,15 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 
-'''This file implements classes where the performance of predictors
-is computed using different techniques.
+'''This file implements classes where the performance of predictors is computed.
 Input: A stack of images, ground truth data, and a predictor
-Output: A list and graphs that shows the performance of predictors
+Output: A list and graphs that show the performance of predictors
 '''
 
 class Performance(Chooser):
     '''It is used to compute the error of predictions and ground-truth points. It
     outpus the difference (in pixels) to file and displays a graph.
     The error is according frames or according kind_point.
-    Usage: ./chamview.py -c Error -d <image directory> -p <ground truth file>
     '''
     
     def setup(self):     
@@ -33,7 +31,9 @@ class Performance(Chooser):
         self.y = [] #Error from ground-truth
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
-        self.outputName = 'Performance_Report.txt' #Name of output file
+        self.outputName = '' #Name of output directory
+        self.showBool = True #Boolean that determines if show or not graphs
+        
         
         #Variables from Image Stack class
         self.name = [] #Name of predictor
@@ -80,6 +80,12 @@ class Performance(Chooser):
         if parameters[0] != '': self.outputName = parameters[0]
         if parameters[1] != '': self.upperB = int(parameters[1])
         if parameters[2] != '': self.tpBound = int(parameters[2])
+        
+        if parameters[3] == 'False': self.showBool = False
+        
+        #Make outputName correct
+        if self.outputName != '':
+            self.outputName = self.outputName + '/'
 
     def teardown(self):
 
@@ -90,8 +96,11 @@ class Performance(Chooser):
         #different ways
         self.computeErrorByFrame()
         
+        #Define path to text file to save results
+        outTextFile = self.outputName + 'Performance_Report.txt'
+        
         #Open a text file to save results
-        self.fo = open(self.outputName,'w')
+        self.fo = open(outTextFile,'w')
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
                
         #Save important values in text file
@@ -116,7 +125,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
-        print 'Report saved to ' + self.outputName
+        print 'Results saved in ' + self.outputName
 
     def choose(self,stack,predicted,predictor_name):
         
@@ -220,12 +229,16 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        title('Error on Prediction\nThis graph shows errors less or equal than '
+        title('Average Distance in Pixels by Frame\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
         xlabel('Frame')
-        ylabel('Number of Pixels')      
-        plt.legend(self.name)
-        plt.show()                  
+        ylabel('Distance in Pixels')      
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
+        if self.showBool: plt.show()                 
         
     def showErrorByPointKind(self):
         
@@ -267,7 +280,7 @@ class Performance(Chooser):
             
             #Plot error
             xPlot = arange(self.totalPointK)
-            width = 1.0 / self.totalPredictors
+            width = 1.0 / (self.totalPredictors + 1.5)
             
             if self.name[i] != self.oracleN:
                 plt.bar(xPlot + width * i, yPlot, width, color=cm.jet(1.*i/len(xPlot)))
@@ -279,12 +292,16 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
             
-        title('Error by Point Kind\nThis graph shows errors less or equal than '
+        title('Average Distance in Pixels by Point Kind\nThis graph shows errors less or equal than '
                +str(self.upperB)+' pixels')
         xlabel('Point Kind')
-        ylabel('Number of Pixels')
-        plt.legend(self.name)
-        plt.show()
+        ylabel('Distance in Pixels')
+        plt.legend(self.name, prop = {'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
+        if self.showBool: plt.show()
 
     def showErrorEachPointK(self):
         
@@ -328,13 +345,16 @@ class Performance(Chooser):
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
-            title('Point Kind: ' + self.pointKList[pointK]+'\nThis graph shows errors less or equal than '
-                  +str(self.upperB)+' pixels')
+            title('Distance in Pixels. Point Kind: ' + self.pointKList[pointK]+
+                  '\nThis graph shows errors less or equal than ' + str(self.upperB)+' pixels')
             xlabel('Frame')
-            ylabel('Number of Pixels')
-            plt.legend(self.name)
+            ylabel('Distance in Pixels')
+            plt.legend(self.name, prop={'size':8})
         
-            plt.show()
+            #Save figure
+            plt.savefig(self.outputName + gName + str(pointK + 1) + '.jpg')
+        
+            if self.showBool: plt.show()
         
         #Write division into file
         self.fo.write(self.division)
@@ -412,10 +432,14 @@ class Performance(Chooser):
         title('Percentage of Points\n(For a given error from 1 to ' + 
               str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
               'points with at most that error)') 
-        xlabel('Error in Pixels')
+        xlabel('Distance in Pixels')
         ylabel('Percentage of Points')
-        plt.legend(self.name)
-        plt.show()
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
+        if self.showBool: plt.show()
         
     def showAccuracy(self):
                 
@@ -466,8 +490,12 @@ class Performance(Chooser):
         title(gName + '\nThis graph shows how accuracy changes through frames')
         xlabel('Frame')
         ylabel('Accuracy')
-        plt.legend(self.name)
-        plt.show()
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
+        if self.showBool: plt.show()
         
     def showAccuracyConfidence(self):
        
@@ -527,9 +555,13 @@ class Performance(Chooser):
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
         ylabel('Accuracy * Confidence')
-        plt.legend(self.name)
-        plt.show()     
+        plt.legend(self.name, prop={'size':8})
         
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
+        if self.showBool: plt.show()     
+    
     def showROC(self):
    
         #Save title in text file and in graphNames array
@@ -602,8 +634,12 @@ class Performance(Chooser):
               'A predictor is better if its curve is above other')
         xlabel('False Positive Rate')
         ylabel('True Positive Rate')
-        plt.legend(self.name)
-        plt.show()          
+        plt.legend(self.name, prop={'size':8})
+        
+        #Save figure
+        plt.savefig(self.outputName + gName + '.jpg')
+        
+        if self.showBool: plt.show()          
       
     def showError3D(self):
         
@@ -651,9 +687,12 @@ class Performance(Chooser):
             title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name)
+            plt.legend(self.name, prop={'size':8})
+        
+            #Save figure
+            plt.savefig(self.outputName + gName + '.jpg')
             
-            plt.show() 
+            if self.showBool: plt.show() 
                             
 
     def computeErrorByFrame(self):
@@ -762,6 +801,9 @@ class Performance(Chooser):
             title('Confidence of Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name)
+            plt.legend(self.name, prop={'size':8})
+        
+            #Save figure
+            plt.savefig(self.outputName + gName + '.jpg')
             
-            plt.show()
+            if self.showBool: plt.show()

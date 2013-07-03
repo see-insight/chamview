@@ -3,7 +3,7 @@ from numpy import *
 from imagestack import ImageStack
 
 
-class Veloc(Predictor):
+class Velocity(Predictor):
 	
     stack = ImageStack('./images/')
     def setup(self,stack):
