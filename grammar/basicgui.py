@@ -253,8 +253,8 @@ class BasicGui(Chooser):
         self.tag = Entry(tag_frame,textvariable=self.currentTag)
         self.tag.pack(side=RIGHT)
         self.tag.config(borderwidth=2,relief=SUNKEN)
-        self.tag.bind("<FocusIn>", lambda e: self.unbindKeys())
-        self.tag.bind("<KeyRelease-Return>", lambda e: self.createKeyBindings())
+        self.tag.bind("<FocusIn>", self.focus_on_tag)
+        self.tag.bind("<KeyRelease-Return>", self.unfocus_tag)
         #Tag label
         label = Label(tag_frame,text='Label')
         label.pack(side=RIGHT)
@@ -516,8 +516,9 @@ class BasicGui(Chooser):
         self.master.bind('<Shift-p>',self.togglePredictions)
         self.master.bind('<q>',self.cyclePredictions)
         self.master.bind('<e>',self.cyclePredictions)
-        self.master.bind('<z>',self.zoom_in)
         self.master.bind('<Button-3>',self.cyclePredictions)
+        self.master.bind('<z>',self.zoom_in)
+        self.master.bind('<f>',lambda e: self.tag.focus_set())
         self.master.bind('<Delete>',self.delete)
         self.canvas.bind("<Button-1>",self.onClick)
         self.canvas.bind("<Double-Button-1>",self.onDoubleClick)
@@ -535,9 +536,18 @@ class BasicGui(Chooser):
         self.master.unbind('<Shift-p>')
         self.master.unbind('<q>')
         self.master.unbind('<e>')
-        self.master.unbind('<z>')
         self.master.unbind('<Button-3>')
+        self.master.unbind('<z>')
+        self.master.unbind('<f>')
         self.master.unbind('<Delete>')
+
+    def focus_on_tag(self,event=''):
+        self.tag.select_range(0,END)
+        self.unbindKeys()
+
+    def unfocus_tag(self,event=''):
+        self.tag.select_clear()
+        self.createKeyBindings()
 
 #****** Canvas and Point Drawing ******
 
