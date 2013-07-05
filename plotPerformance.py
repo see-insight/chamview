@@ -576,10 +576,12 @@ class PlotData:
         
         xPlot = arange(len(xLabels)) #Array for x axis
         
+        col = ['b', 'r', 'g', 'k']
+        
         for i in range(0, len(yPlots)):
             
             width = 1.0 / (len(yPlots) + 1.5)
-            plt.bar(xPlot + width * i, yPlots[i], width, color=cm.jet(1.*i/len(xPlot)))             
+            plt.bar(xPlot + width * i, yPlots[i], width, color=col[i%len(col)])            
             plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot)
             
         plt.title(gName)
