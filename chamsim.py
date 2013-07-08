@@ -182,20 +182,14 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         print '****POINT SOURCE HISTORY:****'
         for frame in imstack.point_sources:
             print frame
-        #print '****CURRENT FRAME:****\n', imstack.current_frame
         print '****ACTIVE POINT:****\n', chooser.activePoint
         print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
-        #print '****POINT KINDS:****\n', imstack.point_kind_list
-        #print '****POINT KINDS ADDED:****\n', chooser.added
-        #print '****POINT KINDS DELETED:****\n', chooser.deleted
 
 
-#    print_var_info() #***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
-#    print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
-#    print 'exit chooser'
+
     if chooser.editedPointKinds:
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
@@ -213,19 +207,15 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                 predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
 
             #Save predictions in predictions array of imstack
-            if imstack.current_frame < imstack.total_frames:
-                imstack.predictions[imstack.current_frame] = predict_point
+            #if imstack.current_frame < imstack.total_frames:
+            imstack.predictions[imstack.current_frame] = predict_point
 
         else:
             #Use predictions previously computed and saved
             predict_point = imstack.predictions[imstack.current_frame]
 
-#        print_var_info() #*************************************************************************
-
         #Give this result to the chooser to get the "real" point
-#       print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
-#       print 'exit chooser'
 
         if chooser.editedPointKinds:
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
@@ -248,10 +238,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             pass
     except NameError:
         if argOutput != '': imstack.save_points(argOutput)
-
-#    print '\n###### FINAL VARIABLE VALUES ######\n'
-#    print_var_info()
-
 
     #Run System Inspector
     if argSysInspector:
