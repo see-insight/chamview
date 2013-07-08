@@ -37,6 +37,7 @@ class Usage(Exception):
 
 def main(argc,argv):
     #Default arguments
+    argUseChamsim = False
     argFrameDir = ''
     argGroundT = ''
     argOutput = ''
@@ -49,12 +50,12 @@ def main(argc,argv):
     argMetadata = ''
     argShow = True
     argComDataSet = ''
-    argsavePreds = ''
-    argusePreds = ''
+    argSavePreds = ''
+    argUsePreds = ''
 
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hd:i:p:o:r:u:t:s:m:k:nc:v:f:', ['help','dirImg=',
+            opts, args = getopt.getopt(argv[1:], 'had:i:p:o:r:u:t:s:m:k:nc:v:f:', ['help','useChamsim','dirImg=',
                          'prep=', 'dirGT=','output=', 'predictor=','upBound=','truePos=',
                          'savedGraph=', 'metadata=', 'pkind=', 'dontShow', 'argComDataSet=',
                          'savePreds=', 'usePreds='])
@@ -66,6 +67,8 @@ def main(argc,argv):
             if opt in ('-h', '--help'):
                 print __doc__
                 sys.exit(0)
+            elif opt in ('-a', '--useChamsim'):
+                argUseChamsim = True
             elif opt in ('-d', '--dirImg'):
                 argFrameDir = arg
             elif opt in ('-i', '--prep'):
@@ -91,9 +94,9 @@ def main(argc,argv):
             elif opt in ('-c', '--comDataSet'):
                 argComDataSet = arg
             elif opt in ('-v', '--savePreds'):
-                argsavePreds = arg
+                argSavePreds = arg
             elif opt in ('-f', '--usePreds'):
-                argusePreds = arg
+                argUsePreds = arg
 
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
@@ -116,7 +119,7 @@ def main(argc,argv):
 
         else:
             #compute errors and then plot
-            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argsavePreds, argusePreds)
+            callChamview(argUseChamsim, argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds)
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -124,9 +127,12 @@ def main(argc,argv):
         return 2
 
 
-def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argsavePreds, argusePreds):
+def callChamview(argUseChamsim, argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds):
 
     command = ["./chamview.py", "-c", "Performance"]
+
+    if argUseChamsim:
+        command[0] = './chamsim.py'
 
     #Get predictor names
     if len(argPredictor) > 0:
@@ -155,12 +161,12 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
         command.append(argPKind)
 
     #Add predictor saving/using info
-    if argsavePreds != '':
+    if argSavePreds != '':
         command.append('-a')
-        command.append(argsavePreds)
-    if argusePreds != '':
+        command.append(argSavePreds)
+    if argUsePreds != '':
         command.append('-u')
-        command.append(argusePreds)
+        command.append(argUsePreds)
 
     #Add evaluate argument
     command.append("-e")
