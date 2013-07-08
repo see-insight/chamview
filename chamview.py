@@ -213,8 +213,8 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                 predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
             
             #Save predictions in predictions array of imstack
-            if imstack.current_frame < imstack.total_frames - 1:
-                imstack.predictions[imstack.current_frame + 1] = predict_point
+            if imstack.current_frame < imstack.total_frames:
+                imstack.predictions[imstack.current_frame] = predict_point
             
         else:
             #Use predictions previously computed and saved
