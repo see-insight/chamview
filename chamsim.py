@@ -171,10 +171,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             if argUsePred == '': imstack.predictions[0] = predict_point
 
     #Pass argOutput to chooser if possible
-    try:
-        chooser.stagedToSave[1] = argOutput
-    except NameError:
-        pass
+    #try:
+    #    chooser.stagedToSave[1] = argOutput
+    #except NameError:
+    #    pass
 
     def print_var_info():
         print '****SELECTED POINTS:****\n', imstack.point
@@ -220,24 +220,27 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         if chooser.editedPointKinds:
             predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-        try:
-            if chooser.stagedToSave[0]:
-                #Save points to file
-                if chooser.stagedToSave[1] != '':
-                    imstack.save_points(chooser.stagedToSave[1])
-        except NameError:
-            pass
+        #try:
+        #    if chooser.stagedToSave[0]:
+        #        #Save points to file
+        #        if chooser.stagedToSave[1] != '':
+        #            imstack.save_points(chooser.stagedToSave[1])
+        #except NameError:
+        #    pass
 
     print 'EXIT loop'
 
     #Save points predicted in a text file
     if argSavePred != '': imstack.save_predictions(argSavePred, predictor_name)
+    
+    #Save points for ground truth data in a text file
+    if argOutput != '': imstack.save_points(argOutput)
 
-    try:
-        if chooser.stagedToSave[1] != '':
-            pass
-    except NameError:
-        if argOutput != '': imstack.save_points(argOutput)
+    #try:
+    #    if chooser.stagedToSave[1] != '':
+    #        pass
+    #except NameError:
+    #    if argOutput != '': imstack.save_points(argOutput)
 
     #Run System Inspector
     if argSysInspector:
