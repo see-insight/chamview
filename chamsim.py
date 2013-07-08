@@ -13,15 +13,19 @@ Usage options:
     -w --inspectout Same as -s but following arg specifies the name of the file to save to
     -r --predictor  Specify the sole predictor you want to use
     -e --evaluate   Determines if user wants to evaluate predictors and parameters used
-
+    -a --savePred   File to save predictions. Default is (none)
+    -u --usePred    Determines if user wants to use previous predictions in that file
 Example:
+
     $ chamview.py -d ./images/Chameleon -o ./points
 
 """
 
 
-import os, sys, time
+import os
+import sys
 import getopt
+import imp
 import dircache
 import timeit
 import vocabulary as vocab
@@ -29,6 +33,7 @@ from numpy import *
 from imagestack import ImageStack
 from grammar import Grammar
 from inspector import SystemInspector as si
+import time
 
 
 class Usage(Exception):
@@ -55,7 +60,8 @@ def main(argc,argv):
                                       'hd:c:i:o:k:p:sw:r:e:a:u:',
                                       ['help','dir=','chooser=','prep=',
                                       'output=','pkind=','ppos=','inspect',
-                                      'inspectout=','predictor=','evaluate='])
+                                      'inspectout=','predictor=','evaluate=',
+                                      'savePred=','usePred='])
         except getopt.error, msg:
             raise Usage(msg)
 
@@ -83,10 +89,14 @@ def main(argc,argv):
                 argPred.append(arg)
             elif opt in ('-e', '--evaluate'):
                 argEvaluate = arg
+            elif opt in ('-a', '--savePred'):
+                argSavePred = arg
+            elif opt in ('-u', '--usePred'):
+                argUsePred = arg
         if argOutput == '':
             argOutput = argDir+'/points.txt'
 
-        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,argPred,argEvaluate)
+        run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,argPred,argEvaluate,argSavePred,argUsePred)
 
 
     except Usage, err:
@@ -94,7 +104,7 @@ def main(argc,argv):
         print >>sys.stderr, 'For help use --help'
         return 2
 
-def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,argPred,argEvaluate):
+def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,argPred,argEvaluate,argSavePred,argUsePred):
 
     #Start timer if argSysInspector
     if argSysInspector: start = timeit.default_timer()
@@ -110,6 +120,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     if argPPos != '':
         pointsReceived = imstack.load_points(argPPos)
         if not(pointsReceived): raise Usage('No valid points file found in "'+argPPos+'"')
+
+    #Load predictions previously computed
+    if argUsePred != '':
+        predictionsReceived = imstack.load_predictions(argUsePred)
+        if not(predictionsReceived): raise Usage('No valid predictions file found in "'+argUsePred+'"')
 
     #Load the Chooser subclass instance
     chooser = vocab.getChooser(argChooser)
@@ -134,10 +149,13 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                 predIndex = predictor_name.index(p)
                 newPredictor.append(predictor[predIndex])
                 newPredictor_name.append(predictor_name[predIndex])
-            except:
+            except Exception:
                 pass #Continue with the same predictors
         predictor = newPredictor
         predictor_name = newPredictor_name
+
+    #Instantiate predictions array of imstack
+    if argUsePred == '': imstack.build_predictionsArray(len(predictor))
 
     #Preprocess the ImageStack image
     if preproc: imstack.img_current = preproc.process(imstack.img_current)
@@ -149,14 +167,15 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         if guess != None:
             for j in range(0,imstack.point_kinds):
                 predict_point[i,j] = guess
+            #Add to predictions array
+            if argUsePred == '': imstack.predictions[0] = predict_point
 
     #Pass argOutput to chooser if possible
     try:
-        chooser.saveFile = argOutput
+        chooser.stagedToSave[1] = argOutput
     except NameError:
         pass
 
-    # Printing for debugging purposes
     def print_var_info():
         print '****SELECTED POINTS:****\n', imstack.point
         print '****PREDICTED POINTS:****\n', predict_point
@@ -164,69 +183,74 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         for frame in imstack.point_sources:
             print frame
         #print '****CURRENT FRAME:****\n', imstack.current_frame
-        #print '****ACTIVE POINT:****\n', chooser.activePoint
+        print '****ACTIVE POINT:****\n', chooser.activePoint
         print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
         #print '****POINT KINDS:****\n', imstack.point_kind_list
         #print '****POINT KINDS ADDED:****\n', chooser.added
         #print '****POINT KINDS DELETED:****\n', chooser.deleted
-        print '****ACTIVE PREDICTORS:****\n', chooser.activePredictors
-        print '****DISPLAYED PREDICTORS:****\n', chooser.displayedPredictors
-        print '****FRAME LABELS:****\n', imstack.label_list
 
-#    print_var_info() #*********************************************************
+
+#    print_var_info() #***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
+#    print 'call chooser'
     chooser.choose(imstack,predict_point,predictor_name)
+#    print 'exit chooser'
+    if chooser.editedPointKinds:
+        predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-#    print_var_info() #*********************************************************
-
+    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
 
         #Preprocess the ImageStack image
         if preproc: imstack.img_current = preproc.process(imstack.img_current)
 
-        #If it's an option, check whether or not the point kinds were edited by the chooser
-        try:
-            ptKindsEdited = chooser.editedPointKinds
-        except NameError:
-            ptKindsEdited = False
+        if argUsePred == '':
 
-        if ptKindsEdited:
-            predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
+            #Give each predictor the current image stack and get a prediction back
+            for i in range(0,len(predictor)):
+                predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
 
-        #Reset predict_point array
-        try:
-            predict_point = zeros((len(chooser.activePredictors),imstack.point_kinds,3))
-        except NameError:
-            predict_point = zeros((len(predictor),imstack.point_kinds,3))
+            #Save predictions in predictions array of imstack
+            if imstack.current_frame < imstack.total_frames:
+                imstack.predictions[imstack.current_frame] = predict_point
 
-        #Give each predictor the current image stack and get a prediction back
-        #from each active predictor
-        count = -1
-        for i in range(len(predictor)):
-            try:
-                if predictor_name[i] in chooser.activePredictors:
-                    count += 1
-                    points = predictor[i].predict(imstack, ptKindsEdited)
-                    predict_point[count] = points
-            except NameError:
-                points = predictor[i].predict(imstack, ptKindsEdited)
-                predict_point[i] = points
+        else:
+            #Use predictions previously computed and saved
+            predict_point = imstack.predictions[imstack.current_frame]
 
-#        print_var_info() #*****************************************************
+#        print_var_info() #*************************************************************************
 
         #Give this result to the chooser to get the "real" point
+#       print 'call chooser'
         chooser.choose(imstack,predict_point,predictor_name)
+#       print 'exit chooser'
+
+        if chooser.editedPointKinds:
+            predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
+
+        try:
+            if chooser.stagedToSave[0]:
+                #Save points to file
+                if chooser.stagedToSave[1] != '':
+                    imstack.save_points(chooser.stagedToSave[1])
+        except NameError:
+            pass
+
+    print 'EXIT loop'
+
+    #Save points predicted in a text file
+    if argSavePred != '': imstack.save_predictions(argSavePred, predictor_name)
 
     try:
-        if chooser.saveFile != '':
+        if chooser.stagedToSave[1] != '':
             pass
     except NameError:
         if argOutput != '': imstack.save_points(argOutput)
 
 #    print '\n###### FINAL VARIABLE VALUES ######\n'
-#    print_var_info() #*********************************************************
+#    print_var_info()
 
 
     #Run System Inspector
