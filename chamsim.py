@@ -171,10 +171,17 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             if argUsePred == '': imstack.predictions[0] = predict_point
 
     #Pass argOutput to chooser if possible
+<<<<<<< HEAD
     #try:
     #    chooser.stagedToSave[1] = argOutput
     #except NameError:
     #    pass
+=======
+    try:
+        chooser.saveFile = argOutput
+    except NameError:
+        pass
+>>>>>>> b95cf12ea1aeae0bd1506b686f97dda0bbfdde4d
 
     def print_var_info():
         print '****SELECTED POINTS:****\n', imstack.point
@@ -186,14 +193,20 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
         print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
 
 
+<<<<<<< HEAD
 
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
 
+=======
+    print_var_info() #***************************************************************************
+
+    #Give this result to the chooser to get the initial ground-truth point
+    chooser.choose(imstack,predict_point,predictor_name)
+>>>>>>> b95cf12ea1aeae0bd1506b686f97dda0bbfdde4d
     if chooser.editedPointKinds:
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
-    print 'ENTER loop'
     #Repeat until the chooser signals to exit
     while(imstack.exit == False):
 
@@ -214,6 +227,7 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             #Use predictions previously computed and saved
             predict_point = imstack.predictions[imstack.current_frame]
 
+<<<<<<< HEAD
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)
 
@@ -241,6 +255,28 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     #        pass
     #except NameError:
     #    if argOutput != '': imstack.save_points(argOutput)
+=======
+        print_var_info() #*************************************************************************
+
+        #Give this result to the chooser to get the "real" point
+        chooser.choose(imstack,predict_point,predictor_name)
+        if chooser.editedPointKinds:
+            predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
+
+    #Save points to text file
+    try:
+        if chooser.saveFile != '':
+            pass
+    except NameError:
+        if argOutput != '': imstack.save_points(argOutput)
+
+    #Save predicted points in a text file
+    if argSavePred != '': imstack.save_predictions(argSavePred, predictor_name)
+
+#    print '\n###### FINAL VARIABLE VALUES ######\n'
+#    print_var_info()
+
+>>>>>>> b95cf12ea1aeae0bd1506b686f97dda0bbfdde4d
 
     #Run System Inspector
     if argSysInspector:

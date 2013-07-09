@@ -653,7 +653,10 @@ class BasicGui(Chooser):
         #For each predictor, draw the current pointkind's predicted position
         #in yellow
         cnt = -1
-        adjusted_index = self.adjusted_index(self.predictor_name[self.activePoint[0]])
+        if self.activePoint[0] == -1:
+            adjusted_index = None
+        else:
+            adjusted_index = self.adjusted_index(self.predictor_name[self.activePoint[0]])
         for pred in self.predicted[:]:
             cnt = cnt+1
             real_index = self.calc_real_index(cnt)
