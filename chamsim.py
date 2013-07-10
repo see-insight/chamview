@@ -280,6 +280,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                            ('TOTAL_TIME',time.strftime('%H:%M:%S', time.gmtime(totalTime))),
                            ('TIME/POINT',timePerPoint),
                            ('TIME/FRAME',timePerFrame)])
+                           
+        if argUsePred != '':
+            #Append a message that tells us if saved predictions were used
+            attributes.append(('THEORETICAL_TIME', True))
 
         #Create SystemInspector object and pass it the additional chamview
         #specific attributes then write the object to a file
