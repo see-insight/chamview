@@ -431,8 +431,8 @@ class PlotData:
         addInfo = [] #Saves additional information used to plot
         
  
-        #Add arrays that will contain important information of the datset       
-        for i in range(0, 6): addInfo.append([])
+        #Add arrays that will contain important information of the dataset       
+        for i in range(0, 7): addInfo.append([])
         
         #Get the information of each metadata file
         for i in range(0, len(self.subdirectories)):
@@ -445,6 +445,7 @@ class PlotData:
                 addInfo[3].append(infoD['timePoint'])
                 addInfo[4].append(infoD['timeFrame'])
                 addInfo[5].append(infoD['predUsed'])                       
+                addInfo[6].append(infoD['theoTime'])
         
         numDatasets = len(addInfo[0])
         
@@ -469,38 +470,41 @@ class PlotData:
                 indexPred = predictors.index(predName) #Get the index of predictor
                 dataInfoG[indexPred][i] = dataInfo[i][j][1] #Put value in correct position
        
-        #Split datasets into two sets: predictors and no-predictors
-        predDataInfoG, predAddInfo, noPredDataInfoG, noPredAddInfo = self.splitDatasets(dataInfoG, addInfo)
+        #Split datasets into three sets: no-predictors, predictors, theoretical-time
+        pDataInfoG, pAddInfo, npDataInfoG, npAddInfo, ttDataInfoG, ttAddInfo = self.splitDatasets(dataInfoG, addInfo)
         
         #If one dataset has more than one metadata file, then take average of times and usage
-        predDataInfoG, predAddInfo,  = self.removeRepeatedData(predDataInfoG, predAddInfo)
-        noPredDataInfoG, noPredAddInfo = self.removeRepeatedData(noPredDataInfoG, noPredAddInfo)
+        pDataInfoG, pAddInfo,  = self.removeRepeatedData(pDataInfoG, pAddInfo)
+        npDataInfoG, npAddInfo = self.removeRepeatedData(npDataInfoG, npAddInfo)
+        ttDataInfoG, ttAddInfo = self.removeRepeatedData(ttDataInfoG, ttAddInfo)
        
-        predNumDatasets = len(predDataInfoG[0])
+        predNumDatasets = len(pDataInfoG[0])
         
         #Call methods to graph results
         
         #self.plotByDatasetName(numDatasets, numPred, addInfo[0], predictors, dataInfoG, addInfo[2])
         #self.plotByDatasetType(numDatasets, numPred, addInfo[1], predictors, dataInfoG)
-        self.plotByDatasetName(predNumDatasets, numPred, predAddInfo[0], predictors, predDataInfoG, predAddInfo[2])
-        self.plotByDatasetType(predNumDatasets, numPred, predAddInfo[1], predictors, predDataInfoG)
+#########self.plotByDatasetName(predNumDatasets, numPred, pAddInfo[0], predictors, pDataInfoG, pAddInfo[2])
+#########self.plotByDatasetType(predNumDatasets, numPred, pAddInfo[1], predictors, pDataInfoG)
         
         #Call methods to plot comparison between using predictors and not using them
-        self.plotCompPredName(predAddInfo, noPredAddInfo)
-        self.plotCompPredType(predAddInfo, noPredAddInfo)
+        self.plotCompPredName(pAddInfo, npAddInfo, ttAddInfo)
+        self.plotCompPredType(pAddInfo, npAddInfo, ttAddInfo)
         
-    def plotCompPredType(self,predInfo, noPredInfo):
+    def plotCompPredType(self,predInfo, noPredInfo, ttInfo):
 
-        #Define an array that will contain all the dataset types from pred or noPred
+        #Define an array that will contain all the dataset types from pred, noPred, or theoTime
         typesD = []
         numRepPred = [] #Saves the number of repetitions for a dataset type and for predInfo
         numRepNoPred = [] #Saves the number of repetitions for a dataset type and for noPredInfo
+        numRepTheoTime = [] #Saves the number of repetitions for a dataset type and for theoTime
         #Fill up typesD
         for i in range(0, len(predInfo[0])):
             if predInfo[1][i] not in typesD:
                 typesD.append(predInfo[1][i])
                 numRepPred.append(1)
                 numRepNoPred.append(0)
+                numRepTheoTime.append(0)
             else:
                 idx = typesD.index(predInfo[1][i])
                 numRepPred[idx] += 1
@@ -509,14 +513,24 @@ class PlotData:
                 typesD.append(noPredInfo[1][i])
                 numRepPred.append(0)
                 numRepNoPred.append(1)
+                numRepTheoTime.append(0)
             else:
                 idx = typesD.index(noPredInfo[1][i])
                 numRepNoPred[idx] += 1
+        for i in range(0, len(ttInfo[0])):
+            if ttInfo[1][i] not in typesD:
+                typesD.append(ttInfo[1][i])
+                numRepPred.append(0)
+                numRepNoPred.append(0)
+                numRepTheoTime.append(1)
+            else:
+                idx = typesD.index(ttInfo[1][i])
+                numRepTheoTime[idx] += 1
                 
         #Define two arrays to save timePoint and timeFrame
-        #Index 0 is for pred, 1 i for noPred
-        timePoint = zeros((2, len(typesD)))
-        timeFrame = zeros((2, len(typesD)))
+        #Index 0 is for pred, 1 i for noPred, 2 is for theoTime
+        timePoint = zeros((3, len(typesD)))
+        timeFrame = zeros((3, len(typesD)))
         #Fill up these arrays
         for i in range(0, len(predInfo[0])):
             idx = typesD.index(predInfo[1][i])
@@ -526,11 +540,15 @@ class PlotData:
             idx = typesD.index(noPredInfo[1][i])
             timePoint[1][idx] += noPredInfo[3][i] / numRepNoPred[idx]
             timeFrame[1][idx] += noPredInfo[4][i] / numRepNoPred[idx]
+        for i in range(0, len(ttInfo[0])):
+            idx = typesD.index(ttInfo[1][i])
+            timePoint[2][idx] += ttInfo[3][i] / numRepTheoTime[idx]
+            timeFrame[2][idx] += ttInfo[4][i] / numRepTheoTime[idx]
         
-        legend = ['Predictors', 'No Predictors']
-        gName1 = 'Time per Point for Dataset Type'
+        legend = ['Predictors', 'No Predictors', 'Theoretical Time']
+        gName1 = 'Average Time per Point for Dataset Type'
         self.plotConsecutiveBars(typesD, timePoint, gName1, 'Dataset Type', 'Time in seconds', legend, 0)
-        gName2 = 'Time per Frame for Dataset Type'
+        gName2 = 'Average Time per Frame for Dataset Type'
         self.plotConsecutiveBars(typesD, timeFrame, gName2, 'Dataset Type', 'Time in seconds', legend, 0)
         
         #Debugging purposes-----------------------------------------------------------------
@@ -539,9 +557,9 @@ class PlotData:
         #print 'numRepNoPred:', numRepNoPred
         #-----------------------------------------------------------------------------------
               
-    def plotCompPredName(self,predInfo, noPredInfo):
+    def plotCompPredName(self,predInfo, noPredInfo, ttInfo):
         
-        #Define an array that will contain all the datasets from pred or noPred
+        #Define an array that will contain all the datasets from pred, noPred, and theoTime
         namesD = []
         #Fill up namesD
         for i in range(0, len(predInfo[0])):
@@ -550,11 +568,14 @@ class PlotData:
         for i in range(0, len(noPredInfo[0])):
             if noPredInfo[0][i] not in namesD:
                 namesD.append(noPredInfo[0][i])
+        for i in range(0, len(ttInfo[0])):
+            if ttInfo[0][i] not in namesD:
+                namesD.append(ttInfo[0][i])
         
         #Define two arrays to save timePoint and timeFrame
-        #Index 0 is for pred, 1 i for noPred
-        timePoint = zeros((2, len(namesD)))
-        timeFrame = zeros((2, len(namesD)))
+        #Index 0 is for pred, 1 is for noPred, 2 is for theoTime
+        timePoint = zeros((3, len(namesD)))
+        timeFrame = zeros((3, len(namesD)))
         #Fill up these arrays
         for i in range(0, len(predInfo[0])):
             idx = namesD.index(predInfo[0][i])
@@ -563,12 +584,16 @@ class PlotData:
         for i in range(0, len(noPredInfo[0])):
             idx = namesD.index(noPredInfo[0][i])    
             timePoint[1][idx] = noPredInfo[3][i]
-            timeFrame[1][idx] = noPredInfo[4][i]    
+            timeFrame[1][idx] = noPredInfo[4][i]
+        for i in range(0, len(ttInfo[0])):
+            idx = namesD.index(ttInfo[0][i])    
+            timePoint[2][idx] = ttInfo[3][i]
+            timeFrame[2][idx] = ttInfo[4][i] 
             
-        legend = ['Predictors', 'No Predictors']
-        gName1 = 'Time per Point for Each Dataset'
+        legend = ['Predictors', 'No Predictors', 'Theoretical Time']
+        gName1 = 'Average Time per Point for Each Dataset'
         self.plotConsecutiveBars(namesD, timePoint, gName1, 'Dataset', 'Time in seconds', legend, 30)
-        gName2 = 'Time per Frame for Each Dataset'
+        gName2 = 'Average Time per Frame for Each Dataset'
         self.plotConsecutiveBars(namesD, timeFrame, gName2, 'Dataset', 'Time in seconds', legend, 30)
         
     def plotConsecutiveBars(self, xLabels, yPlots, gName, xl, yl, leg, rot):
@@ -647,6 +672,14 @@ class PlotData:
             newAddInfo[3][i] /= numRepetitions[i]
             newAddInfo[4][i] /= numRepetitions[i]
             
+        newAddInfo.append([]) #Add theoTime array
+        #Fill up theoTime array
+        for i in range(0, len(names)):
+            idx = addInfo[0].index(names[i])
+            theoTime = addInfo[6][idx]
+            newAddInfo[6].append(theoTime)
+
+            
         
         #Debugging purposes-----------------------------------------------------------------------
         #print 'names:\n', names
@@ -673,6 +706,11 @@ class PlotData:
         for i in range(0, len(dataInfoG)): noPDIG.append([])
         noPAI = []
         for i in range(0, len(addInfo)): noPAI.append([])
+        #Define a new array where analysis with predictors and theoretical time will be saved
+        ttDIG = []
+        for i in range(0, len(dataInfoG)): ttDIG.append([])
+        ttAI = []
+        for i in range(0, len(addInfo)): ttAI.append([])
         
         #Find datasets that didn't use any predictor for the analysis
         for dataset in range(0, len(addInfo[0])):
@@ -684,6 +722,15 @@ class PlotData:
                     noPDIG[i].append(dataInfoG[i][dataset])
                 for i in range(0, len(addInfo)):
                     noPAI[i].append(addInfo[i][dataset])
+            
+            elif addInfo[6][dataset] == True:
+                
+                #Add information to ttDIG and ttAI
+                for i in range(0, len(dataInfoG)):
+                    ttDIG[i].append(dataInfoG[i][dataset])
+                for i in range(0, len(addInfo)):
+                    ttAI[i].append(addInfo[i][dataset])
+                    
             else:
                 
                 #Add information to pDIG and pAI
@@ -699,7 +746,7 @@ class PlotData:
         #print 'pAI:\n', pAI
         #---------------------------------------------------------------------------------------
         
-        return pDIG, pAI, noPDIG, noPAI
+        return pDIG, pAI, noPDIG, noPAI, ttDIG, ttAI
         
  
     def plotByDatasetName(self, numDatasets, numPred, names, predictors, dataInfoG, pointsM):
@@ -792,7 +839,7 @@ class PlotData:
         returnInfo = {}
         
         #Define boolean variables to know if info was obtained
-        pointsM = manualP = pred = name = timeF = timeP = False
+        pointsM = manualP = pred = name = timeF = timeP = theoTime = False
         
         #Obtain each value
         for line in metaArr:
@@ -836,7 +883,14 @@ class PlotData:
                 returnInfo['nameDataset'] = pathSplit[-2 + noValid] #Get name of dataset
                 returnInfo['typeDataset'] = pathSplit[-3 + noValid] #Get dataset type
                 name = True
+
+            elif line.startswith('THEORETICAL_TIME') and 'True' in line:
+                returnInfo['theoTime'] = True
+                theoTime = True
             
+        #Put false if theoTime line was not found
+        if theoTime == False: returnInfo['theoTime'] = False
+        
         if not(pointsM and manualP and pred and timeF and timeP and name): return None
         
         #Obtain how many points came from each predictor
