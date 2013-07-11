@@ -32,7 +32,7 @@ class Performance(Chooser):
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
         self.outputName = '' #Name of output directory
-        self.showBool = True #Boolean that determines if show or not graphs
+        self.showBool = True #Boolean that determines if show or don't graphs
         
         
         #Variables from Image Stack class
