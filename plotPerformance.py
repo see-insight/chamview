@@ -57,7 +57,7 @@ class PlotData:
         self.readFile(self.directory)
         
         #Plot all the graphs
-        self.plot()
+        self.plotAll()
         
     def readFile(self, filename):
         
@@ -76,22 +76,59 @@ class PlotData:
                 break
         self.fileArr = fileArr[i:]
         
-    def plot(self):
+    def plotAll(self):
         
         itr = 0 #Iterator that traverses fileArr
        
         #While loop that checks if there are still data to plot
         while itr < len(self.fileArr):
         
-            #Check if current line cotains a graph name or a point kind name
-            if self.fileArr[itr] in self.graphNames or self.pointKLabel in self.fileArr[itr]:
+            #Check if current line cotains a graph name
+            if self.fileArr[itr] in self.graphNames:
             
+                graphTitle = self.fileArr[itr]
+                itr += 1
+                
+                if graphTitle == 'ERROR BY FRAME\n':
+                    
+                    #Something like
+                    #input file, numPred, numPointK, numFrames are global variables
+                    # itr = getErrorByFrameInfo(itr)
+                    pass
+                    
+                elif graphTitle == 'ERROR BY POINT KIND\n':
+                    
+                    pass
+                    
+                elif graphTitle == 'PERCENTAGE OF POINTS\n':
+                    
+                    pass
+                    
+                elif graphTitle == 'ACCURACY IN PREDICTION\n':
+                    
+                    pass
+                    
+                elif graphTitle == 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n':
+                    
+                    #Method not implemented because right now ROC is not important
+                    pass
+                    
+                else:
+                    
+                    print 'Graph name was not found'
+        else:
+                itr += 1
+        
+    def getErrorByFrameInfo(self, itr):
+        pass
+                                                       
+    def plotGraph(self, graphTitle):              
                 self.numPlots += 1
                 #Define a new figure
                 plt.figure(self.numPlots)
                 
                 graphTitle = self.fileArr[itr] #Save graph title
-                itr += 1
+                
                 
                 predictors = [] #Define an array that will save predictor names
                 
@@ -199,9 +236,6 @@ class PlotData:
                   
                 plt.legend(predictors)
                 plt.show()
-        
-            else:
-                itr += 1
                
     def getXY(self, line):
         xy = line.split(',')         
