@@ -171,23 +171,11 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             if argUsePred == '': imstack.predictions[0] = predict_point
 
     #Pass argOutput to chooser if possible
-
     try:
         chooser.saveFile = argOutput
     except NameError:
         pass
 
-
-    def print_var_info():
-        print '****SELECTED POINTS:****\n', imstack.point
-        print '****PREDICTED POINTS:****\n', predict_point
-        print '****POINT SOURCE HISTORY:****'
-        for frame in imstack.point_sources:
-            print frame
-        print '****ACTIVE POINT:****\n', chooser.activePoint
-        print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
-
-    #print_var_info() #***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
@@ -216,8 +204,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
             #Use predictions previously computed and saved
             predict_point = imstack.predictions[imstack.current_frame]
 
-        #print_var_info() #*************************************************************************
-
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)
         if chooser.editedPointKinds:
@@ -232,9 +218,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
     #Save predicted points in a text file
     if argSavePred != '': imstack.save_predictions(argSavePred, predictor_name)
-
-#    print '\n###### FINAL VARIABLE VALUES ######\n'
-#    print_var_info()
 
     #Run System Inspector
     if argSysInspector:
