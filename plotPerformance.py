@@ -22,6 +22,7 @@ class PlotData:
         self.file_in = None
         self.directory = directory
         self.outputName = '' #Name of output directory
+        self.showBool = True; ##Boolean that determines if show or don't graphs
         self.subdirectories = []
         
         #Atribbutes that are obtained from performance class
@@ -255,10 +256,14 @@ class PlotData:
         self.oracleN = per.oracleN
         
     #Method that plots information from Metadata file
-    def plotMeta(self):
+    def plotMeta(self, output, argShow):
         
         #If filename does not exist, return
         if os.path.exists(self.directory) == False: return
+        
+        #Get the path where graphs will be saved
+        self.outputName = output
+        if output != '' and not(output.endswith('/')): self.outputName += '/'
         
         #Open file and read each line
         inputFile = open(self.directory)
@@ -304,8 +309,8 @@ class PlotData:
         #Plot how many accepted points came from each predictor and manually
         self.plotUsePredictors(predictorUse, pointsModified)
     
-    #Method that obtains the use of the predictors when running chamview
     def getUsePredictors(self, metaArr, predictors, manualPoints):
+        #Method that obtains the use of the predictors when running chamview
     
         #Define an array to save how many accepted points came from each predictor
         #Put initially the manual points
@@ -328,7 +333,8 @@ class PlotData:
     def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
         fig = plt.figure()
         ax = fig.add_axes([0., 0., 1., 1.])
-        text(.25, .9, 'METADATA INFORMATION', size = 24)
+        gName = 'METADATA INFORMATION'
+        text(.25, .9, gName, size = 24)
         
         text(0.05, 0.5, 'Total Points: ' + str(totalPoints) + '\n'
               'Points Modified: ' + str(pointsModified) + '\n'
@@ -339,6 +345,13 @@ class PlotData:
               'Time Per Frame: ' + self.getTime(timePerFrame) + '\n',
               verticalalignment = 'center', size = 22)
         ax.set_axis_off()
+        
+        #Save figure if output file is given
+        if self.outputName != '':
+            figPath = self.outputName + gName + '.jpg'
+            savefig(figPath)
+            print 'Graph saved in', figPath
+        
         show()                            
     
     #This method plots how many time each predictor was used for annotating points
@@ -357,7 +370,16 @@ class PlotData:
         x = arange(len(predictorUse))
         bar(x, yPlot)
         xticks( x + 0.4, xPlot )
-        title('Use of Predictors\nPoints modified: ' + str(pointsModified))
+        gName = 'Use of Predictors'
+        title(gName + '\nPoints modified: ' + str(pointsModified))
+        
+        #Save figure if output file is given
+        if self.outputName != '':
+            figPath = self.outputName + gName + '.jpg'
+            savefig(figPath)
+            print 'Graph saved in', figPath
+        
+        #Show graph only if user wants
         show()
 
     #Method that receives a string and return an array
@@ -427,7 +449,6 @@ class PlotData:
         self.getSubdirectories(self.directory, 'metadata.txt')
         
         #Debugging purposes-----------------------------------------------------------------------
-        #Get all ajsdklfj
         #self.subdirectories = []
         #self.getSubdirectories(self.directory, 'metadata1.txt')
         #if len(self.subdirectories) > 0:
