@@ -265,6 +265,9 @@ class PlotData:
         self.outputName = output
         if output != '' and not(output.endswith('/')): self.outputName += '/'
         
+        #Get boolean variable for show
+        self.showBool = argShow
+        
         #Open file and read each line
         inputFile = open(self.directory)
         metaArr = inputFile.readlines()
@@ -352,7 +355,8 @@ class PlotData:
             savefig(figPath)
             print 'Graph saved in', figPath
         
-        show()                            
+        #Show graphs if user wants
+        if self.showBool: show()                            
     
     #This method plots how many time each predictor was used for annotating points
     def plotUsePredictors(self, predictorUse, pointsModified):
@@ -380,7 +384,7 @@ class PlotData:
             print 'Graph saved in', figPath
         
         #Show graph only if user wants
-        show()
+        if self.showBool: show()
 
     #Method that receives a string and return an array
     def getPred(self, line):
@@ -438,12 +442,14 @@ class PlotData:
             if minutes > 0: strTime += str(int(minutes)) + ' min '
             return strTime + str(seconds) + ' s'
         
-    def compareMetas(self, output):
+    def compareMetas(self, output, argShow):
         '''This method looks for metadata and points files in order to compare evaluations
         between datasets. It takes self.directory and finds all these two files in subdirectories'''
         
         self.outputName = output
         if output != '' and not(output.endswith('/')): self.outputName += '/'
+        
+        self.showBool = argShow
 
         #Get all the subdirectories that contain metadata files
         self.getSubdirectories(self.directory, 'metadata.txt')
@@ -682,7 +688,7 @@ class PlotData:
             print 'Figure saved to:', figPath
         
         #Show figure
-        plt.show()                 
+        if self.showBool: plt.show()                 
  
     def removeRepeatedData(self, dataInfo, addInfo):
         
@@ -902,7 +908,7 @@ class PlotData:
             print 'Figure saved to:', figPath
         
         #Show figure
-        plt.show()
+        if self.showBool: plt.show()
                 
     def getInfoDatasets(self, pathFile):
    
