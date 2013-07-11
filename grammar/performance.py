@@ -55,6 +55,7 @@ class Performance(Chooser):
         self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
+        self.PredictorsL = 'PREDICTORS: '
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
         self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
@@ -106,6 +107,7 @@ class Performance(Chooser):
         self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
         self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
+        self.fo.write(self.numPredictorsL + str(self.name) + '\n')
         
         #TURN ON OR OFF THE GRAPHS THAT NEED TO BE DISPLAYED
         
