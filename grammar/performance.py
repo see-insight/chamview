@@ -84,8 +84,7 @@ class Performance(Chooser):
         if parameters[3] == 'False': self.showBool = False
         
         #Make outputName correct
-        if self.outputName != '':
-            self.outputName = self.outputName + '/'
+        if self.outputName != '': self.outputName = self.outputName + '/'
 
     def teardown(self):
 
