@@ -6,18 +6,23 @@
 
 Usage options:
     -h --help       Print this help message.
-    -d --dirImg     Image directory. Default is (./dataSets/ChamB_LB/frames).
+    -d --dirImg     Image directory. Default is (none).
     -i --prep       Preprocessor subclass. Default is (none).
     -k --pkind      Point kind file. Default is (defaultPointKinds.txt).
-    -p --dirGT      Ground Truth points directory. Default is (./dataSets/ChamB_LB/manualpoints/2013_06_04_dosalman/points.txt).
-    -r --predictor  Predictor Name. Default is all predictors.
+    -p --dirGT      Ground Truth points directory. Default is (none).
+    -r --predictor  Predictor Name that will be evaluated. Default is all the predictors.
     -o --output     Output directory where results are saved. Default is current directory.
     -u --upBound    Determines the upper bound of results we can see. Default is 50.
     -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5.
+    
+    -n --dontShow   It indicates that user doesn't want to see the graphs created at the moment
+    
+    #Functionalities
     -s --savedGraph Data results previously saved in text file that is used to graph.
-    -m --metadata   Directory of metadata to plot graphs using the information there.
-    -n --dontShow   It indicates that user doesn't want to plot graphs at the moment
+    -m --metadata   File of metadata.txt to plot graphs using the information in it.
     -c --comDataSet Directory of datasets used to compare evaluations on them
+    
+    #Pending
     -v --savePreds  File to save the Predicted Points to for re-use later
     -f --usePreds   Previously saved predicted points file to use as predicted points to save time
 
@@ -40,7 +45,7 @@ def main(argc,argv):
     argFrameDir = ''
     argGroundT = ''
     argOutput = ''
-    argPKind = ''
+    argPKind = 'defaultPointKinds.txt'
     argPredictor = []
     argPreproc = ''
     argUpBound = 50
@@ -98,25 +103,38 @@ def main(argc,argv):
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
 
+            # -s Option
             #Plot dataset from a text file
             pd = PlotData(argSavedGraph, argUpBound)
             pd.plotSavedG()
-
-        elif argMetadata != '':
-
-            #Show graphs using Metadata info
-            pd = PlotData(argMetadata)
-            pd.plotMeta()
-
+            
         elif argComDataSet != '':
 
+            #-c Option
             #Show graphs to compare evaluations between datasets
             pd = PlotData(argComDataSet)
-            pd.compareMetas(argOutput)
+            pd.compareMetas(argOutput, argShow)
 
+        elif argGroundT != '' or argMetadata != '':
+            
+            if argMetadata != '':
+                # -m Option
+                #Show graphs using Metadata info
+                pd = PlotData(argMetadata)
+                pd.plotMeta(argOutput, argShow)
+            
+            if argGroundT != '':
+                #compute errors and then plot
+                
+                #Obtain error arrays
+                
+                #send this array to plotPerformance class and generate graphs
+                
+                callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds)
+    
         else:
-            #compute errors and then plot
-            callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds)
+                
+            print 'No files were found to do the evaluation'
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -126,7 +144,7 @@ def main(argc,argv):
 
 def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds):
 
-    command = ["./chamview.py", "-c", "Performance"]
+    command = ["./chamsim.py", "-c", "Performance"]
 
     #Get predictor names
     if len(argPredictor) > 0:
