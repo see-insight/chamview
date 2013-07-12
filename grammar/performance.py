@@ -63,11 +63,11 @@ class Performance(Chooser):
         self.oracleN = 'Oracle' #Label for Oracle predictor
         
         #Define an array that saves all the graph names
-        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n']
-        self.graphNames.append('ERROR FOR EACH POINT KIND\n')
-        self.graphNames.append('PERCENTAGE OF POINTS\n')
-        self.graphNames.append('ACCURACY IN PREDICTION\n')
-        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
+        self.graphNames = ['ERROR BY FRAME', 'ERROR BY POINT KIND']
+        self.graphNames.append('ERROR FOR EACH POINT KIND')
+        self.graphNames.append('PERCENTAGE OF POINTS')
+        self.graphNames.append('ACCURACY IN PREDICTION')
+        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE')
         
         #Define an array that saves all the arguments for graphs
         self.argGraphs = []
@@ -221,7 +221,7 @@ class Performance(Chooser):
     def showErrorByFrame(self):
                 
         #Save title in text file and in graphNames array
-        gName = 'ERROR BY FRAME'
+        gName = self.graphNames[0]
         self.fo.write('\n' + gName + '\n')
         
         #Define a new figure
@@ -257,10 +257,10 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        title('Average Distance in Pixels by Frame\nThis graph shows errors less or equal than '
-               +str(self.upperB)+' pixels')
-        xlabel('Frame')
-        ylabel('Distance in Pixels')      
+        titleLa = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) +self.argGraphs[0][3]
+        title(titleLa)
+        xlabel(self.argGraphs[0][4])
+        ylabel(self.argGraphs[0][5])      
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
@@ -271,7 +271,7 @@ class Performance(Chooser):
     def showErrorByPointKind(self):
         
         #Save title in text file and in graphNames array
-        gName = 'ERROR BY POINT KIND'
+        gName = self.graphNames[1]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
@@ -319,11 +319,11 @@ class Performance(Chooser):
             
         #Write division into file
         self.fo.write(self.division)
-            
-        title('Average Distance in Pixels by Point Kind\nThis graph shows errors less or equal than '
-               +str(self.upperB)+' pixels')
-        xlabel('Point Kind')
-        ylabel('Distance in Pixels')
+        
+        titleLa = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) + self.argGraphs[1][3]
+        title(titleLa)
+        xlabel(self.argGraphs[1][4])
+        ylabel(self.argGraphs[1][5])
         plt.legend(self.name, prop = {'size':8})
         
         #Save figure
@@ -334,7 +334,7 @@ class Performance(Chooser):
     def showErrorEachPointK(self):
         
         #Save title in text file and in graphNames array
-        gName = 'ERROR FOR EACH POINT KIND'
+        gName = self.graphNames[2]
         self.fo.write('\n' + gName + '\n')
         
         #Go through each point kind
@@ -373,10 +373,11 @@ class Performance(Chooser):
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
-            title('Distance in Pixels. Point Kind: ' + self.pointKList[pointK]+
-                  '\nThis graph shows errors less or equal than ' + str(self.upperB)+' pixels')
-            xlabel('Frame')
-            ylabel('Distance in Pixels')
+            titleLa = self.argGraphs[2][1] + self.pointKList[pointK] + '\n'
+            titleLa += self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
+            title(titleLa)
+            xlabel(self.argGraphs[2][4])
+            ylabel(self.argGraphs[2][5])
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
@@ -390,7 +391,7 @@ class Performance(Chooser):
     def showPercentageError(self):
         
         #Save title in text file and in graphNames array
-        gName = 'PERCENTAGE OF POINTS'
+        gName = self.graphNames[3]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
@@ -457,11 +458,10 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        title('Percentage of Points\n(For a given error from 1 to ' + 
-              str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
-              'points with at most that error)') 
-        xlabel('Distance in Pixels')
-        ylabel('Percentage of Points')
+        titleLa = self.argGraphs[3][1] + str(self.upperB) + self.argGraphs[3][2] + '\n' + self.argGraphs[3][3]
+        title(titleLa) 
+        xlabel(self.argGraphs[3][4])
+        ylabel(self.argGraphs[3][5])
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
@@ -472,7 +472,7 @@ class Performance(Chooser):
     def showAccuracy(self):
                 
         #Save title in text file and in graphNames array
-        gName = 'ACCURACY IN PREDICTION'
+        gName = self.graphNames[4]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
@@ -514,10 +514,10 @@ class Performance(Chooser):
            
         #Write division into file
         self.fo.write(self.division) 
-  
-        title(gName + '\nThis graph shows how accuracy changes through frames')
-        xlabel('Frame')
-        ylabel('Accuracy')
+        
+        title(self.argGraphs[4][1] + '\n' + self.argGraphs[4][2])
+        xlabel(self.argGraphs[4][3])
+        ylabel(self.argGraphs[4][4])
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
@@ -593,7 +593,7 @@ class Performance(Chooser):
     def showROC(self):
    
         #Save title in text file and in graphNames array
-        gName = 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE'
+        gName = self.graphNames[5]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
