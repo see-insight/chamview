@@ -27,9 +27,11 @@ class PlotData:
         
         #Atribbutes that are obtained from performance class
         self.graphNames = []
+        self.argGraphs = []
         self.division = ''
         #Label variables used to match with text file information
         self.predLabel = ''
+        self.predictorsL = ''
         self.pointKLabel = ''
         self.numPredictorsL = ''
         self.numFramesL = ''
@@ -40,6 +42,7 @@ class PlotData:
         
         #Attributes that are obtained from text file
         self.numPredictors = 0
+        self.predList = []
         self.numFrames = 0
         self.numPointK = 0
         self.upperB = int(upBound)
@@ -89,153 +92,182 @@ class PlotData:
                 graphTitle = self.fileArr[itr]
                 itr += 1
                 
-                if graphTitle == 'ERROR BY FRAME\n':
+                if graphTitle == self.graphNames[0]:
+                    #ERROR BY FRAME Case
                     
-                    #Something like
-                    #input file, numPred, numPointK, numFrames are global variables
-                    # itr = getErrorByFrameInfo(itr)
-                    pass
+                    #Get data arrays to plot
+                    itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                     
-                elif graphTitle == 'ERROR BY POINT KIND\n':
+                    #Get arguments for graph
+                    titleG = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) + self.argGraphs[0][3]
+                    xLabel = self.argGraphs[0][4]
+                    yLabel = self.argGraphs[0][5]
                     
-                    pass
+                    #Call method to plot graph
+                    self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel)
                     
-                elif graphTitle == 'PERCENTAGE OF POINTS\n':
+                elif graphTitle == self.graphNames[1]:
+                    #ERROR BY POINT KIND
                     
-                    pass
+                    #Get data arrays
+                    itr, xPlot, yPlot = self.getInfoErrorByPointK(itr)
                     
-                elif graphTitle == 'ACCURACY IN PREDICTION\n':
+                    #Get arguments for graph
+                    titleG = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) + self.argGraphs[1][3]
+                    xLabel = self.argGraphs[1][4]
+                    yLabel = self.argGraphs[1][5]
                     
-                    pass
+                    #Call method to plot
+                    self.plotConsecutiveBars(xPlot, yPlot, titleG, xLabel, yLabel, self.predList, 0)
+
+                elif graphTitle == self.graphNames[2]:
+                    #ERROR FOR EACH POINT KIND
                     
-                elif graphTitle == 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n':
+                    for i in range(0, self.numPointK):
+                            
+                        #Get name of pointK
+                        pointK = self.fileArr[itr].split(':')[-1]
+                        itr += 1
+                            
+                        #Get data arrays
+                        itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
+                        
+                        #Get arguments for graph
+                        titleG = self.argGraphs[2][1] + pointK + self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
+                        xLabel = self.argGraphs[2][4]
+                        yLabel = self.argGraphs[2][5]
+                        
+                        #Call method to plot graph
+                        self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel)
+                        
+                elif graphTitle == self.graphNames[3]:
+                    #PERCENTAGE OF POINTS
                     
-                    #Method not implemented because right now ROC is not important
+                    #Get data arrays to plot
+                    itr, xPlot, yPlot = self.getInfoPercentagePoints(itr)
+                    
+                    #Get arguments for graphs
+                    titleG = self.argGraphs[3][1] + str(self.upperB) + self.argGraphs[3][2] + '\n' + self.argGraphs[3][3]
+                    xLabel = self.argGraphs[3][4]
+                    yLabel = self.argGraphs[3][5]
+                    
+                    #Call method to plot graph
+                    self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel, 5)
+                    
+                elif graphTitle == self.graphNames[4]:
+                    #ACCURACY
+                    
+                    #Get data arrays to plot
+                    itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
+                    
+                    #Get arguments for graphs
+                    titleG = self.argGraphs[4][1] + '\n' +self.argGraphs[4][2]
+                    xLabel = self.argGraphs[4][3]
+                    yLabel = self.argGraphs[4][4]
+                    
+                    #Call method to plot graph
+                    self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel)
+                    
+                elif graphTitle == self.graphNames[5]:
+                    
+                    #title = graphTitle + 'A predictor is better if its curve is above other'
+                    #xlabel = 'False Positive Rate'
+                    #ylabel = 'True Positive Rate'
+                    
+                    #Method not implemented because right now ROC is not important at the moment
                     pass
                     
                 else:
                     
-                    print 'Graph name was not found'
-        else:
+                    print 'Graph Name was not found'
+            else:
                 itr += 1
         
-    def getErrorByFrameInfo(self, itr):
-        pass
-                                                       
-    def plotGraph(self, graphTitle):              
-                self.numPlots += 1
-                #Define a new figure
-                plt.figure(self.numPlots)
+    def getInfoErrorByFrame(self, itr):
+        
+        #Define two lists to save numbers to plot
+        xPlot = zeros((self.numPredictors, self.numFrames))
+        yPlot = zeros((self.numPredictors, self.numFrames))
+        
+        for i in range(0, self.numPredictors):
+            
+            itr += 1 #Discard predictor name
+            for j in range(0, self.numFrames):
+                xPlot[i][j], yPlot[i][j] = self.getXY(self.fileArr[itr])
+                itr += 1
                 
-                graphTitle = self.fileArr[itr] #Save graph title
+            yPlot[i].sort() #Sort yPlot to avoid annoying graphs
+            
+            #Cut yPlot to values less or equal than upper Bound
+            for j in range(0, self.numFrames):
+                if yPlot[i][j] > self.upperB: yPlot[i][j] = self.upperB
+            
+        return itr, xPlot, yPlot
+        
+    def getInfoErrorByPointK(self, itr):
+        
+        #Define two lists to save data
+        xPlot = []
+        yPlot = zeros((self.numPredictors, self.numPointK))
+        
+        for i in range(0, self.numPredictors):
+            
+            itr +=1 #Discard predictor name
+            
+            for j in range(0, self.numPointK):
+                newX, yPlot[i][j] = self.getXY(self.fileArr[itr])
+                if i == 0: xPlot.append(newX)
+                if yPlot[i][j] > self.upperB: yPlot[i][j] = self.upperB
+                itr += 1
                 
+        return itr, xPlot, yPlot
+        
+    def getInfoPercentagePoints(self, itr):
+        
+        #Define two lists to save the data
+        xPlot = []
+        yPlot = []
+        
+        for i in range(0, self.numPredictors):
+            
+            xPlot.append([])
+            yPlot.append([])            
+            
+            itr += 1 #Discard predictor name
+            
+            while not(self.fileArr[itr].startswith(self.predLabel)) and ',' in self.fileArr[itr]:
+                newX, newY = self.getXY(self.fileArr[itr])
+                xPlot[i].append(int(newX))
+                yPlot[i].append(float(newY))
+                itr += 1
+        
+            #Only take the important part of the data
+            if self.upperB < len(yPlot[i]):
+                yPlot[i] = yPlot[i][0:self.upperB]
+                xPlot[i] = xPlot[i][0:self.upperB]     
+                     
+        return itr, xPlot, yPlot
+        
+    
+    def plotLine(self, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
+        
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
+        
+        for i in range(0, len(self.predList)): 
+            if self.predList[i] != self.oracleN:
+                plt.plot(xPlot[i], yPlot[i])
+                #if scatt != 0: plt.scatter(xPlot[i], yPlot[i], s=scatt)
+            else:
+                plt.plot(xPlot[i], yPlot[i], '--', color = 'k')
                 
-                predictors = [] #Define an array that will save predictor names
-                
-                #Plot a line for each predictor
-                while self.predLabel in self.fileArr[itr]:
-                    
-                    pred = self.getPredictor(self.fileArr[itr]) #Get predictor name
-                    predictors.append(pred) #Put it in the array
-                    itr += 1
-                    
-                    #Define xPlot and yPlot
-                    xPlot = []
-                    yPlot = []
-
-                    while not(self.predLabel in self.fileArr[itr] or self.fileArr[itr] == self.division or self.pointKLabel in self.fileArr[itr]):
-                        newX, newY = self.getXY(self.fileArr[itr])
-
-                        try:
-                            xPlot.append(int(newX))
-                        except ValueError:
-                            xPlot.append(newX)
-                            
-                        yPlot.append(float(newY))
-                        itr += 1                           
-                    
-                    if graphTitle == 'PERCENTAGE OF POINTS\n':
-                        
-                        #Only take the important part of the data
-                        if self.upperB < len(yPlot):
-                            yPlot = yPlot[0:self.upperB]
-                            xPlot = xPlot[0:self.upperB]
-                        
-                        if pred != self.oracleN:
-                            plt.plot(xPlot, yPlot)
-                            plt.scatter(xPlot, yPlot, s=5)
-                        else:
-                            plt.plot(xPlot, yPlot, '--', color = 'k')
-
-                    elif graphTitle == 'ERROR BY POINT KIND\n':
-                        
-                        #Cut yPlot to values less or equal than upper Bound
-                        for i in range(0, len(yPlot)):
-                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB
-                        
-                        #Plot error with bars if it is by point kinds
-                        i = len(predictors) - 1
-                        x = arange(self.numPointK)
-                        width = 1.0 / (self.numPredictors + 1.5)
-                        
-                        if pred != self.oracleN:
-                            plt.bar(x + width * i, yPlot, width, color=cm.jet(1.*i/len(x)))
-                        else:
-                            plt.bar(x + width * i, yPlot, width, color='k')
-                        
-                        plt.xticks( x + 0.5,  xPlot)
-                        
-                    else:
-                        
-                        yPlot.sort() #Sort yPlot to avoid annoying graphs
-                        #Cut yPlot to values less or equal than upper Bound
-                        for i in range(0, len(yPlot)):
-                            if yPlot[i] > self.upperB: yPlot[i] = self.upperB   
-                        #Plot the error in the subplot
-                        
-                        if pred != self.oracleN:
-                            plt.plot(xPlot, yPlot)
-                        else:
-                            plt.plot(xPlot, yPlot, '--', color = 'k')
-                                                        
-                
-                #Choose the correct labels for x and y axis
-                if graphTitle == 'ERROR BY POINT KIND\n':
-                    
-                    title(graphTitle + 'This graph shows errors less or equal than '
-                    +str(self.upperB)+' pixels')
-                    xlabel('Point Kind')
-                    ylabel('Number of Pixels')
-                    
-                elif graphTitle == 'PERCENTAGE OF POINTS\n':
-                    
-                    title(graphTitle + '(For a given error from 1 to ' + 
-                    str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
-                    'points with at most that error)')
-                    xlabel('Error in Pixels')
-                    ylabel('Percentage of Points')
-                    
-                elif graphTitle == 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n':
-                    
-                    title(graphTitle + 'A predictor is better if its curve is above other')
-                    xlabel('False Positive Rate')
-                    ylabel('True Positive Rate')
-                    
-                elif graphTitle == 'ACCURACY IN PREDICTION\n':
-                    
-                    title(graphTitle)
-                    xlabel('Frame')
-                    ylabel('Accuracy')
-                    
-                else:    
-                    
-                    title(graphTitle + 'This graph shows errors less or equal than '
-                    + str(self.upperB) + ' pixels')
-                    xlabel('Frame')
-                    ylabel('Number of Pixels')
+        plt.title(titleG)
+        plt.xlabel(xLabel)
+        plt.ylabel(yLabel)
                   
-                plt.legend(predictors)
-                plt.show()
+        plt.legend(self.predList)
+        plt.show()
                
     def getXY(self, line):
         xy = line.split(',')         
@@ -254,24 +286,28 @@ class PlotData:
         inputFile = open(filename)
         
         #Define a boolean variables that tell us what values have been obtained        
-        pred = fram = pointK = False
+        pred = fram = pointK = predL = False
 
         for line in inputFile:
             #Get number of predictors, frames, and point kinds
             if line.startswith(self.numPredictorsL):
                 arr = line.split()
-                self.numPredictors = int(arr[len(arr)-1])
+                self.numPredictors = int(arr[-1])
                 pred = True
             if line.startswith(self.numFramesL):
                 arr = line.split()
-                self.numFrames = int(arr[len(arr)-1])
+                self.numFrames = int(arr[-1])
                 fram = True
             if line.startswith(self.numPointKL):
                 arr = line.split()
-                self.numPointK = int(arr[len(arr)-1])
+                self.numPointK = int(arr[-1])
                 pointK = True
+            if line.startswith(self.predictorsL):
+                self.predList = self.getPred(line, False)
+                predL = True
+                
             
-            if pred and fram and pointK: break
+            if pred and fram and pointK and predL: break
             
     def getPerformanceAtt(self):
         #Create a new performance object
@@ -280,6 +316,7 @@ class PlotData:
         
         #Update global variables
         self.graphNames = per.graphNames
+        self.argGraphs = per.argGraphs
         self.division = per.division
         self.predLabel = per.predLabel
         self.pointKLabel = per.pointKLabel
@@ -288,6 +325,7 @@ class PlotData:
         self.numPointKL = per.numPointKL
         self.infVal = per.infVal
         self.oracleN = per.oracleN
+        self.predictorsL = per.predictorsL
         
     #Method that plots information from Metadata file
     def plotMeta(self, output, argShow):
@@ -334,7 +372,7 @@ class PlotData:
                 timePerFrame = float(line.split()[-1])
                 
             elif line.startswith('PREDICTORS'):
-                predictors = self.getPred(line)
+                predictors = self.getPred(line, True)
         
         #Plot times
         self.plotTimes(totalPoints, pointsModified, totalFrames, framesModified,
@@ -421,7 +459,7 @@ class PlotData:
         if self.showBool: show()
 
     #Method that receives a string and return an array
-    def getPred(self, line):
+    def getPred(self, line, lowerC):
         
         #Get the indexes for array bounds
         first = line.index('[')
@@ -443,7 +481,11 @@ class PlotData:
             l = pred.index("'") #Find last (')
             pred = pred[:l]
             
-            newList[i] = string.lower(pred)
+            #Make lowerC if needed
+            if lowerC:
+                newList[i] = string.lower(pred)
+            else:
+                newList[i] = pred
             
         return newList
             
@@ -487,14 +529,6 @@ class PlotData:
 
         #Get all the subdirectories that contain metadata files
         self.getSubdirectories(self.directory, 'metadata.txt')
-        
-        #Debugging purposes-----------------------------------------------------------------------
-        #self.subdirectories = []
-        #self.getSubdirectories(self.directory, 'metadata1.txt')
-        #if len(self.subdirectories) > 0:
-        #    print 'THERE IS A METADATA1.TXT !!!'
-        #return
-        #---------------------------------------------------------------------------------------
         
         #Arrays that saves the information needed to plot for each dataset
         dataInfo = [] #Saves use of predictors for each dataset
@@ -779,18 +813,7 @@ class PlotData:
             idx = addInfo[0].index(names[i])
             theoTime = addInfo[6][idx]
             newAddInfo[6].append(theoTime)
-
-            
-        
-        #Debugging purposes-----------------------------------------------------------------------
-        #print 'names:\n', names
-        #print 'numRepetitions:\n', numRepetitions
-        #print '\ndataInfo:\n', dataInfo
-        #print 'newDataInfo:\n', newDataInfo
-        #print 'addInfo:\n', addInfo
-        #print 'newAddInfo:\n', newAddInfo
-        #-----------------------------------------------------------------------------------------   
-              
+       
         return newDataInfo, newAddInfo
         
         
@@ -968,7 +991,7 @@ class PlotData:
                 manualP = True
                 
             elif line.startswith('PREDICTORS'):
-                predictors = self.getPred(line)
+                predictors = self.getPred(line, True)
                 
                 returnInfo['predUsed'] = len(predictors)
                 
