@@ -153,7 +153,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
-        print 'Results saved in ' + self.outputName
+        print 'Results saved in ' + outTextFile
 
     def choose(self,stack,predicted,predictor_name):
         
@@ -264,7 +264,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
         
         if self.showBool: plt.show()                 
         
@@ -327,7 +327,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop = {'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
         
         if self.showBool: plt.show()
 
@@ -381,7 +381,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            plt.savefig(self.outputName + gName + str(pointK + 1) + '.jpg')
+            if self.outputName != '': plt.savefig(self.outputName + gName + str(pointK + 1) + '.jpg')
         
             if self.showBool: plt.show()
         
@@ -465,7 +465,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
         
         if self.showBool: plt.show()
         
@@ -521,7 +521,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
         
         if self.showBool: plt.show()
         
@@ -586,7 +586,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
         
         if self.showBool: plt.show()     
     
@@ -665,7 +665,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
         
         if self.showBool: plt.show()          
       
@@ -718,7 +718,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            plt.savefig(self.outputName + gName + '.jpg')
+            if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
             
             if self.showBool: plt.show() 
                             
@@ -832,6 +832,6 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            plt.savefig(self.outputName + gName + '.jpg')
+            if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
             
             if self.showBool: plt.show()
