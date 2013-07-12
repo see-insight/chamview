@@ -21,6 +21,9 @@ Usage options:
     -s --savedGraph Data results previously saved in text file that is used to graph.
     -m --metadata   File of metadata.txt to plot graphs using the information in it.
     -c --comDataSet Directory of datasets used to compare evaluations on them
+    #Posible functionalities
+    take a -X where X belongs to alphabet and it tells if it has to do the main functionality
+    -e use saved predictions and ground truth to compute error without run chamview
     
     #Pending
     -v --savePreds  File to save the Predicted Points to for re-use later
