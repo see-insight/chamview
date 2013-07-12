@@ -2,3 +2,6 @@
 	path = inspector
 	url = https://github.com/becketta/sys-inspector.git
 
+[submodule "wrappers"]
+	path = wrappers
+	url = https://github.com/becketta/wrappers.git
