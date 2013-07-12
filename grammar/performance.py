@@ -55,16 +55,43 @@ class Performance(Chooser):
         self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
-        self.PredictorsL = 'PREDICTORS: '
+        self.predictorsL = 'PREDICTORS: '
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
         self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
         self.infVal = 'INF' #Label that indicates the error is very large
+        self.oracleN = 'Oracle' #Label for Oracle predictor
+        
         #Define an array that saves all the graph names
-        self.oracleN = 'Oracle'
-        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF POINTS\n']
-        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
+        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n']
+        self.graphNames.append('ERROR FOR EACH POINT KIND\n')
+        self.graphNames.append('PERCENTAGE OF POINTS\n')
         self.graphNames.append('ACCURACY IN PREDICTION\n')
+        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
+        
+        #Define an array that saves all the arguments for graphs
+        self.argGraphs = []
+        #Error by frame
+        self.argGraphs.append([self.graphNames[0],
+            'Average Distance in Pixels by Frame', 'This graph shows errors less or equal than ', ' pixels',
+            'Frame', 'Distance in Pixels'])
+        #Error by point kind
+        self.argGraphs.append([self.graphNames[1],
+            'Average Distance in Pixels by Point Kind', 'This graph shows errors less or equal than ', ' pixels',
+            'Point Kind', 'Distance in Pixels'])
+        #Error by each point kind
+        self.argGraphs.append([self.graphNames[2],
+            'Distance in Pixels. Point Kind: ', 'This graph shows errors less or equal than ', ' pixels',
+            'Frame', 'Distance in Pixels'])
+        #Percentage of error
+        self.argGraphs.append([self.graphNames[3],
+            'Percentage of Points\n(For a given error from 1 to ', 
+            ' pixels,', 'the next graph shows the percentage of points with at most that error)',
+            'Distance in Pixels', 'Percentage of Points'])
+        #Accuracy
+        self.argGraphs.append([self.graphNames[4],
+            'Accuracy on Prediction', 'This graph shows how accuracy changes through frames.',
+            'Frame', 'Accuracy'])
         
         #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
@@ -107,7 +134,7 @@ class Performance(Chooser):
         self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
         self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
-        self.fo.write(self.numPredictorsL + str(self.name) + '\n')
+        self.fo.write(self.predictorsL + str(self.name) + '\n')
         
         #TURN ON OR OFF THE GRAPHS THAT NEED TO BE DISPLAYED
         
