@@ -7,11 +7,15 @@ import os
 from Grammar import Chooser
 from numpy import *
 from Tkinter import *
-import Tix
 import tkMessageBox, tkFileDialog
 import ttk
 from PIL import Image, ImageTk
 import basicgui_supportclasses as support
+try:
+    import Tix
+    TIX = True
+except ImportError:
+    TIX = False
 
 
 class BasicGui(Chooser):
@@ -44,8 +48,8 @@ class BasicGui(Chooser):
 
     def setup(self):
         '''Set instance variables and create the GUI.'''
-        self.master = Tix.Tk()
-#        self.master = Tk()  # use if Tix is not available
+        if TIX: self.master = Tix.Tk()
+        else: self.master = Tk()  # use if Tix is not available
         #Frame and point info
         self.currentFrame = StringVar()
         self.totalFrame = StringVar()
@@ -109,9 +113,6 @@ class BasicGui(Chooser):
         #Show the window and get user input
         self.master.mainloop()
 
-    def t(self,event=''):
-        print 'it worked'
-
     def fillPointkindList(self):
         '''List each point kind in the point kind Listbox'''
         #We don't have to fill the list again after this
@@ -120,7 +121,6 @@ class BasicGui(Chooser):
         #and bind the first 9 to the number keys on the keyboard
         for i in range(0,self.imstack.point_kinds):
             self.pointlist.insert(END,self.imstack.point_kind_list[i])
-            if i+1 <= 9: self.master.bind_all(str(i+1),self.setPointKind)
         self.pointKind = 0
         self.updatePointKind()
         #Fill the list of predictor choices
@@ -173,23 +173,26 @@ class BasicGui(Chooser):
 
         ###frameL###
         #Tix Balloon for hover-over help
-        balloon = Tix.Balloon(self.master)
+        if TIX: balloon = Tix.Balloon(self.master)
         #Annotation frame
         self.aframe = Frame(self.frameL)
         self.aframe.grid(row=0,column=0,columnspan=3,rowspan=1,pady=15)
         #Delete button
         self.button_del = Button(self.aframe,text='Delete',command=self.delete)
-        balloon.bind_widget(self.button_del,
+        if TIX:
+            balloon.bind_widget(self.button_del,
             balloonmsg='Deletes current point kind\'s selection from current frame.')
         self.button_del.grid(row=0,column=0,columnspan=2,ipadx=15)
         #Clear Frame button
         self.button_clearf = Button(self.aframe,text='Clear Frame',command=self.clearFrame)
-        balloon.bind_widget(self.button_clearf,
+        if TIX:
+            balloon.bind_widget(self.button_clearf,
             balloonmsg='Deletes all points on the current frame.')
         self.button_clearf.grid(row=1,column=0,sticky='WE')
         #Clear All button
         self.button_cleara = Button(self.aframe,text='Clear All Frames',command=self.clearAll)
-        balloon.bind_widget(self.button_cleara,
+        if TIX:
+            balloon.bind_widget(self.button_cleara,
             balloonmsg='Deletes all points from all frames.')
         self.button_cleara.grid(row=1,column=1,sticky='WE')
         #Save and Help frame
@@ -197,19 +200,22 @@ class BasicGui(Chooser):
         self.shframe.grid(row=1,column=0,columnspan=3,rowspan=1,pady=5)
         #Save button
         self.button_save = Button(self.shframe,text='Save Points',command=self.save)
-        balloon.bind_widget(self.button_save,
+        if TIX:
+            balloon.bind_widget(self.button_save,
             balloonmsg='Saves all point data to text file.')
         self.button_save.grid(row=0,column=0,sticky=E)
         #Help button
         self.button_help = Button(self.shframe,text='Help',command=self.showHelp)
-        balloon.bind_widget(self.button_help,
+        if TIX:
+            balloon.bind_widget(self.button_help,
             balloonmsg='Display help window.')
         self.button_help.grid(row=0,column=1,sticky=W)
         #Point Types Label and edit button
         self.pt_label = Label(self.frameL,text='Points',height=4,anchor=S)
         self.pt_label.grid(row=2,column=1)
         self.pt_edit = Button(self.frameL,text='Edit',command=self.pointKindEdit)
-        balloon.bind_widget(self.pt_edit,
+        if TIX:
+            balloon.bind_widget(self.pt_edit,
             balloonmsg='Click to edit the available point kinds.')
         self.pt_edit.grid(row=2,column=2,sticky=S)
         #Listbox used to select point kind
@@ -223,16 +229,18 @@ class BasicGui(Chooser):
         self.pointlist.focus()
         #Clear Point Kind button
         self.button_clearp = Button(self.frameL,text='Clear Point Kind',command=self.clearPointKind)
-        balloon.bind_widget(self.button_clearp,
+        if TIX:
+            balloon.bind_widget(self.button_clearp,
             balloonmsg='Clears selected point kind from all frames.')
         self.button_clearp.grid(row=4,column=1,columnspan=2)
         #Predictors Label and edit button
         self.pd_label = Label(self.frameL,text='Predictors',height=3,anchor=S)
         self.pd_label.grid(row=5,column=1)
-        self.pd_info = Button(self.frameL,text='Edit',command=self.predictorsInfo)
-        balloon.bind_widget(self.pd_info,
+        self.pd_edit = Button(self.frameL,text='Edit',command=self.predictorsEdit)
+        if TIX:
+            balloon.bind_widget(self.pd_edit,
             balloonmsg='Choose which predictors are enabled and disabled.')
-        self.pd_info.grid(row=5,column=2,sticky=S)
+        self.pd_edit.grid(row=5,column=2,sticky=S)
         #Listbox used to show predictors
         self.predlist= Listbox(self.frameL,width=15,height=10,selectmode=SINGLE)
         self.predlist.grid(row=6,column=1,columnspan=2)
@@ -243,7 +251,8 @@ class BasicGui(Chooser):
         self.predlist.bind('<<ListboxSelect>>',self.setActivePred)
         #Toggle Predictions Button
         button = Button(self.frameL,text='Toggle Predictions',command=self.togglePredictions)
-        balloon.bind_widget(button,balloonmsg='Turns continuous display of predicted points on/off.')
+        if TIX:
+            balloon.bind_widget(button,balloonmsg='Turns continuous display of predicted points on/off.')
         button.grid(row=7,column=1,columnspan=2)
 
         ###frameR###
@@ -283,7 +292,10 @@ class BasicGui(Chooser):
         label.grid(row=0,column=0,pady=10,sticky=E)
         label.config(borderwidth=0)
         #Current frame label
-        self.label_goto = Entry(self.fframe,width=3,textvariable=self.currentFrame)
+        self.label_goto = Entry(self.fframe,
+                                width=5,
+                                textvariable=self.currentFrame,
+                                justify=RIGHT)
         self.label_goto.grid(row=0,column=1)
         self.label_goto.config(borderwidth=2,relief=SUNKEN)
         self.label_goto.bind("<KeyRelease-Return>", self.gotoFrame)
@@ -442,6 +454,7 @@ class BasicGui(Chooser):
     def cyclePredictions(self,event=''):
         '''Cycle through the predicted points to choose one to save as the point.'''
         if not self.madePointkindList: return
+        if self.activePredictors == []: return
         self.predlist.select_clear(self.activePoint[0])
         if(event.char=='q'):
             self.decActivePred()
@@ -493,19 +506,22 @@ class BasicGui(Chooser):
     def togglePredictions(self,event=''):
         '''Turn the drawing of predicted points on or off.'''
         self.forcePredDisplay = not self.forcePredDisplay
-        print 'entered'
-        print self.forcePredDisplay
         self.update_points()
         self.end_update_loop()
 
-    def predictorsInfo(self,event=''):
+    def predictorsEdit(self,event=''):
         '''Window displaying accuracy info about each predictor.'''
-        window = support.PredictorWindow(self.master,
-                                         self.predictor_name,
-                                         self.activePredictors,
-                                         self.displayedPredictors)
-        self.activePredictors, self.displayedPredictors = window.result
-        self.end_update_loop()
+        if TIX:
+            window = support.PredictorWindow(self.master,
+                                             self.predictor_name,
+                                             self.activePredictors,
+                                             self.displayedPredictors)
+            self.activePredictors, self.displayedPredictors = window.result
+            self.end_update_loop()
+        else:
+            msg = 'Cannot turn Predictors on/off.\n'
+            msg += 'To enable this feature, install the Python Tix module.'
+            tkMessageBox.showinfo(title='Can\'t Edit Predictors',message=msg)
 
 #****** Key Bindings ******
 

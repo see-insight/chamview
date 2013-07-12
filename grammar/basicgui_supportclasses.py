@@ -3,9 +3,13 @@
 import os
 from Tkinter import *
 import tkMessageBox
-import Tix
 import numpy as np
 from PIL import Image, ImageTk
+try:
+    import Tix
+    TIX = True
+except ImportError:
+    TIX = False
 
 
 class StatusBar(Frame):
@@ -217,7 +221,7 @@ class EditPointKinds(Dialog):
     def body(self, master):
         '''Create dialog body. Return widget that should have initial focus.'''
         #Tix Balloon for hover-over help
-        self.balloon = Tix.Balloon(master)
+        if TIX: self.balloon = Tix.Balloon(master)
 
         self.topframe = Frame(master)
         self.topframe.grid(row=0,padx=15,pady=15)
@@ -228,12 +232,14 @@ class EditPointKinds(Dialog):
         self.listbox.bind('<<ListboxSelect>>',self.highlight)
         self.default = Button(self.topframe, text="Default", width=10,
                                 command=self.revert_to_default)
-        self.balloon.bind_widget(self.default,
+        if TIX:
+            self.balloon.bind_widget(self.default,
             balloonmsg='Resets the point kinds to the default.')
         self.default.pack(side=LEFT,padx=5, pady=5)
         self.maked = Button(self.topframe, text="Make Default", width=10,
                                 command=self.set_as_default)
-        self.balloon.bind_widget(self.maked,
+        if TIX:
+            self.balloon.bind_widget(self.maked,
             balloonmsg='Sets the current point kinds as the default point kinds.')
         self.maked.pack(side=LEFT, padx=5, pady=5)
 
@@ -318,15 +324,24 @@ class PredictorWindow(Dialog):
         self.active = set(active_preds[:])
         self.displayed = set(displayed_preds[:])
         self.result = (active_preds, displayed_preds)
+        self.predwidgets = []
         Dialog.__init__(self,parent,title)
 
     def body(self, master):
+        bbox = Frame(master)
+        button = Button(bbox,text='Enable All',command=self.enable_all)
+        button.pack(side=LEFT,pady=10)
+        button = Button(bbox,text='Disable All',command=self.disable_all)
+        button.pack(side=RIGHT,pady=10)
+        self.predbox = Frame(master)
         for i in range(len(self.all_)):
             pred = self.all_[i]
-            widget = self.add_predictor(master, pred)
+            widget = self.add_predictor(self.predbox, pred)
             col = int(i / 8.0)
             r = i % 8
             widget.grid(row=r, column=col, sticky='EW')
+        bbox.pack()
+        self.predbox.pack()
         return master
 
     def add_predictor(self, master, predictor):
@@ -343,9 +358,10 @@ class PredictorWindow(Dialog):
             combo.config(value='Enabled Only')
         else:
             combo.config(value='Disabled')
-        func = lambda e='': self.update(predictor, combo['selection'])
+        func = lambda e='': self.update(predictor, combo['value'])
         combo.config(command=func)
         combo.pack(side=RIGHT)
+        self.predwidgets.append([predictor, combo])
         return frame
 
     def update(self, predictor, status):
@@ -370,6 +386,18 @@ class PredictorWindow(Dialog):
     def disable(self, predictor):
         self.active.discard(predictor)
         self.displayed.discard(predictor)
+
+    def enable_all(self):
+        for pred in self.predwidgets:
+            pred[1].pick(0)
+        print self.active
+        print self.displayed
+
+    def disable_all(self):
+        for pred in self.predwidgets:
+            pred[1].pick(2)
+        print self.active
+        print self.displayed
 
     def apply(self):
         self.result = (list(self.active), list(self.displayed))
