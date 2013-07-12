@@ -75,7 +75,7 @@ class PlotData:
         
         #Find the index i for the first graph name and discard the data before it
         for i in range(0, len(fileArr)):
-            if fileArr[i] in (self.graphNames):
+            if fileArr[i][0:-1] in (self.graphNames):
                 break
         self.fileArr = fileArr[i:]
         
@@ -87,7 +87,7 @@ class PlotData:
         while itr < len(self.fileArr):
         
             #Check if current line cotains a graph name
-            if self.fileArr[itr] in self.graphNames:
+            if self.fileArr[itr][0:-1] in self.graphNames:
             
                 graphTitle = self.fileArr[itr]
                 itr += 1
