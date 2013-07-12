@@ -89,7 +89,7 @@ class PlotData:
             #Check if current line cotains a graph name
             if self.fileArr[itr][0:-1] in self.graphNames:
             
-                graphTitle = self.fileArr[itr]
+                graphTitle = self.fileArr[itr][0:-1]
                 itr += 1
                 
                 if graphTitle == self.graphNames[0]:
