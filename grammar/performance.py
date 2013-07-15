@@ -73,23 +73,23 @@ class Performance(Chooser):
         self.argGraphs = []
         #Error by frame
         self.argGraphs.append([self.graphNames[0],
-            'Average Distance in Pixels by Frame', 'This graph shows errors less or equal than ', ' pixels',
-            'Frame', 'Distance in Pixels'])
+            'Average Distance Error by Frame (in Pixels)', 'Errors are up to ', ' pixels',
+            'Frame', 'Distance Error in Pixels'])
         #Error by point kind
         self.argGraphs.append([self.graphNames[1],
-            'Average Distance in Pixels by Point Kind', 'This graph shows errors less or equal than ', ' pixels',
-            'Point Kind', 'Distance in Pixels'])
+            'Average Distance Error by Point Kind (in Pixels)', 'Errors are up to ', ' pixels',
+            'Point Kind', 'Distance Error in Pixels'])
         #Error by each point kind
         self.argGraphs.append([self.graphNames[2],
-            'Distance in Pixels. Point Kind: ', 'This graph shows errors less or equal than ', ' pixels',
-            'Frame', 'Distance in Pixels'])
+            'Average Distance Error (in Pixels). Point Kind: ', 'Errors are up to ', ' pixels',
+            'Frame', 'Distance Error in Pixels'])
         #Percentage of error
         self.argGraphs.append([self.graphNames[3],
             'Percentage of Predicted Points within a Given Radius from the Ground Truth Point', '', '',
             'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points'])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
-            'Accuracy on Prediction', 'This graph shows how accuracy changes through frames.',
+            'Prediction Accuracy', 'Accuracy is correct predictions over total predictions',
             'Frame', 'Accuracy'])
         
         #Variables used to match with chamview.py requirements
@@ -326,7 +326,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop = {'size':8})
         
         #Save figure
-        saveGraph(gName)
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()
 
@@ -380,7 +380,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            saveGraph(gName, str(pointK + 1))
+            self.saveGraph(gName, str(pointK + 1))
         
             if self.showBool: plt.show()
         
@@ -465,7 +465,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':15}, loc=2)
         
         #Save figure
-        saveGraph(gName)
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()
         
@@ -521,7 +521,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        saveGraph(gName)
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()
         
@@ -586,7 +586,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        saveGraph(gName)
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()     
     
@@ -665,7 +665,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        saveGraph(gName)
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()          
       
@@ -718,7 +718,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            saveGraph(gName)
+            self.saveGraph(gName)
             
             if self.showBool: plt.show() 
                             
@@ -832,7 +832,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            saveGraph(gName)
+            self.saveGraph(gName)
             
             if self.showBool: plt.show()
             
