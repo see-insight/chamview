@@ -36,6 +36,7 @@ class PlotData:
         self.numPredictorsL = ''
         self.numFramesL = ''
         self.numPointKL = ''
+        self.frameDirL = ''
         self.infVal = ''
         self.fileArr = [] #Contains the data from text file
         self.oracleN = ''
@@ -46,6 +47,7 @@ class PlotData:
         self.numFrames = 0
         self.numPointK = 0
         self.upperB = int(upBound)
+        self.frameDir = ''
         
         
     def plotSavedG(self):
@@ -99,7 +101,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                     
                     #Get arguments for graph
-                    titleG = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) + self.argGraphs[0][3]
+                    titleG = self.argGraphs[0][1] + '\n' + self.frameDir#self.argGraphs[0][2] + str(self.upperB) + self.argGraphs[0][3]
                     xLabel = self.argGraphs[0][4]
                     yLabel = self.argGraphs[0][5]
                     
@@ -286,10 +288,13 @@ class PlotData:
         inputFile = open(filename)
         
         #Define a boolean variables that tell us what values have been obtained        
-        pred = fram = pointK = predL = False
+        frameD = pred = fram = pointK = predL = False
 
         for line in inputFile:
             #Get number of predictors, frames, and point kinds
+            if line.startswith(self.frameDirL):
+                self.frameDir = line.split()[-1]
+                frameD = True
             if line.startswith(self.numPredictorsL):
                 arr = line.split()
                 self.numPredictors = int(arr[-1])
@@ -307,7 +312,7 @@ class PlotData:
                 predL = True
                 
             
-            if pred and fram and pointK and predL: break
+            if frameD and pred and fram and pointK and predL: break
             
     def getPerformanceAtt(self):
         #Create a new performance object
@@ -326,6 +331,7 @@ class PlotData:
         self.infVal = per.infVal
         self.oracleN = per.oracleN
         self.predictorsL = per.predictorsL
+        self.frameDirL = per.frameDirL
         
     #Method that plots information from Metadata file
     def plotMeta(self, output, argShow):
