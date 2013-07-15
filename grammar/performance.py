@@ -263,7 +263,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+        if self.outputName != '': plt.savefig(self.outputName + gName + '.png')
         
         if self.showBool: plt.show()                 
         
@@ -326,7 +326,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop = {'size':8})
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+        saveGraph(gName)
         
         if self.showBool: plt.show()
 
@@ -380,7 +380,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            if self.outputName != '': plt.savefig(self.outputName + gName + str(pointK + 1) + '.jpg')
+            saveGraph(gName, str(pointK + 1))
         
             if self.showBool: plt.show()
         
@@ -449,23 +449,23 @@ class Performance(Chooser):
 
             #Plot the error in the subplot
             if self.name[i] != self.oracleN:                
-                plt.plot(xPlot,yPlot, lw = 1)
-                plt.scatter(xPlot, yPlot, s=5)
+                plt.plot(xPlot,yPlot, lw = 2)
+                plt.scatter(xPlot, yPlot, s=10)
             else:
-                plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
+                plt.plot(xPlot,yPlot, '--', color = 'k', lw = 2)
             
         #Write division into file
         self.fo.write(self.division)
         
         titleLa = self.argGraphs[3][1]
-        title(titleLa) 
-        xlabel(self.argGraphs[3][4])
+        title(titleLa, size = 20) 
+        xlabel(self.argGraphs[3][4], fontsize = 17)
         xlim(0,self.upperB)
-        ylabel(self.argGraphs[3][5])
-        plt.legend(self.name, prop={'size':10}, loc=2)
+        ylabel(self.argGraphs[3][5], fontsize = 17)
+        plt.legend(self.name, prop={'size':15}, loc=2)
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+        saveGraph(gName)
         
         if self.showBool: plt.show()
         
@@ -521,7 +521,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+        saveGraph(gName)
         
         if self.showBool: plt.show()
         
@@ -586,7 +586,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+        saveGraph(gName)
         
         if self.showBool: plt.show()     
     
@@ -665,7 +665,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+        saveGraph(gName)
         
         if self.showBool: plt.show()          
       
@@ -718,7 +718,7 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+            saveGraph(gName)
             
             if self.showBool: plt.show() 
                             
@@ -832,6 +832,11 @@ class Performance(Chooser):
             plt.legend(self.name, prop={'size':8})
         
             #Save figure
-            if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
+            saveGraph(gName)
             
             if self.showBool: plt.show()
+            
+    def saveGraph(self, name, name2 = ''):
+        '''This method saves a graph as an image'''
+        if self.outputName != '':
+            plt.savefig(self.outputName + name + name2 + '.png')
