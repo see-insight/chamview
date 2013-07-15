@@ -32,6 +32,7 @@ class Performance(Chooser):
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
         self.outputName = '' #Name of output directory
+        self.frameDir = ''
         self.showBool = True #Boolean that determines if show or don't graphs
         
         
@@ -59,6 +60,7 @@ class Performance(Chooser):
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
         self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
+        self.frameDirL = 'Directory: '
         self.infVal = 'INF' #Label that indicates the error is very large
         self.oracleN = 'Oracle' #Label for Oracle predictor
         
@@ -74,23 +76,23 @@ class Performance(Chooser):
         #Error by frame
         self.argGraphs.append([self.graphNames[0],
             'Average Distance Error by Frame (in Pixels)', 'Errors are up to ', ' pixels',
-            'Frame', 'Distance Error in Pixels'])
+            'Frame', 'Distance Error in Pixels', ''])
         #Error by point kind
         self.argGraphs.append([self.graphNames[1],
             'Average Distance Error by Point Kind (in Pixels)', 'Errors are up to ', ' pixels',
-            'Point Kind', 'Distance Error in Pixels'])
+            'Point Kind', 'Distance Error in Pixels', ''])
         #Error by each point kind
         self.argGraphs.append([self.graphNames[2],
             'Average Distance Error (in Pixels). Point Kind: ', 'Errors are up to ', ' pixels',
-            'Frame', 'Distance Error in Pixels'])
+            'Frame', 'Distance Error in Pixels', ''])
         #Percentage of error
         self.argGraphs.append([self.graphNames[3],
             'Percentage of Predicted Points within a Given Radius from the Ground Truth Point', '', '',
-            'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points'])
+            'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points', ''])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
-            'Prediction Accuracy', 'Accuracy is correct predictions over total predictions',
-            'Frame', 'Accuracy'])
+            'Prediction Accuracy', 'Correct predictions over total predictions',
+            'Frame', 'Accuracy',  '', ''])
         
         #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
@@ -106,9 +108,9 @@ class Performance(Chooser):
         #Update variables
         if parameters[0] != '': self.outputName = parameters[0]
         if parameters[1] != '': self.upperB = int(parameters[1])
-        if parameters[2] != '': self.tpBound = int(parameters[2])
-        
+        if parameters[2] != '': self.tpBound = int(parameters[2])        
         if parameters[3] == 'False': self.showBool = False
+        if parameters[4] != '': self.frameDir = parameters[4]
         
         #Make outputName correct
         if self.outputName != '': self.outputName = self.outputName + '/'
@@ -130,10 +132,15 @@ class Performance(Chooser):
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
                
         #Save important values in text file
+        self.fo.write(self.frameDirL + self.frameDir + '\n')
         self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
         self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
         self.fo.write(self.predictorsL + str(self.name) + '\n')
+        
+        #Update the image directories to be displayed on graphs
+        for i in range(0, len(self.argGraphs)):
+            self.argGraphs[i][6] = self.argGraphs[i][6] + self.frameDir
         
         #TURN ON OR OFF THE GRAPHS THAT NEED TO BE DISPLAYED
         
@@ -256,7 +263,7 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        titleLa = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) +self.argGraphs[0][3]
+        titleLa = self.argGraphs[0][1] + '\n' + self.frameDir
         title(titleLa)
         xlabel(self.argGraphs[0][4])
         ylabel(self.argGraphs[0][5])      
@@ -319,7 +326,7 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        titleLa = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) + self.argGraphs[1][3]
+        titleLa = self.argGraphs[1][1] + '\n' + self.frameDir
         title(titleLa)
         xlabel(self.argGraphs[1][4])
         ylabel(self.argGraphs[1][5])
@@ -372,8 +379,7 @@ class Performance(Chooser):
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
-            titleLa = self.argGraphs[2][1] + self.pointKList[pointK] + '\n'
-            titleLa += self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
+            titleLa = self.argGraphs[2][1] + self.pointKList[pointK] + '\n' + self.frameDir
             title(titleLa)
             xlabel(self.argGraphs[2][4])
             ylabel(self.argGraphs[2][5])
@@ -449,20 +455,20 @@ class Performance(Chooser):
 
             #Plot the error in the subplot
             if self.name[i] != self.oracleN:                
-                plt.plot(xPlot,yPlot, lw = 2)
-                plt.scatter(xPlot, yPlot, s=10)
+                plt.plot(xPlot,yPlot, lw = 1)
+                plt.scatter(xPlot, yPlot, s=5)
             else:
-                plt.plot(xPlot,yPlot, '--', color = 'k', lw = 2)
+                plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
             
         #Write division into file
         self.fo.write(self.division)
         
-        titleLa = self.argGraphs[3][1]
-        title(titleLa, size = 20) 
-        xlabel(self.argGraphs[3][4], fontsize = 17)
+        titleLa = self.argGraphs[3][1] + '\n' + self.frameDir
+        title(titleLa, size = 12) 
+        xlabel(self.argGraphs[3][4], fontsize = 10)
         xlim(0,self.upperB)
-        ylabel(self.argGraphs[3][5], fontsize = 17)
-        plt.legend(self.name, prop={'size':15}, loc=2)
+        ylabel(self.argGraphs[3][5], fontsize = 10)
+        plt.legend(self.name, prop={'size':12}, loc=2)
         
         #Save figure
         self.saveGraph(gName)
@@ -515,10 +521,11 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division) 
         
-        title(self.argGraphs[4][1] + '\n' + self.argGraphs[4][2])
+        titleL = self.argGraphs[4][1] + '. ' + self.argGraphs[4][2] + '\n' + self.frameDir
+        title(titleL)
         xlabel(self.argGraphs[4][3])
         ylabel(self.argGraphs[4][4])
-        plt.legend(self.name, prop={'size':8})
+        plt.legend(self.name, prop={'size':10}, loc=2)
         
         #Save figure
         self.saveGraph(gName)
