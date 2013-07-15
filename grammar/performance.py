@@ -85,9 +85,8 @@ class Performance(Chooser):
             'Frame', 'Distance in Pixels'])
         #Percentage of error
         self.argGraphs.append([self.graphNames[3],
-            'Percentage of Points\n(For a given error from 1 to ', 
-            ' pixels,', 'the next graph shows the percentage of points with at most that error)',
-            'Distance in Pixels', 'Percentage of Points'])
+            'Percentage of Predicted Points within a Given Radius from the Ground Truth Point', '', '',
+            'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points'])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
             'Accuracy on Prediction', 'This graph shows how accuracy changes through frames.',
@@ -458,11 +457,12 @@ class Performance(Chooser):
         #Write division into file
         self.fo.write(self.division)
         
-        titleLa = self.argGraphs[3][1] + str(self.upperB) + self.argGraphs[3][2] + '\n' + self.argGraphs[3][3]
+        titleLa = self.argGraphs[3][1]
         title(titleLa) 
         xlabel(self.argGraphs[3][4])
+        xlim(0,self.upperB)
         ylabel(self.argGraphs[3][5])
-        plt.legend(self.name, prop={'size':8})
+        plt.legend(self.name, prop={'size':10}, loc=2)
         
         #Save figure
         if self.outputName != '': plt.savefig(self.outputName + gName + '.jpg')
