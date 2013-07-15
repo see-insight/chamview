@@ -423,7 +423,7 @@ class PlotData:
         
         #Save figure if output file is given
         if self.outputName != '':
-            figPath = self.outputName + gName + '.jpg'
+            figPath = self.outputName + gName + '.png'
             savefig(figPath)
             print 'Graph saved in', figPath
         
@@ -451,7 +451,7 @@ class PlotData:
         
         #Save figure if output file is given
         if self.outputName != '':
-            figPath = self.outputName + gName + '.jpg'
+            figPath = self.outputName + gName + '.png'
             savefig(figPath)
             print 'Graph saved in', figPath
         
@@ -742,16 +742,16 @@ class PlotData:
             
             width = 1.0 / (len(yPlots) + 1.5)
             plt.bar(xPlot + width * i, yPlots[i], width, color=col[i%len(col)])            
-            plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot)
+            plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot, size = 10)
             
         plt.title(gName, size = 30)
-        xlabel(xl, fontsize = 15)
-        ylabel(yl, fontsize = 15)
-        plt.legend(leg, prop = {'size':12})
+        xlabel(xl, fontsize = 17)
+        ylabel(yl, fontsize = 17)
+        plt.legend(leg, prop = {'size':15})
         
         #Save figure
         if self.outputName != '':
-            figPath = self.outputName + gName + '.jpg'
+            figPath = self.outputName + gName + '.png'
             plt.savefig(figPath)
             print 'Figure saved to:', figPath
         
@@ -896,7 +896,7 @@ class PlotData:
         
         #Call method for plot stacked bars
         gName = 'Predictors Usage'
-        self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 8)
+        self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 10)
  
     def plotByDatasetType(self, numDatasets, numPred, types, predictors, dataInfoG):
         
@@ -954,13 +954,14 @@ class PlotData:
         plt.xlabel('Data Sets', fontsize = 17)
         plt.title(gName, size = 36)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
+        xlim(0,xLength)
         
         plt.yticks(np.arange(0,100,5))
         plt.legend(predictors, prop = {'size':12})
         
         #Save figure
         if self.outputName != '':
-            figPath = self.outputName + gName + '.jpg'
+            figPath = self.outputName + gName + '.png'
             plt.savefig(figPath)
             print 'Figure saved to:', figPath
         
