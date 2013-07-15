@@ -744,10 +744,10 @@ class PlotData:
             plt.bar(xPlot + width * i, yPlots[i], width, color=col[i%len(col)])            
             plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot)
             
-        plt.title(gName)
-        xlabel(xl)
-        ylabel(yl)
-        plt.legend(leg, prop = {'size':10})
+        plt.title(gName, size = 30)
+        xlabel(xl, fontsize = 15)
+        ylabel(yl, fontsize = 15)
+        plt.legend(leg, prop = {'size':12})
         
         #Save figure
         if self.outputName != '':
@@ -895,7 +895,7 @@ class PlotData:
                 dataInfoG[i][j] = dataInfoG[i][j] * 100.0 / pointsM[j]    
         
         #Call method for plot stacked bars
-        gName = 'Usage of Predictors'
+        gName = 'Predictors Usage'
         self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 8)
  
     def plotByDatasetType(self, numDatasets, numPred, types, predictors, dataInfoG):
@@ -928,7 +928,7 @@ class PlotData:
                 dataByType[i][j] = dataByType[i][j] * 100.0 / pointsModType[j]
         
         #Call method for plot stacked bars
-        gName = 'Usage of Predictors by Data Type'
+        gName = 'Predictors Usage by Data Type'
         self.plotBarsStack(gName, numTypes, typesList, numPred, predictors, dataByType, 0, 10)     
         
     def plotBarsStack(self, gName, xLength, names, numPred, predictors, dataInfoG, rot, fontS):
@@ -950,13 +950,13 @@ class PlotData:
             for j in range(0, xLength):
                 accumulativeUse[j] += dataInfoG[i][j]
         
-        plt.ylabel('Percentage for Usage of Predictors')
-        plt.xlabel('Data Sets', fontsize = 12)
-        plt.title(gName)
+        plt.ylabel('Percentage Usage', fontsize = 17)
+        plt.xlabel('Data Sets', fontsize = 17)
+        plt.title(gName, size = 36)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
         
         plt.yticks(np.arange(0,100,5))
-        plt.legend(predictors, prop = {'size':10})
+        plt.legend(predictors, prop = {'size':12})
         
         #Save figure
         if self.outputName != '':
