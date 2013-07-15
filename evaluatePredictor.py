@@ -187,8 +187,8 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
 
     #Add evaluate argument
     command.append("-e")
-    #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos
-    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) + '-' + str(argShow)
+    #Create Evaluate argument. This is: argOutput-argUpBound-argTruePos-argShow
+    argEvaluate = argOutput + '-' + str(argUpBound) + '-' + str(argTruePos) + '-' + str(argShow) + '-' + argFrameDir
     command.append(argEvaluate)
 
     #Call subprocess
