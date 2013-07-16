@@ -101,7 +101,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                     
                     #Get arguments for graph
-                    titleG = self.argGraphs[0][1] + '\n' + self.frameDir#self.argGraphs[0][2] + str(self.upperB) + self.argGraphs[0][3]
+                    titleG = self.argGraphs[0][1] + '\n' + self.frameDir
                     xLabel = self.argGraphs[0][4]
                     yLabel = self.argGraphs[0][5]
                     
@@ -115,7 +115,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByPointK(itr)
                     
                     #Get arguments for graph
-                    titleG = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) + self.argGraphs[1][3]
+                    titleG = self.argGraphs[1][1] + '\n' + self.frameDir
                     xLabel = self.argGraphs[1][4]
                     yLabel = self.argGraphs[1][5]
                     
@@ -135,7 +135,7 @@ class PlotData:
                         itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                         
                         #Get arguments for graph
-                        titleG = self.argGraphs[2][1] + pointK + self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
+                        titleG = self.argGraphs[2][1] + pointK + '\n' + self.frameDir
                         xLabel = self.argGraphs[2][4]
                         yLabel = self.argGraphs[2][5]
                         
@@ -149,7 +149,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoPercentagePoints(itr)
                     
                     #Get arguments for graphs
-                    titleG = self.argGraphs[3][1] + str(self.upperB) + self.argGraphs[3][2] + '\n' + self.argGraphs[3][3]
+                    titleG = self.argGraphs[3][1] + '\n' + self.frameDir
                     xLabel = self.argGraphs[3][4]
                     yLabel = self.argGraphs[3][5]
                     
@@ -163,7 +163,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                     
                     #Get arguments for graphs
-                    titleG = self.argGraphs[4][1] + '\n' +self.argGraphs[4][2]
+                    titleG = self.argGraphs[4][1] + '. ' +self.argGraphs[4][2] + '\n' + self.frameDir
                     xLabel = self.argGraphs[4][3]
                     yLabel = self.argGraphs[4][4]
                     
@@ -428,10 +428,7 @@ class PlotData:
         ax.set_axis_off()
         
         #Save figure if output file is given
-        if self.outputName != '':
-            figPath = self.outputName + gName + '.png'
-            savefig(figPath)
-            print 'Graph saved in', figPath
+        self.saveGraph(gName)
         
         #Show graphs if user wants
         if self.showBool: show()                            
@@ -456,10 +453,7 @@ class PlotData:
         title(gName + '\nPoints modified: ' + str(pointsModified))
         
         #Save figure if output file is given
-        if self.outputName != '':
-            figPath = self.outputName + gName + '.png'
-            savefig(figPath)
-            print 'Graph saved in', figPath
+        self.saveGraph(gName)
         
         #Show graph only if user wants
         if self.showBool: show()
@@ -733,11 +727,11 @@ class PlotData:
                 
         legend = ['Predictors', 'No Predictors', 'Theoretical Time']
         gName1 = 'Average Time per Point for Each Dataset'
-        self.plotConsecutiveBars(namesD, timePoint, gName1, 'Dataset', 'Time in seconds', legend, 30)
+        self.plotConsecutiveBars(namesD, timePoint, gName1, 'Dataset', 'Time in seconds', legend, 30, 7)
         gName2 = 'Average Time per Frame for Each Dataset'
-        self.plotConsecutiveBars(namesD, timeFrame, gName2, 'Dataset', 'Time in seconds', legend, 30)
+        self.plotConsecutiveBars(namesD, timeFrame, gName2, 'Dataset', 'Time in seconds', legend, 30, 7)
         
-    def plotConsecutiveBars(self, xLabels, yPlots, gName, xl, yl, leg, rot):
+    def plotConsecutiveBars(self, xLabels, yPlots, gName, xl, yl, leg, rot, fontS = 10):
         '''This method makes a graph with consecutive bars for each single x value'''
         
         xPlot = arange(len(xLabels)) #Array for x axis
@@ -748,18 +742,15 @@ class PlotData:
             
             width = 1.0 / (len(yPlots) + 1.5)
             plt.bar(xPlot + width * i, yPlots[i], width, color=col[i%len(col)])            
-            plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot, size = 10)
+            plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot, size = fontS)
             
-        plt.title(gName, size = 30)
+        plt.title(gName, size = 20)
         xlabel(xl, fontsize = 17)
         ylabel(yl, fontsize = 17)
-        plt.legend(leg, prop = {'size':15})
+        plt.legend(leg, prop = {'size':8})
         
         #Save figure
-        if self.outputName != '':
-            figPath = self.outputName + gName + '.png'
-            plt.savefig(figPath)
-            print 'Figure saved to:', figPath
+        self.saveGraph(gName)
         
         #Show figure
         if self.showBool: plt.show()                 
@@ -902,7 +893,7 @@ class PlotData:
         
         #Call method for plot stacked bars
         gName = 'Predictors Usage'
-        self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 10)
+        self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 5)
  
     def plotByDatasetType(self, numDatasets, numPred, types, predictors, dataInfoG):
         
@@ -958,18 +949,15 @@ class PlotData:
         
         plt.ylabel('Percentage Usage', fontsize = 17)
         plt.xlabel('Data Sets', fontsize = 17)
-        plt.title(gName, size = 36)
+        plt.title(gName, size = 20)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
         xlim(0,xLength)
         
         plt.yticks(np.arange(0,100,5))
-        plt.legend(predictors, prop = {'size':12})
+        plt.legend(predictors, prop = {'size':8})
         
         #Save figure
-        if self.outputName != '':
-            figPath = self.outputName + gName + '.png'
-            plt.savefig(figPath)
-            print 'Figure saved to:', figPath
+        self.saveGraph(gName)
         
         #Show figure
         if self.showBool: plt.show()
@@ -1066,6 +1054,13 @@ class PlotData:
                 
                 #Look in the new subdirectory
                 self.getSubdirectories(newDirData, filename)
+                
+    def saveGraph(self, name, name2 = ''):
+        '''This method saves a graph as an image'''
+        if self.outputName != '':
+            figPath = self.outputName + name + name2 + '.png'
+            plt.savefig(figPath, bbox_inches='tight')
+            print 'Figure saved to:', figPath
         
         
         
