@@ -65,11 +65,11 @@ class Performance(Chooser):
         self.oracleN = 'Oracle' #Label for Oracle predictor
         
         #Define an array that saves all the graph names
-        self.graphNames = ['ERROR BY FRAME', 'ERROR BY POINT KIND']
-        self.graphNames.append('ERROR FOR EACH POINT KIND')
-        self.graphNames.append('PERCENTAGE OF POINTS')
-        self.graphNames.append('ACCURACY IN PREDICTION')
-        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE')
+        self.graphNames = ['ERROR_BY_FRAME', 'ERROR_BY_POINT_KIND']
+        self.graphNames.append('ERROR_FOR_EACH_POINT_KIND')
+        self.graphNames.append('PERCENTAGE_OF_POINTS')
+        self.graphNames.append('ACCURACY_IN_PREDICTION')
+        self.graphNames.append('RECEIVER_OPERATING CHARACTERISTIC_(ROC)_CURVE')
         
         #Define an array that saves all the arguments for graphs
         self.argGraphs = []
