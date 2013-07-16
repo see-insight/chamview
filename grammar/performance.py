@@ -270,7 +270,7 @@ class Performance(Chooser):
         plt.legend(self.name, prop={'size':8})
         
         #Save figure
-        if self.outputName != '': plt.savefig(self.outputName + gName + '.png')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()                 
         
@@ -468,7 +468,7 @@ class Performance(Chooser):
         xlabel(self.argGraphs[3][4], fontsize = 10)
         xlim(0,self.upperB)
         ylabel(self.argGraphs[3][5], fontsize = 10)
-        plt.legend(self.name, prop={'size':12}, loc=2)
+        plt.legend(self.name, prop={'size':8}, loc=2)
         
         #Save figure
         self.saveGraph(gName)
@@ -525,7 +525,7 @@ class Performance(Chooser):
         title(titleL)
         xlabel(self.argGraphs[4][3])
         ylabel(self.argGraphs[4][4])
-        plt.legend(self.name, prop={'size':10}, loc=2)
+        plt.legend(self.name, prop={'size':8}, loc=2)
         
         #Save figure
         self.saveGraph(gName)
