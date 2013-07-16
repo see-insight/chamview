@@ -109,7 +109,7 @@ def main(argc,argv):
             # -s Option
             #Plot dataset from a text file
             pd = PlotData(argSavedGraph, argUpBound)
-            pd.plotSavedG()
+            pd.plotSavedG(argOutput, argShow)
             
         elif argComDataSet != '':
 
