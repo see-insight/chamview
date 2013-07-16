@@ -50,7 +50,14 @@ class PlotData:
         self.frameDir = ''
         
         
-    def plotSavedG(self):
+    def plotSavedG(self, output = '', showB = True):
+        
+        #Get the path where graphs will be saved
+        self.outputName = output
+        if output != '' and not(output.endswith('/')): self.outputName += '/'
+        
+        #Update showBool
+        self.showBool = showB
         
         #Get performance attributes
         self.getPerformanceAtt()
@@ -91,10 +98,10 @@ class PlotData:
             #Check if current line cotains a graph name
             if self.fileArr[itr][0:-1] in self.graphNames:
             
-                graphTitle = self.fileArr[itr][0:-1]
+                graphN = self.fileArr[itr][0:-1]
                 itr += 1
                 
-                if graphTitle == self.graphNames[0]:
+                if graphN == self.graphNames[0]:
                     #ERROR BY FRAME Case
                     
                     #Get data arrays to plot
@@ -106,9 +113,9 @@ class PlotData:
                     yLabel = self.argGraphs[0][5]
                     
                     #Call method to plot graph
-                    self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel)
                     
-                elif graphTitle == self.graphNames[1]:
+                elif graphN == self.graphNames[1]:
                     #ERROR BY POINT KIND
                     
                     #Get data arrays
@@ -120,9 +127,9 @@ class PlotData:
                     yLabel = self.argGraphs[1][5]
                     
                     #Call method to plot
-                    self.plotConsecutiveBars(xPlot, yPlot, titleG, xLabel, yLabel, self.predList, 0)
+                    self.plotConsecutiveBars(xPlot, yPlot, titleG, xLabel, yLabel, self.predList, 0, 10, graphN)
 
-                elif graphTitle == self.graphNames[2]:
+                elif graphN == self.graphNames[2]:
                     #ERROR FOR EACH POINT KIND
                     
                     for i in range(0, self.numPointK):
@@ -140,9 +147,9 @@ class PlotData:
                         yLabel = self.argGraphs[2][5]
                         
                         #Call method to plot graph
-                        self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel)
+                        self.plotLine(graphN + str(i+1), xPlot, yPlot, titleG, xLabel, yLabel)
                         
-                elif graphTitle == self.graphNames[3]:
+                elif graphN == self.graphNames[3]:
                     #PERCENTAGE OF POINTS
                     
                     #Get data arrays to plot
@@ -154,9 +161,9 @@ class PlotData:
                     yLabel = self.argGraphs[3][5]
                     
                     #Call method to plot graph
-                    self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel, 5)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5)
                     
-                elif graphTitle == self.graphNames[4]:
+                elif graphN == self.graphNames[4]:
                     #ACCURACY
                     
                     #Get data arrays to plot
@@ -168,11 +175,11 @@ class PlotData:
                     yLabel = self.argGraphs[4][4]
                     
                     #Call method to plot graph
-                    self.plotLine(xPlot, yPlot, titleG, xLabel, yLabel)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel)
                     
-                elif graphTitle == self.graphNames[5]:
+                elif graphN == self.graphNames[5]:
                     
-                    #title = graphTitle + 'A predictor is better if its curve is above other'
+                    #title = graphN + 'A predictor is better if its curve is above other'
                     #xlabel = 'False Positive Rate'
                     #ylabel = 'True Positive Rate'
                     
@@ -251,7 +258,7 @@ class PlotData:
         return itr, xPlot, yPlot
         
     
-    def plotLine(self, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
+    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
         
         self.numPlots += 1
         #Define a new figure
@@ -267,9 +274,10 @@ class PlotData:
         plt.title(titleG)
         plt.xlabel(xLabel)
         plt.ylabel(yLabel)
-                  
-        plt.legend(self.predList)
-        plt.show()
+        plt.legend(self.predList, prop={'size':8})
+        
+        self.saveGraph(gName)
+        if self.showBool: plt.show()
                
     def getXY(self, line):
         xy = line.split(',')         
@@ -731,11 +739,11 @@ class PlotData:
         gName2 = 'Average Time per Frame for Each Dataset'
         self.plotConsecutiveBars(namesD, timeFrame, gName2, 'Dataset', 'Time in seconds', legend, 30, 7)
         
-    def plotConsecutiveBars(self, xLabels, yPlots, gName, xl, yl, leg, rot, fontS = 10):
+    def plotConsecutiveBars(self, xLabels, yPlots, gTitle, xl, yl, leg, rot, fontS = 10, gName = ''):
         '''This method makes a graph with consecutive bars for each single x value'''
         
         xPlot = arange(len(xLabels)) #Array for x axis
-        
+       
         col = ['b', 'r', 'g', 'k']
         
         for i in range(0, len(yPlots)):
@@ -744,12 +752,13 @@ class PlotData:
             plt.bar(xPlot + width * i, yPlots[i], width, color=col[i%len(col)])            
             plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot, size = fontS)
             
-        plt.title(gName, size = 20)
+        plt.title(gTitle, size = 20)
         xlabel(xl, fontsize = 17)
         ylabel(yl, fontsize = 17)
         plt.legend(leg, prop = {'size':8})
         
         #Save figure
+        if gName == '': gName = gTitle
         self.saveGraph(gName)
         
         #Show figure
@@ -1061,6 +1070,3 @@ class PlotData:
             figPath = self.outputName + name + name2 + '.png'
             plt.savefig(figPath, bbox_inches='tight')
             print 'Figure saved to:', figPath
-        
-        
-        
