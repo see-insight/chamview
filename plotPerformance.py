@@ -161,7 +161,7 @@ class PlotData:
                     yLabel = self.argGraphs[3][5]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 2, 5)
                     
                 elif graphN == self.graphNames[4]:
                     #ACCURACY
@@ -175,7 +175,7 @@ class PlotData:
                     yLabel = self.argGraphs[4][4]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 2)
                     
                 elif graphN == self.graphNames[5]:
                     
@@ -258,7 +258,7 @@ class PlotData:
         return itr, xPlot, yPlot
         
     
-    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
+    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, loca = 1, scatt = 0):
         
         self.numPlots += 1
         #Define a new figure
@@ -267,14 +267,15 @@ class PlotData:
         for i in range(0, len(self.predList)): 
             if self.predList[i] != self.oracleN:
                 plt.plot(xPlot[i], yPlot[i])
-                #if scatt != 0: plt.scatter(xPlot[i], yPlot[i], s=scatt)
+                if scatt != 0: plt.scatter(xPlot[i], yPlot[i], s=scatt)
             else:
                 plt.plot(xPlot[i], yPlot[i], '--', color = 'k')
                 
         plt.title(titleG)
         plt.xlabel(xLabel)
+        xlim(0,self.upperB)
         plt.ylabel(yLabel)
-        plt.legend(self.predList, prop={'size':8})
+        plt.legend(self.predList, prop={'size':8}, loc=loca)
         
         self.saveGraph(gName)
         if self.showBool: plt.show()
