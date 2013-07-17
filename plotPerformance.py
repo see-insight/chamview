@@ -973,14 +973,14 @@ class PlotData:
         if self.showBool: plt.show()
                 
     def getInfoDatasets(self, pathFile):
-   
-        #Open file and read each line     
-        metaFile = open(pathFile)
-        metaArr = metaFile.readlines()
-                
-        #Debugging purposes-------------------------------------------------------------------
-        print 'pathFile:', pathFile
-        #-------------------------------------------------------------------------------------
+        
+        try:
+            #Open file and read each line     
+            metaFile = open(pathFile)
+            metaArr = metaFile.readlines()
+        except IOError:
+            print 'The following file cannot be open: ', pathFile
+            return None
         
         #Define a list that will contain all the returned values
         returnInfo = {}
@@ -988,62 +988,68 @@ class PlotData:
         #Define boolean variables to know if info was obtained
         pointsM = manualP = pred = name = timeF = timeP = theoTime = False
         
-        #Obtain each value
-        for line in metaArr:
+        try:
             
-            if line.startswith('POINTS_MODIFIED'):
-                returnInfo['pointsModified'] = int(line.split()[-1])
-                pointsM = True
+            #Obtain each value
+            for line in metaArr:
                 
-            elif line.startswith('MANUAL_POINTS'):
-                manualPoints = int(line.split()[-1])
-                manualP = True
-                
-            elif line.startswith('PREDICTORS'):
-                predictors = self.getPred(line, True)
-                
-                returnInfo['predUsed'] = len(predictors)
-                
-                pred = True
-                
-            elif line.startswith('TIME/FRAME'):
-                returnInfo['timeFrame'] = float(line.split()[-1])
-                timeF = True
-                
-            elif line.startswith('TIME/POINT'):                
-                returnInfo['timePoint'] = float(line.split()[-1])
-                timeP = True
+                if line.startswith('POINTS_MODIFIED'):
+                    returnInfo['pointsModified'] = int(line.split()[-1])
+                    pointsM = True
+                    
+                elif line.startswith('MANUAL_POINTS'):
+                    manualPoints = int(line.split()[-1])
+                    manualP = True
+                    
+                elif line.startswith('PREDICTORS'):
+                    predictors = self.getPred(line, True)
+                    
+                    returnInfo['predUsed'] = len(predictors)
+                    
+                    pred = True
+                    
+                elif line.startswith('TIME/FRAME'):
+                    returnInfo['timeFrame'] = float(line.split()[-1])
+                    timeF = True
+                    
+                elif line.startswith('TIME/POINT'):                
+                    returnInfo['timePoint'] = float(line.split()[-1])
+                    timeP = True
             
-            elif line.startswith('IMAGE_DIRECTORY'):
+                elif line.startswith('IMAGE_DIRECTORY'):
                 
-                #Get path to image directory
-                lenLabel = len('IMAGE_DIRECTORY: ')
-                returnInfo['pathImages'] = line[lenLabel:]
+                    #Get path to image directory
+                    lenLabel = len('IMAGE_DIRECTORY: ')
+                    returnInfo['pathImages'] = line[lenLabel:]
+                    
+                    pathSplit = line.split('/')
                 
-                pathSplit = line.split('/')
+                    #Remove no valid directories for pathSplit
+                    noValid = 0
+                    while pathSplit[noValid-1] == '' or pathSplit[noValid-1] == '\n':
+                        noValid -= 1
                 
-                #Remove no valid directories for pathSplit
-                noValid = 0
-                while pathSplit[noValid-1] == '' or pathSplit[noValid-1] == '\n':
-                    noValid -= 1
-                
-                returnInfo['nameDataset'] = pathSplit[-2 + noValid] #Get name of dataset
-                returnInfo['typeDataset'] = pathSplit[-3 + noValid] #Get dataset type
-                name = True
-
-            elif line.startswith('THEORETICAL_TIME') and 'True' in line:
-                returnInfo['theoTime'] = True
-                theoTime = True
+                    returnInfo['nameDataset'] = pathSplit[-2 + noValid] #Get name of dataset
+                    returnInfo['typeDataset'] = pathSplit[-3 + noValid] #Get dataset type
+                    name = True
+    
+                elif line.startswith('THEORETICAL_TIME') and 'True' in line:
+                    returnInfo['theoTime'] = True
+                    theoTime = True
             
-        #Put false if theoTime line was not found
-        if theoTime == False: returnInfo['theoTime'] = False
+            #Put false if theoTime line was not found
+            if theoTime == False: returnInfo['theoTime'] = False
+            
+            if not(pointsM and manualP and pred and timeF and timeP and name): return None
         
-        if not(pointsM and manualP and pred and timeF and timeP and name): return None
+            #Obtain how many points came from each predictor
+            returnInfo['predictorUse'] = self.getUsePredictors(metaArr, predictors, manualPoints)
         
-        #Obtain how many points came from each predictor
-        returnInfo['predictorUse'] = self.getUsePredictors(metaArr, predictors, manualPoints)
-        
-        return returnInfo
+            return returnInfo
+            
+        except ValueError:
+            print 'The next file has no the correct format: ', pathFile
+            return None
     
     def getSubdirectories(self, dirData, filename):
         
