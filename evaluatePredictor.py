@@ -184,8 +184,6 @@ def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, a
     if argUsePreds != '':
         command.append('-u')
         command.append(argUsePreds)
-    if argSavePreds != '' or argUsePreds != '':
-        command[0] = './chamsim.py'
 
     #Add evaluate argument
     command.append("-e")
