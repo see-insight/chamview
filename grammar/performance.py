@@ -14,8 +14,8 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 
 '''This file implements classes where the performance of predictors is computed.
-Input: A stack of images, ground truth data, and a predictor
-Output: A list and graphs that show the performance of predictors
+Input: A stack of images, ground truth data, and a set of predictors
+Output: An output text file and graphs that show predictors performance
 '''
 
 class Performance(Chooser):
@@ -24,7 +24,8 @@ class Performance(Chooser):
     The error is according frames or according kind_point.
     '''
     
-    def setup(self):     
+    def setup(self):
+        '''This method instantiates all class attributes'''
         
         self.x = [] #Frame number
         self.errorKindX = [] #Kind point number
@@ -101,6 +102,8 @@ class Performance(Chooser):
         self.stagedToSave = ['', '']
 
     def setupPar(self,argEvaluate):
+        '''This method instantiates arguments obtained from evaluatePredictor class and are special
+        for this class'''
         
         #Get parameters: Output-upperBound-TruePositiveBound
         parameters = argEvaluate.split('-')
@@ -116,6 +119,8 @@ class Performance(Chooser):
         if self.outputName != '': self.outputName = self.outputName + '/'
 
     def teardown(self):
+        '''Final called method of this class, it saves an output file and calls methods
+        to display all the graphs'''
 
         #Define Oracle predictor, build it, and append results to other predictors results
         self.appendOracle()
@@ -162,6 +167,8 @@ class Performance(Chooser):
         print 'Results saved in ' + outTextFile
 
     def choose(self,stack,predicted,predictor_name):
+        '''This method uses chamview implementation to compute predictions and then measure
+        the error of ground truth data and predictions'''
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
@@ -225,6 +232,7 @@ class Performance(Chooser):
             stack.exit = True              
                                  
     def showErrorByFrame(self):
+        '''This method computes the average error by frame and displays a graph'''
                 
         #Save title in text file and in graphNames array
         gName = self.graphNames[0]
@@ -275,6 +283,7 @@ class Performance(Chooser):
         if self.showBool: plt.show()                 
         
     def showErrorByPointKind(self):
+        '''This method computes the average error by point kind and displays a bar graph'''
         
         #Save title in text file and in graphNames array
         gName = self.graphNames[1]
@@ -338,6 +347,8 @@ class Performance(Chooser):
         if self.showBool: plt.show()
 
     def showErrorEachPointK(self):
+        '''This method computes the error by frame for each point kind
+        and displays a graph for each point kind'''
         
         #Save title in text file and in graphNames array
         gName = self.graphNames[2]
@@ -394,6 +405,8 @@ class Performance(Chooser):
         self.fo.write(self.division)
             
     def showPercentageError(self):
+        '''This method computes the percentage of points whithin a given interval of error and
+        displays a graph'''
         
         #Save title in text file and in graphNames array
         gName = self.graphNames[3]
@@ -476,6 +489,7 @@ class Performance(Chooser):
         if self.showBool: plt.show()
         
     def showAccuracy(self):
+        '''This method computes the accuracy of predictors and display a graph'''
                 
         #Save title in text file and in graphNames array
         gName = self.graphNames[4]
@@ -533,6 +547,8 @@ class Performance(Chooser):
         if self.showBool: plt.show()
         
     def showAccuracyConfidence(self):
+        '''This graph computes the accuracy * confidence of predictors and display a graph
+        Now, it is not working because confidence of some predictor is missing'''
        
         #Save title in text file and in graphNames array
         gName = 'ACCURACY WITH CONFIDENCE'
@@ -598,6 +614,7 @@ class Performance(Chooser):
         if self.showBool: plt.show()     
     
     def showROC(self):
+        '''This method computes true and false positives rate and display an ROC curve'''
    
         #Save title in text file and in graphNames array
         gName = self.graphNames[5]
@@ -677,6 +694,8 @@ class Performance(Chooser):
         if self.showBool: plt.show()          
       
     def showError3D(self):
+        '''This method display a 3D plot that shows predictors error, where the x and y dimensions
+        are frame and point kind'''
         
         #Write title in text file
         self.fo.write('\nERROR FOR EACH PREDICTOR IN 3D\n')
@@ -731,6 +750,7 @@ class Performance(Chooser):
                             
 
     def computeErrorByFrame(self):
+        '''This method is used to compute the average error by frame'''
         
         #Create a 2-dimensional array, predictors x frames
         self.errorFrame = zeros((len(self.name), self.totalFrames))
@@ -755,8 +775,8 @@ class Performance(Chooser):
                     self.errorFrame[pred][frame] /= count
         
     def appendOracle(self):
-        #This method adds a new 2-dimensional array to y with the smallest error
-        #for each frame and point kind. We call this "predictor" Oracle
+        '''This method adds a new 2-dimensional array to y with the smallest error
+        for each frame and point kind. We call this "predictor" Oracle'''
         
         yOracle = zeros((self.totalFrames, self.totalPointK))
         for i in range(0, self.totalFrames):
@@ -775,7 +795,7 @@ class Performance(Chooser):
         self.y = concatenate((self.y, [yOracle]))
         
     def minError(self, i, j):
-        #This method return the minimum error for a frame and a point kind
+        '''This method return the minimum error for a frame and a point kind'''
         
         minVal = self.y[0][i][j]
 
@@ -797,7 +817,7 @@ class Performance(Chooser):
         return array
         
     def showConfidence(self):
-        #This method shows a graph with predictor confidence
+        '''This method shows a graph with predictor confidence'''
         
         #For each predictor
         for i in range(0,self.totalPredictors):
