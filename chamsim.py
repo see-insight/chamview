@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Main Chamview testing program
+"""Copy of Chamview class in order to make evaluations of system performance
 
 Usage options:
     -h --help       Print this help message
