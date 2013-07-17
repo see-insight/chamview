@@ -14,8 +14,11 @@ import numpy as np
 import string
 
 class PlotData:
+    '''This class implements methods to plot data given in text files. It displays error and 
+    accuracy graphs. Also, information gotten from metadata files'''
     
     def __init__(self,directory='', upBound=50):
+        '''Constructor class that builds an object and instantiate attributes'''
 
         #Attributes
         self.numPlots = 0
@@ -51,6 +54,7 @@ class PlotData:
         
         
     def plotSavedG(self, output = '', showB = True):
+        '''Method that takes a text file with evaluation information and display several graphs'''
         
         #Get the path where graphs will be saved
         self.outputName = output
@@ -72,6 +76,8 @@ class PlotData:
         self.plotAll()
         
     def readFile(self, filename):
+        '''This method reads a text file and save it in an array. Also, it finds the first line
+        that contains a graphName'''
         
         #If filename does not exist, return
         if os.path.exists(filename) == False:
@@ -89,15 +95,16 @@ class PlotData:
         self.fileArr = fileArr[i:]
         
     def plotAll(self):
+        '''Plot all the graphs that show the error and accuracy of predictors'''
         
         itr = 0 #Iterator that traverses fileArr
        
         #While loop that checks if there are still data to plot
         while itr < len(self.fileArr):
-        
+            
             #Check if current line cotains a graph name
             if self.fileArr[itr][0:-1] in self.graphNames:
-            
+                
                 graphN = self.fileArr[itr][0:-1]
                 itr += 1
                 
@@ -193,6 +200,8 @@ class PlotData:
                 itr += 1
         
     def getInfoErrorByFrame(self, itr):
+        '''Takes a text file as an array and returns two arrays that are used to graph
+        Error_By_Frame'''
         
         #Define two lists to save numbers to plot
         xPlot = zeros((self.numPredictors, self.numFrames))
@@ -214,6 +223,8 @@ class PlotData:
         return itr, xPlot, yPlot
         
     def getInfoErrorByPointK(self, itr):
+        '''Takes a text file as an array and returns two arrays that are used to graph
+        Error_By_Point_Kind'''
         
         #Define two lists to save data
         xPlot = []
@@ -232,6 +243,8 @@ class PlotData:
         return itr, xPlot, yPlot
         
     def getInfoPercentagePoints(self, itr):
+        '''Takes a text file as an array and returns two arrays that are used to graph
+        Percentage_of_Points'''
         
         #Define two lists to save the data
         xPlot = []
@@ -259,6 +272,7 @@ class PlotData:
         
     
     def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
+        '''Method that takes two arrays and makes a graph using lines'''
         
         self.numPlots += 1
         #Define a new figure
@@ -281,16 +295,19 @@ class PlotData:
         if self.showBool: plt.show()
                
     def getXY(self, line):
+        '''Takes a string with 2 values separated by a comma and return them''' 
         xy = line.split(',')         
         if (xy[1] == self.infVal + '\n') or (xy[1] == '-1.0\n'):
             xy[1] = self.upperB
         return xy[0], xy[1]
         
     def getPredictor(self, line):
+        '''Takes a string with a predictor name and returns it'''
         idx = line.index(self.predLabel) + len(self.predLabel)
         return line[idx:-1]
         
     def getNumbers(self, filename):
+        '''Takes an input file and reads important information about the evaluation in order to plot'''
         
         #If file does not exists, return
         if os.path.exists(filename) == False: return        
@@ -324,6 +341,8 @@ class PlotData:
             if frameD and pred and fram and pointK and predL: break
             
     def getPerformanceAtt(self):
+        '''Method that Copies the same attributes from performance class to this class'''
+        
         #Create a new performance object
         per = vocab.getChooser('Performance')
         per.setup()
@@ -344,6 +363,7 @@ class PlotData:
         
     #Method that plots information from Metadata file
     def plotMeta(self, output, argShow):
+        '''It takes a metadata file and plots two graphs: metadata info, and predictors usage'''
         
         #If filename does not exist, return
         if os.path.exists(self.directory) == False: return
@@ -400,6 +420,8 @@ class PlotData:
         self.plotUsePredictors(predictorUse, pointsModified)
     
     def getUsePredictors(self, metaArr, predictors, manualPoints):
+        '''Takes a text file as an array, finds and returns the predictors usage'''
+        
         #Method that obtains the use of the predictors when running chamview
     
         #Define an array to save how many accepted points came from each predictor
@@ -419,8 +441,9 @@ class PlotData:
         
         return predictorUse
     
-    #Plot information given by metadata file
     def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
+        '''Plot running time information given by metadata file'''
+        
         fig = plt.figure()
         ax = fig.add_axes([0., 0., 1., 1.])
         gName = 'METADATA INFORMATION'
@@ -442,8 +465,8 @@ class PlotData:
         #Show graphs if user wants
         if self.showBool: show()                            
     
-    #This method plots how many time each predictor was used for annotating points
     def plotUsePredictors(self, predictorUse, pointsModified):
+        '''This method plots how many time each predictor was used for annotating points'''        
         
         plt.figure()
         
@@ -467,9 +490,8 @@ class PlotData:
         #Show graph only if user wants
         if self.showBool: show()
 
-    #Method that receives a string and return an array
     def getPred(self, line, lowerC):
-        
+        '''Method that receives an list as an string and returns the list'''
         #Get the indexes for array bounds
         first = line.index('[')
         last = line.index(']')
@@ -498,9 +520,9 @@ class PlotData:
             
         return newList
             
-    #This method receives time in seconds and returns time in hrs, min, sec
     def getTime(self, time):
-        
+        '''This method receives time in seconds as a float number or as HH:MM:SS format
+        and returns time in hrs, min, sec as a string'''       
         if isinstance(time, basestring) and ':' in time:
             #Case when time is in HH:MM:SS format
             tSplit = time.split(':')
@@ -516,6 +538,7 @@ class PlotData:
             return strTime
             
         else:
+            #Case when the time is a float number representing seconds
             time = int(time * 100) / 100.0
             seconds = time % 60
             totalMinutes = (time - seconds) / 60
@@ -610,6 +633,8 @@ class PlotData:
         self.plotCompPredType(pAddInfo, npAddInfo, ttAddInfo)
         
     def plotCompPredType(self,predInfo, noPredInfo, ttInfo):
+        '''Method that takes lists of running times and additional information and plots graphs
+        that indicate runnig time for each data type'''
 
         #Define an array that will contain all the dataset types from pred, noPred, or theoTime
         typesD = []
@@ -670,6 +695,8 @@ class PlotData:
         self.plotConsecutiveBars(typesD, timeFrame, gName2, 'Dataset Type', 'Time in seconds', legend, 0)
               
     def plotCompPredName(self,predInfo, noPredInfo, ttInfo, complete):
+        '''Method that takes lists of running times and additional information and plots graphs
+        that indicate runnig time for each data set'''
         
         #Define an array that will contain all the datasets from pred, noPred, and theoTime
         namesD = []
@@ -766,6 +793,9 @@ class PlotData:
         if self.showBool: plt.show()                 
  
     def removeRepeatedData(self, dataInfo, addInfo):
+        '''Method that takes metadata information and if there are more than one metadata for a 
+        specific dataset, it joins the information of them with the average, and finally have
+        just a metadata file for each dataset'''
         
         #addInfo[0] has the dataset name
         #Define a new array that has all the names but without repetition
@@ -826,6 +856,8 @@ class PlotData:
         
 
     def splitDatasets(self, dataInfoG, addInfo):
+        '''This method splits datasets into the three ways to run chamview: not using predictors,
+        using predictors in real time, and using predictors with automatic predictions'''
         
         #Define a new array where analysis with predictors information will be saved
         pDIG = []
@@ -873,6 +905,8 @@ class PlotData:
         return pDIG, pAI, noPDIG, noPAI, ttDIG, ttAI
         
     def getPredDataset(self, dataInfoG, addInfo):
+        '''Takes lists of dataset information and returns only two lists of data info for graph
+        and additional information'''
         
         #Define a new array where analysis with predictors information will be saved
         pDIG = []
@@ -895,6 +929,8 @@ class PlotData:
         
  
     def plotByDatasetName(self, numDatasets, numPred, names, predictors, dataInfoG, pointsM):
+        '''This method takes data for predictors usage for each dataset and calls the method
+        to create the graph'''
         
         #Compute percentage of usage
         for i in range(0, numPred):
@@ -906,6 +942,8 @@ class PlotData:
         self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 5)
  
     def plotByDatasetType(self, numDatasets, numPred, types, predictors, dataInfoG):
+        '''This method takes data for predictors usage for each dataset, joins the information
+        of the same dataset types, and calls the method to create the graph'''
         
         #Get list of types
         typesList = []
@@ -939,6 +977,8 @@ class PlotData:
         self.plotBarsStack(gName, numTypes, typesList, numPred, predictors, dataByType, 0, 10)     
         
     def plotBarsStack(self, gName, xLength, names, numPred, predictors, dataInfoG, rot, fontS):
+        '''This method takes lists of data and plots a bar graph where each bar is a stack
+        showing the percentage usage of each predictor'''
         
         xPlot = np.arange(xLength)    #the x locations for the groups
         width = 0.5                   #width of the bars
@@ -973,6 +1013,7 @@ class PlotData:
         if self.showBool: plt.show()
                 
     def getInfoDatasets(self, pathFile):
+        '''This method takes a metadata path, reads it and get important information for graphs'''
         
         try:
             #Open file and read each line     
@@ -1052,6 +1093,7 @@ class PlotData:
             return None
     
     def getSubdirectories(self, dirData, filename):
+        '''It takes a directory and gets all the paths for metadata files'''
         
         #Check if exists metadata in current directory
         metaDir = dirData + '/' + filename
