@@ -11,7 +11,7 @@ Usage options:
     -k --pkind      Point kind file. Default is (defaultPointKinds.txt).
     -p --dirGT      Ground Truth points directory. Default is (none).
     -r --predictor  Predictor Name that will be evaluated. Default is all the predictors.
-    -o --output     Output directory where results are saved. Default is current directory.
+    -o --output     Output directory where results are saved. Default is None.
     -u --upBound    Determines the upper bound of results we can see. Default is 50.
     -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5.
     
@@ -105,7 +105,7 @@ def main(argc,argv):
 
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
-
+            
             # -s Option
             #Plot dataset from a text file
             pd = PlotData(argSavedGraph, argUpBound)
@@ -127,10 +127,10 @@ def main(argc,argv):
                 pd.plotMeta(argOutput, argShow)
             
             if argGroundT != '':
+                
+                #These comments are for another implementation
                 #compute errors and then plot
-                
                 #Obtain error arrays
-                
                 #send this array to plotPerformance class and generate graphs
                 
                 callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds)
@@ -146,7 +146,9 @@ def main(argc,argv):
 
 
 def callChamview(argFrameDir, argGroundT, argOutput, argPredictor, argUpBound, argTruePos, argPKind, argPreproc, argShow, argSavePreds, argUsePreds):
-
+    '''This method calls chamview class and run it, with the chooser performance. Chamview class
+    will use the same arguments given in this class'''
+    
     command = ["./chamsim.py", "-c", "Performance"]
 
     #Get predictor names
