@@ -161,7 +161,7 @@ class PlotData:
                     yLabel = self.argGraphs[3][5]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 2, 5)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5)
                     
                 elif graphN == self.graphNames[4]:
                     #ACCURACY
@@ -175,7 +175,7 @@ class PlotData:
                     yLabel = self.argGraphs[4][4]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 2)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel)
                     
                 elif graphN == self.graphNames[5]:
                     
@@ -258,7 +258,7 @@ class PlotData:
         return itr, xPlot, yPlot
         
     
-    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, loca = 1, scatt = 0):
+    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
         
         self.numPlots += 1
         #Define a new figure
@@ -275,7 +275,7 @@ class PlotData:
         plt.xlabel(xLabel)
         xlim(0,self.upperB)
         plt.ylabel(yLabel)
-        plt.legend(self.predList, prop={'size':8}, loc=loca)
+        plt.legend(self.predList, prop={'size':8}, loc='best')
         
         self.saveGraph(gName)
         if self.showBool: plt.show()
@@ -756,7 +756,7 @@ class PlotData:
         plt.title(gTitle, size = 20)
         xlabel(xl, fontsize = 17)
         ylabel(yl, fontsize = 17)
-        plt.legend(leg, prop = {'size':8})
+        plt.legend(leg, prop = {'size':8}, loc='best')
         
         #Save figure
         if gName == '': gName = gTitle
@@ -964,7 +964,7 @@ class PlotData:
         xlim(0,xLength)
         
         plt.yticks(np.arange(0,100,5))
-        plt.legend(predictors, prop = {'size':8})
+        plt.legend(predictors, prop = {'size':8}, loc='best')
         
         #Save figure
         self.saveGraph(gName)
@@ -977,6 +977,10 @@ class PlotData:
         #Open file and read each line     
         metaFile = open(pathFile)
         metaArr = metaFile.readlines()
+                
+        #Debugging purposes-------------------------------------------------------------------
+        print 'pathFile:', pathFile
+        #-------------------------------------------------------------------------------------
         
         #Define a list that will contain all the returned values
         returnInfo = {}
@@ -1006,7 +1010,7 @@ class PlotData:
                 returnInfo['timeFrame'] = float(line.split()[-1])
                 timeF = True
                 
-            elif line.startswith('TIME/POINT'):
+            elif line.startswith('TIME/POINT'):                
                 returnInfo['timePoint'] = float(line.split()[-1])
                 timeP = True
             
