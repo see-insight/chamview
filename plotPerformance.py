@@ -1048,7 +1048,7 @@ class PlotData:
             return returnInfo
             
         except ValueError:
-            print 'The next file has no the correct format: ', pathFile
+            print 'The next file could not be read correctly: ', pathFile
             return None
     
     def getSubdirectories(self, dirData, filename):
@@ -1062,9 +1062,7 @@ class PlotData:
             self.subdirectories.append(metaDir)
                         
         else:
-
             #Check subdirectories
-
             #Get all subdirectories
             subDirs = os.walk(dirData).next()[1]
             
