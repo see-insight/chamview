@@ -266,8 +266,8 @@ class Performance(Chooser):
         titleLa = self.argGraphs[0][1] + '\n' + self.frameDir
         title(titleLa)
         xlabel(self.argGraphs[0][4])
-        ylabel(self.argGraphs[0][5])      
-        plt.legend(self.name, prop={'size':8})
+        ylabel(self.argGraphs[0][5])     
+        plt.legend(self.name, prop={'size':8}, loc='best') 
         
         #Save figure
         self.saveGraph(gName)
@@ -330,7 +330,7 @@ class Performance(Chooser):
         title(titleLa)
         xlabel(self.argGraphs[1][4])
         ylabel(self.argGraphs[1][5])
-        plt.legend(self.name, prop = {'size':8})
+        plt.legend(self.name, prop = {'size':8}, loc='best')
         
         #Save figure
         self.saveGraph(gName)
@@ -383,7 +383,7 @@ class Performance(Chooser):
             title(titleLa)
             xlabel(self.argGraphs[2][4])
             ylabel(self.argGraphs[2][5])
-            plt.legend(self.name, prop={'size':8})
+            plt.legend(self.name, prop={'size':8}, loc='best')
         
             #Save figure
             self.saveGraph(gName, str(pointK + 1))
@@ -468,7 +468,7 @@ class Performance(Chooser):
         xlabel(self.argGraphs[3][4], fontsize = 10)
         xlim(0,self.upperB)
         ylabel(self.argGraphs[3][5], fontsize = 10)
-        plt.legend(self.name, prop={'size':8}, loc=2)
+        plt.legend(self.name, prop={'size':8}, loc='best')
         
         #Save figure
         self.saveGraph(gName)
@@ -525,7 +525,7 @@ class Performance(Chooser):
         title(titleL)
         xlabel(self.argGraphs[4][3])
         ylabel(self.argGraphs[4][4])
-        plt.legend(self.name, prop={'size':8}, loc=2)
+        plt.legend(self.name, prop={'size':8}, loc='best')
         
         #Save figure
         self.saveGraph(gName)
@@ -590,7 +590,7 @@ class Performance(Chooser):
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
         ylabel('Accuracy * Confidence')
-        plt.legend(self.name, prop={'size':8})
+        plt.legend(self.name, prop={'size':8}, loc='best')
         
         #Save figure
         self.saveGraph(gName)
@@ -669,7 +669,7 @@ class Performance(Chooser):
               'A predictor is better if its curve is above other')
         xlabel('False Positive Rate')
         ylabel('True Positive Rate')
-        plt.legend(self.name, prop={'size':8})
+        plt.legend(self.name, prop={'size':8}, loc='best')
         
         #Save figure
         self.saveGraph(gName)
@@ -722,7 +722,7 @@ class Performance(Chooser):
             title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8})
+            plt.legend(self.name, prop={'size':8}, loc='best')
         
             #Save figure
             self.saveGraph(gName)
@@ -836,7 +836,7 @@ class Performance(Chooser):
             title('Confidence of Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8})
+            plt.legend(self.name, prop={'size':8}, loc='best')
         
             #Save figure
             self.saveGraph(gName)
