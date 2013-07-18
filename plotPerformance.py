@@ -167,7 +167,7 @@ class PlotData:
                     yLabel = self.argGraphs[3][5]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5, self.upperB)
                     
                 elif graphN == self.graphNames[4]:
                     #ACCURACY
@@ -181,7 +181,7 @@ class PlotData:
                     yLabel = self.argGraphs[4][4]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 0, 0, 1)
                     
                 elif graphN == self.graphNames[5]:
                     
@@ -270,7 +270,7 @@ class PlotData:
         return itr, xPlot, yPlot
         
     
-    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0):
+    def plotLine(self, gName, xPlot, yPlot, titleG, xLabel, yLabel, scatt = 0, xLim = 0, yLim = 0):
         '''Method that takes two arrays and makes a graph using lines'''
         
         self.numPlots += 1
@@ -286,8 +286,9 @@ class PlotData:
                 
         plt.title(titleG)
         plt.xlabel(xLabel)
-        xlim(0,self.upperB)
+        if xLim != 0: xlim(0, xLim)
         plt.ylabel(yLabel)
+        if yLim != 0: ylim(0,yLim)
         plt.legend(self.predList, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         self.saveGraph(gName)
@@ -976,7 +977,7 @@ class PlotData:
         
     def plotBarsStack(self, gName, xLength, names, numPred, predictors, dataInfoG, rot, fontS):
         '''This method takes lists of data and plots a bar graph where each bar is a stack
-        showing the percentage usage of each predictor'''
+        showing the of each predictor'''
         
         xPlot = np.arange(xLength)    #the x locations for the groups
         width = 0.5                   #width of the bars
