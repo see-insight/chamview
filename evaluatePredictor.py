@@ -14,19 +14,10 @@ Usage options:
     -o --output     Output directory where results are saved. Default is None.
     -u --upBound    Determines the upper bound of results we can see. Default is 50.
     -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5.
-    
     -n --dontShow   It indicates that user doesn't want to see the graphs created at the moment
-    
-    #Functionalities
     -s --savedGraph Data results previously saved in text file that is used to graph.
     -m --metadata   File of metadata.txt to plot graphs using the information in it.
     -c --comDataSet Directory of datasets used to compare evaluations on them
-    #Posible functionalities
-    take a -X where X belongs to alphabet and it tells if it has to do the main functionality
-    -e use saved predictions and ground truth to compute error without run chamview
-    
-    #Pending
-    -v --savePreds  File to save the Predicted Points to for re-use later
     -f --usePreds   Previously saved predicted points file to use as predicted points to save time
 
 Example:
@@ -98,8 +89,6 @@ def main(argc,argv):
                 argShow = False
             elif opt in ('-c', '--comDataSet'):
                 argComDataSet = arg
-            elif opt in ('-v', '--savePreds'):
-                argSavePreds = arg
             elif opt in ('-f', '--usePreds'):
                 argUsePreds = arg
 
