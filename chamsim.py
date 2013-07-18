@@ -17,7 +17,7 @@ Usage options:
     -u --usePred    Determines if user wants to use previous predictions in that file
 Example:
 
-    $ chamview.py -d ./images/Chameleon -o ./points
+    $ chamsim.py -d ./images/Chameleon -o ./points
 
 """
 
