@@ -93,7 +93,7 @@ class Performance(Chooser):
             'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points', ''])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
-            'Percentage of Predictions Within ', ' Pixels Over Time',
+            'Percentage of Predictions', 'Within ', ' Pixels Over Time',
             'Frame', 'Percent',  '', ''])
         
         #Variables used to match with chamview.py requirements
@@ -520,12 +520,12 @@ class Performance(Chooser):
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
         
-        titleLa = self.argGraphs[4][1] + str(self.tpBound) + self.argGraphs[4][2]
+        titleLa = self.argGraphs[4][1] + '\n' + self.argGraphs[4][2] + str(self.tpBound) + self.argGraphs[4][3]
         yLimit = 100
         ylim(0, yLimit)
         
         #Put labels in graph
-        self.putLabels(titleLa, self.argGraphs[4][3], self.argGraphs[4][4], self.name, yLimit)
+        self.putLabels(titleLa, self.argGraphs[4][4], self.argGraphs[4][5], self.name, yLimit)
         
         #Save figure
         self.saveGraph(gName)
@@ -854,5 +854,5 @@ class Performance(Chooser):
         plt.ylabel(yL, size = 15)     
         plt.legend(leg, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
-        plt.text(0, yDistance + yDistance/8, self.frameDir, horizontalalignment='left',
+        plt.text(0, yDistance + yDistance/8, 'Directory: ' + self.frameDir, horizontalalignment='left',
         verticalalignment='bottom', size = 8)
