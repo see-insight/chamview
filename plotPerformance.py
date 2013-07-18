@@ -22,7 +22,6 @@ class PlotData:
 
         #Attributes
         self.numPlots = 0
-        self.file_in = None
         self.directory = directory
         self.outputName = '' #Name of output directory
         self.showBool = True; ##Boolean that determines if show or don't graphs
