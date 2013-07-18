@@ -31,7 +31,6 @@ class PlotData:
         #Atribbutes that are obtained from performance class
         self.graphNames = []
         self.argGraphs = []
-        self.division = ''
         #Label variables used to match with text file information
         self.predLabel = ''
         self.predictorsL = ''
@@ -149,7 +148,7 @@ class PlotData:
                         itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                         
                         #Get arguments for graph
-                        titleG = self.argGraphs[2][1] + pointK + '\n' + self.frameDir
+                        titleG = self.argGraphs[2][1] + pointK + self.frameDir
                         xLabel = self.argGraphs[2][4]
                         yLabel = self.argGraphs[2][5]
                         
@@ -257,7 +256,7 @@ class PlotData:
             
             itr += 1 #Discard predictor name
             
-            while not(self.fileArr[itr].startswith(self.predLabel)) and ',' in self.fileArr[itr]:
+            while itr < len(self.fileArr) and not(self.fileArr[itr].startswith(self.predLabel)) and ',' in self.fileArr[itr]:
                 newX, newY = self.getXY(self.fileArr[itr])
                 xPlot[i].append(int(newX))
                 yPlot[i].append(float(newY))
@@ -289,7 +288,7 @@ class PlotData:
         plt.xlabel(xLabel)
         xlim(0,self.upperB)
         plt.ylabel(yLabel)
-        plt.legend(self.predList, prop={'size':8}, loc='best')
+        plt.legend(self.predList, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         self.saveGraph(gName)
         if self.showBool: plt.show()
@@ -350,7 +349,6 @@ class PlotData:
         #Update global variables
         self.graphNames = per.graphNames
         self.argGraphs = per.argGraphs
-        self.division = per.division
         self.predLabel = per.predLabel
         self.pointKLabel = per.pointKLabel
         self.numPredictorsL = per.numPredictorsL
@@ -783,7 +781,7 @@ class PlotData:
         plt.title(gTitle, size = 20)
         xlabel(xl, fontsize = 17)
         ylabel(yl, fontsize = 17)
-        plt.legend(leg, prop = {'size':8}, loc='best')
+        plt.legend(leg, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         if gName == '': gName = gTitle
@@ -938,7 +936,7 @@ class PlotData:
                 dataInfoG[i][j] = dataInfoG[i][j] * 100.0 / pointsM[j]    
         
         #Call method for plot stacked bars
-        gName = 'Predictors Usage'
+        gName = 'Predictor Usage'
         self.plotBarsStack(gName, numDatasets, names, numPred, predictors, dataInfoG, 30, 5)
  
     def plotByDatasetType(self, numDatasets, numPred, types, predictors, dataInfoG):
@@ -973,7 +971,7 @@ class PlotData:
                 dataByType[i][j] = dataByType[i][j] * 100.0 / pointsModType[j]
         
         #Call method for plot stacked bars
-        gName = 'Predictors Usage by Data Type'
+        gName = 'Predictor Usage by Data Type'
         self.plotBarsStack(gName, numTypes, typesList, numPred, predictors, dataByType, 0, 10)     
         
     def plotBarsStack(self, gName, xLength, names, numPred, predictors, dataInfoG, rot, fontS):
@@ -997,14 +995,14 @@ class PlotData:
             for j in range(0, xLength):
                 accumulativeUse[j] += dataInfoG[i][j]
         
-        plt.ylabel('Percentage Usage', fontsize = 17)
+        plt.ylabel('Percent Usage', fontsize = 17)
         plt.xlabel('Data Sets', fontsize = 17)
         plt.title(gName, size = 20)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
         xlim(0,xLength)
         
         plt.yticks(np.arange(0,100,5))
-        plt.legend(predictors, prop = {'size':8}, loc='best')
+        plt.legend(predictors, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         self.saveGraph(gName)
