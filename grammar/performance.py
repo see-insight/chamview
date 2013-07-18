@@ -61,6 +61,7 @@ class Performance(Chooser):
         self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
         self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
         self.frameDirL = 'Directory: '
+        self.tpBoundL = 'tpBound: '
         self.infVal = 'INF' #Label that indicates the error is very large
         self.oracleN = 'Oracle' #Label for Oracle predictor
         
@@ -83,7 +84,7 @@ class Performance(Chooser):
             'Point Kind', 'Distance Error in Pixels', ''])
         #Error by each point kind
         self.argGraphs.append([self.graphNames[2],
-            'Average Distance Error (in Pixels). Point Kind: ', 'Errors are up to ', ' pixels',
+            'Distance Error (in Pixels). Point Kind: ', 'Errors are up to ', ' pixels',
             'Frame', 'Distance Error in Pixels', ''])
         #Percentage of error
         self.argGraphs.append([self.graphNames[3],
@@ -91,8 +92,8 @@ class Performance(Chooser):
             'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points', ''])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
-            'Prediction Accuracy', 'Correct predictions over total predictions',
-            'Frame', 'Accuracy',  '', ''])
+            'Percentage of Predictions Within ', ' Pixels Over Time',
+            'Frame', 'Percent',  '', ''])
         
         #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
@@ -481,6 +482,7 @@ class Performance(Chooser):
         #Save title in text file and in graphNames array
         gName = self.graphNames[4]
         self.fo.write('\n' + gName + '\n')
+        self.fo.write(self.tpBoundL + str(self.tpBound) + '\n')
         
         self.numPlots += 1
         
@@ -505,6 +507,9 @@ class Performance(Chooser):
                 yPlot[frame] += yPlot[frame - 1] * frame * self.totalPointK
                 #Compute new accuracy
                 yPlot[frame] /= (frame + 1) * self.totalPointK 
+                
+            #Multiply by 100 to get percentage
+            yPlot *= 100
             
             #Save data to file
             for j in range(0,self.x[i].shape[0]):
@@ -516,11 +521,11 @@ class Performance(Chooser):
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
         
-        titleL = self.argGraphs[4][1] + '. ' + self.argGraphs[4][2] + '\n' + self.frameDir
+        titleL = self.argGraphs[4][1] + str(self.tpBound) + self.argGraphs[4][2] + '\n' + self.frameDir
         title(titleL)
         xlabel(self.argGraphs[4][3])
         ylabel(self.argGraphs[4][4])
-        ylim(0,1)
+        ylim(0,100)
         plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
@@ -843,3 +848,4 @@ class Performance(Chooser):
         '''This method saves a graph as an image'''
         if self.outputName != '':
             plt.savefig(self.outputName + name + name2 + '.png', bbox_inches='tight')
+            #Increase size image: dpi = 600
