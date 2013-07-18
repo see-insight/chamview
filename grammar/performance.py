@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
+import matplotlib.patches as patches
 
 '''This file implements classes where the performance of predictors is computed.
 Input: A stack of images, ground truth data, and a set of predictors
@@ -88,7 +89,7 @@ class Performance(Chooser):
             'Frame', 'Distance Error in Pixels', ''])
         #Percentage of error
         self.argGraphs.append([self.graphNames[3],
-            'Percentage of Predicted Points within a Given Radius from the Ground Truth Point', '', '',
+            'Percentage of Predicted Points within', 'a Given Radius from the Ground Truth Point', '',
             'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points', ''])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
@@ -268,11 +269,10 @@ class Performance(Chooser):
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k')
         
-        titleLa = self.argGraphs[0][1] + '\n' + self.frameDir
-        title(titleLa)
-        xlabel(self.argGraphs[0][4])
-        ylabel(self.argGraphs[0][5])     
-        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0) 
+        titleLa = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) +self.argGraphs[0][3]
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[0][4], self.argGraphs[0][5], self.name, self.upperB) 
         
         #Save figure
         self.saveGraph(gName)
@@ -329,11 +329,10 @@ class Performance(Chooser):
                 
             plt.xticks( xPlot + 0.5,  self.pointKList)
         
-        titleLa = self.argGraphs[1][1] + '\n' + self.frameDir
-        title(titleLa)
-        xlabel(self.argGraphs[1][4])
-        ylabel(self.argGraphs[1][5])
-        plt.legend(self.name, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        titleLa = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) + self.argGraphs[1][3]
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[1][4], self.argGraphs[1][5], self.name, self.upperB)
         
         #Save figure
         self.saveGraph(gName)
@@ -384,11 +383,10 @@ class Performance(Chooser):
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
-            titleLa = self.argGraphs[2][1] + self.pointKList[pointK] + '\n' + self.frameDir
-            title(titleLa)
-            xlabel(self.argGraphs[2][4])
-            ylabel(self.argGraphs[2][5])
-            plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+            titleLa = self.argGraphs[2][1] + self.pointKList[pointK] + '\n' + self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
+
+            #Put labels in graph
+            self.putLabels(titleLa, self.argGraphs[2][4], self.argGraphs[2][5], self.name, self.upperB)
         
             #Save figure
             self.saveGraph(gName, str(pointK + 1))
@@ -464,12 +462,13 @@ class Performance(Chooser):
             else:
                 plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
         
-        titleLa = self.argGraphs[3][1] + '\n' + self.frameDir
-        title(titleLa, size = 12) 
-        xlabel(self.argGraphs[3][4], fontsize = 10)
+        titleLa = self.argGraphs[3][1] + '\n' + self.argGraphs[3][2]
+        yLimit = 100
         xlim(0,self.upperB)
-        ylabel(self.argGraphs[3][5], fontsize = 10)
-        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        ylim(0, yLimit)
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[3][4], self.argGraphs[3][5], self.name, yLimit)
         
         #Save figure
         self.saveGraph(gName)
@@ -521,12 +520,12 @@ class Performance(Chooser):
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
         
-        titleL = self.argGraphs[4][1] + str(self.tpBound) + self.argGraphs[4][2] + '\n' + self.frameDir
-        title(titleL)
-        xlabel(self.argGraphs[4][3])
-        ylabel(self.argGraphs[4][4])
-        ylim(0,100)
-        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        titleLa = self.argGraphs[4][1] + str(self.tpBound) + self.argGraphs[4][2]
+        yLimit = 100
+        ylim(0, yLimit)
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[4][3], self.argGraphs[4][4], self.name, yLimit)
         
         #Save figure
         self.saveGraph(gName)
@@ -587,10 +586,8 @@ class Performance(Chooser):
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
 
-        title('Accuracy and Confidence on Prediction')
-        xlabel('Frame')
-        ylabel('Accuracy * Confidence')
-        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        #Put labels in graph
+        self.putLabels(titleLa, 'Frame', 'Accuracy * Confidence', self.name, 100)
         
         #Save figure
         self.saveGraph(gName)
@@ -663,11 +660,10 @@ class Performance(Chooser):
             #Plot the error
             plt.plot(xPlot, yPlot, lw = 1)  
                   
-        title('Receiver Operating Characteristic (ROC) Curve\n'+
-              'A predictor is better if its curve is above other')
-        xlabel('False Positive Rate')
-        ylabel('True Positive Rate')
-        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        titleLa = 'Receiver Operating Characteristic (ROC) Curve\nA predictor is better if its curve is above other'
+
+        #Put labels in graph
+        self.putLabels(titleLa, 'False Positive Rate', 'True Positive Rate', self.name, 1)
         
         #Save figure
         self.saveGraph(gName)
@@ -719,11 +715,11 @@ class Performance(Chooser):
             fig.colorbar(surf, shrink=0.5, aspect=5)
             
             #Messages for plot
-            title('Error in Predictor: ' + self.name[i])
-            xlabel('Frames')
-            ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
-        
+            titleLa = 'Error in Predictor: ' + self.name[i]
+ 
+            #Put labels in graph
+            self.putLabels(titleLa, 'Frame', 'Point Kinds', self.name, self.upperB)
+            
             #Save figure
             self.saveGraph(gName)
             
@@ -849,3 +845,14 @@ class Performance(Chooser):
         if self.outputName != '':
             plt.savefig(self.outputName + name + name2 + '.png', bbox_inches='tight')
             #Increase size image: dpi = 600
+            
+    def putLabels(self, titleLa, xL, yL, leg, yDistance):
+        '''This method receives several labels to be placed in the graph'''
+        
+        plt.title(titleLa, size = 17)
+        plt.xlabel(xL, size=15)
+        plt.ylabel(yL, size = 15)     
+        plt.legend(leg, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        
+        plt.text(0, yDistance + yDistance/8, self.frameDir, horizontalalignment='left',
+        verticalalignment='bottom', size = 8)
