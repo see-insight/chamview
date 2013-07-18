@@ -518,9 +518,6 @@ class Performance(Chooser):
                 yPlot[frame] += yPlot[frame - 1] * frame * self.totalPointK
                 #Compute new accuracy
                 yPlot[frame] /= (frame + 1) * self.totalPointK 
-
-            #Sort array to get a nice graph
-            yPlot.sort()
             
             #Save data to file
             for j in range(0,self.x[i].shape[0]):
