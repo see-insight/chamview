@@ -178,9 +178,9 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByFrame(itr, False)
                     
                     #Get arguments for graphs
-                    titleG = self.argGraphs[4][1] + str(self.tpBound) +self.argGraphs[4][2]
-                    xLabel = self.argGraphs[4][3]
-                    yLabel = self.argGraphs[4][4]
+                    titleG = self.argGraphs[4][1] + '\n' + self.argGraphs[4][2] + str(self.tpBound) +self.argGraphs[4][3]
+                    xLabel = self.argGraphs[4][4]
+                    yLabel = self.argGraphs[4][5]
                     
                     #Call method to plot graph
                     self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 0, 0, 100)
@@ -305,7 +305,7 @@ class PlotData:
         else:
             yDistance = self.maxMatrix(yPlot)
         
-        plt.text(0, yDistance + yDistance/8, self.frameDir, horizontalalignment='left',
+        plt.text(0, yDistance + yDistance/8, 'Directory: ' + self.frameDir, horizontalalignment='left',
         verticalalignment='bottom', size = 8)
         
         self.saveGraph(gName)
@@ -809,9 +809,11 @@ class PlotData:
         #Put directory at the top of the graph
         if self.frameDir != '':
             dirTop = self.frameDir
+            topDist = 8
         else:
             dirTop = self.directory
-        plt.text(0, yDistance + yDistance/8, dirTop, horizontalalignment='left',
+            topDist = 16
+        plt.text(0, yDistance + yDistance/topDist, 'Directory: ' + dirTop, horizontalalignment='left',
         verticalalignment='bottom', size = 8)
         
         #Save figure
@@ -1031,6 +1033,13 @@ class PlotData:
         plt.title(gName, size = 20)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
         xlim(0,xLength)
+        yDistance = 100
+        ylim(0, yDistance)
+        
+        #Put directory at the top of the graph
+        plt.text(0, yDistance + yDistance/16, 'Directory: ' + self.directory, horizontalalignment='left',
+        verticalalignment='bottom', size = 8)
+        
         
         plt.yticks(np.arange(0,100,5))
         plt.legend(predictors, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
