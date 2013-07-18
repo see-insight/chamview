@@ -53,7 +53,6 @@ class Performance(Chooser):
         
         #Variables used to save information into a text file
         self.fo = None 
-        self.division = '--\n' #String that determines the division between two evaluations
         self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
@@ -267,15 +266,12 @@ class Performance(Chooser):
                 plt.plot(self.x[i], yPlot)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k')
-            
-        #Write division into file
-        self.fo.write(self.division)
         
         titleLa = self.argGraphs[0][1] + '\n' + self.frameDir
         title(titleLa)
         xlabel(self.argGraphs[0][4])
         ylabel(self.argGraphs[0][5])     
-        plt.legend(self.name, prop={'size':8}, loc='best') 
+        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0) 
         
         #Save figure
         self.saveGraph(gName)
@@ -331,15 +327,12 @@ class Performance(Chooser):
                 plt.bar(xPlot + width * i, yPlot, width, color='k')
                 
             plt.xticks( xPlot + 0.5,  self.pointKList)
-            
-        #Write division into file
-        self.fo.write(self.division)
         
         titleLa = self.argGraphs[1][1] + '\n' + self.frameDir
         title(titleLa)
         xlabel(self.argGraphs[1][4])
         ylabel(self.argGraphs[1][5])
-        plt.legend(self.name, prop = {'size':8}, loc='best')
+        plt.legend(self.name, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         self.saveGraph(gName)
@@ -394,15 +387,12 @@ class Performance(Chooser):
             title(titleLa)
             xlabel(self.argGraphs[2][4])
             ylabel(self.argGraphs[2][5])
-            plt.legend(self.name, prop={'size':8}, loc='best')
+            plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
             #Save figure
             self.saveGraph(gName, str(pointK + 1))
         
             if self.showBool: plt.show()
-        
-        #Write division into file
-        self.fo.write(self.division)
             
     def showPercentageError(self):
         '''This method computes the percentage of points whithin a given interval of error and
@@ -472,16 +462,13 @@ class Performance(Chooser):
                 plt.scatter(xPlot, yPlot, s=5)
             else:
                 plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
-            
-        #Write division into file
-        self.fo.write(self.division)
         
         titleLa = self.argGraphs[3][1] + '\n' + self.frameDir
         title(titleLa, size = 12) 
         xlabel(self.argGraphs[3][4], fontsize = 10)
         xlim(0,self.upperB)
         ylabel(self.argGraphs[3][5], fontsize = 10)
-        plt.legend(self.name, prop={'size':8}, loc='best')
+        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         self.saveGraph(gName)
@@ -528,15 +515,12 @@ class Performance(Chooser):
                 plt.plot(self.x[i], yPlot, lw = 1)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
-           
-        #Write division into file
-        self.fo.write(self.division) 
         
         titleL = self.argGraphs[4][1] + '. ' + self.argGraphs[4][2] + '\n' + self.frameDir
         title(titleL)
         xlabel(self.argGraphs[4][3])
         ylabel(self.argGraphs[4][4])
-        plt.legend(self.name, prop={'size':8}, loc='best')
+        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         self.saveGraph(gName)
@@ -596,14 +580,11 @@ class Performance(Chooser):
                 plt.plot(self.x[i], yPlot, lw = 1)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
-            
-        #Write division into file
-        self.fo.write(self.division)
 
         title('Accuracy and Confidence on Prediction')
         xlabel('Frame')
         ylabel('Accuracy * Confidence')
-        plt.legend(self.name, prop={'size':8}, loc='best')
+        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         self.saveGraph(gName)
@@ -674,16 +655,13 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(xPlot[i]) + ', ' + str(yPlot[i]) + '\n')                           
                                                                                  
             #Plot the error
-            plt.plot(xPlot, yPlot, lw = 1)
-         
-        #Write division into file
-        self.fo.write(self.division)   
+            plt.plot(xPlot, yPlot, lw = 1)  
                   
         title('Receiver Operating Characteristic (ROC) Curve\n'+
               'A predictor is better if its curve is above other')
         xlabel('False Positive Rate')
         ylabel('True Positive Rate')
-        plt.legend(self.name, prop={'size':8}, loc='best')
+        plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
         self.saveGraph(gName)
@@ -738,7 +716,7 @@ class Performance(Chooser):
             title('Error in Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8}, loc='best')
+            plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
             #Save figure
             self.saveGraph(gName)
@@ -853,7 +831,7 @@ class Performance(Chooser):
             title('Confidence of Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8}, loc='best')
+            plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
             #Save figure
             self.saveGraph(gName)
@@ -863,4 +841,4 @@ class Performance(Chooser):
     def saveGraph(self, name, name2 = ''):
         '''This method saves a graph as an image'''
         if self.outputName != '':
-            plt.savefig(self.outputName + name + name2 + '.png')
+            plt.savefig(self.outputName + name + name2 + '.png', bbox_inches='tight')
