@@ -520,6 +520,7 @@ class Performance(Chooser):
         title(titleL)
         xlabel(self.argGraphs[4][3])
         ylabel(self.argGraphs[4][4])
+        ylim(0,1)
         plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
