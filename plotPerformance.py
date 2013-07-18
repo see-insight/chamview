@@ -39,6 +39,7 @@ class PlotData:
         self.numFramesL = ''
         self.numPointKL = ''
         self.frameDirL = ''
+        self.tpBoundL = ''
         self.infVal = ''
         self.fileArr = [] #Contains the data from text file
         self.oracleN = ''
@@ -49,6 +50,7 @@ class PlotData:
         self.numFrames = 0
         self.numPointK = 0
         self.upperB = int(upBound)
+        self.tpBound = 0
         self.frameDir = ''
         
         
@@ -176,12 +178,12 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                     
                     #Get arguments for graphs
-                    titleG = self.argGraphs[4][1] + '. ' +self.argGraphs[4][2] + '\n' + self.frameDir
+                    titleG = self.argGraphs[4][1] + str(self.tpBound) +self.argGraphs[4][2] + '\n' + self.frameDir
                     xLabel = self.argGraphs[4][3]
                     yLabel = self.argGraphs[4][4]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 0, 0, 1)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 0, 0, 100)
                     
                 elif graphN == self.graphNames[5]:
                     
@@ -205,6 +207,11 @@ class PlotData:
         #Define two lists to save numbers to plot
         xPlot = zeros((self.numPredictors, self.numFrames))
         yPlot = zeros((self.numPredictors, self.numFrames))
+        
+        #Take tpBound if reading information for accuracy
+        if self.fileArr[itr].startswith(self.tpBoundL):
+            self.tpBound = int(self.fileArr[itr].split()[-1])
+            itr += 1
         
         for i in range(0, self.numPredictors):
             
@@ -1119,4 +1126,5 @@ class PlotData:
         if self.outputName != '':
             figPath = self.outputName + name + name2 + '.png'
             plt.savefig(figPath, bbox_inches='tight')
+            #Increase size image: dpi = 600
             print 'Figure saved to:', figPath
