@@ -40,7 +40,6 @@ class PlotData:
         self.numPointKL = ''
         self.frameDirL = ''
         self.tpBoundL = ''
-        self.infVal = ''
         self.fileArr = [] #Contains the data from text file
         self.oracleN = ''
         
@@ -314,7 +313,7 @@ class PlotData:
     def getXY(self, line):
         '''Takes a string with 2 values separated by a comma and return them''' 
         xy = line.split(',')         
-        if (xy[1] == self.infVal + '\n') or (xy[1] == '-1.0\n'):
+        if xy[1] == '-1.0\n':
             xy[1] = self.upperB
         return xy[0], xy[1]
         
@@ -372,7 +371,6 @@ class PlotData:
         self.numPredictorsL = per.numPredictorsL
         self.numFramesL = per.numFramesL
         self.numPointKL = per.numPointKL
-        self.infVal = per.infVal
         self.oracleN = per.oracleN
         self.predictorsL = per.predictorsL
         self.frameDirL = per.frameDirL
