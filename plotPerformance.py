@@ -53,6 +53,9 @@ class PlotData:
         self.tpBound = 0
         self.frameDir = ''
         
+        #Get performance attributes
+        self.getPerformanceAtt()
+        
         
     def plotSavedG(self, output = '', showB = True):
         '''Method that takes a text file with evaluation information and display several graphs'''
@@ -63,9 +66,6 @@ class PlotData:
         
         #Update showBool
         self.showBool = showB
-        
-        #Get performance attributes
-        self.getPerformanceAtt()
         
         #Get number of predictors, frames, and point kinds
         self.getNumbers(self.directory)
@@ -116,7 +116,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                     
                     #Get arguments for graph
-                    titleG = self.argGraphs[0][1] + '\n' + self.frameDir
+                    titleG = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) +self.argGraphs[0][3]
                     xLabel = self.argGraphs[0][4]
                     yLabel = self.argGraphs[0][5]
                     
@@ -130,7 +130,7 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoErrorByPointK(itr)
                     
                     #Get arguments for graph
-                    titleG = self.argGraphs[1][1] + '\n' + self.frameDir
+                    titleG = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) +self.argGraphs[1][3]
                     xLabel = self.argGraphs[1][4]
                     yLabel = self.argGraphs[1][5]
                     
@@ -150,7 +150,7 @@ class PlotData:
                         itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
                         
                         #Get arguments for graph
-                        titleG = self.argGraphs[2][1] + pointK + self.frameDir
+                        titleG = self.argGraphs[2][1] + pointK + self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
                         xLabel = self.argGraphs[2][4]
                         yLabel = self.argGraphs[2][5]
                         
@@ -164,21 +164,21 @@ class PlotData:
                     itr, xPlot, yPlot = self.getInfoPercentagePoints(itr)
                     
                     #Get arguments for graphs
-                    titleG = self.argGraphs[3][1] + '\n' + self.frameDir
+                    titleG = self.argGraphs[3][1] + '\n' + self.argGraphs[3][2]
                     xLabel = self.argGraphs[3][4]
                     yLabel = self.argGraphs[3][5]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5, self.upperB)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 5, self.upperB, 100)
                     
                 elif graphN == self.graphNames[4]:
                     #ACCURACY
                     
                     #Get data arrays to plot
-                    itr, xPlot, yPlot = self.getInfoErrorByFrame(itr)
+                    itr, xPlot, yPlot = self.getInfoErrorByFrame(itr, False)
                     
                     #Get arguments for graphs
-                    titleG = self.argGraphs[4][1] + str(self.tpBound) +self.argGraphs[4][2] + '\n' + self.frameDir
+                    titleG = self.argGraphs[4][1] + str(self.tpBound) +self.argGraphs[4][2]
                     xLabel = self.argGraphs[4][3]
                     yLabel = self.argGraphs[4][4]
                     
@@ -200,7 +200,7 @@ class PlotData:
             else:
                 itr += 1
         
-    def getInfoErrorByFrame(self, itr):
+    def getInfoErrorByFrame(self, itr, cutUpperB = True):
         '''Takes a text file as an array and returns two arrays that are used to graph
         Error_By_Frame'''
         
@@ -223,8 +223,9 @@ class PlotData:
             yPlot[i].sort() #Sort yPlot to avoid annoying graphs
             
             #Cut yPlot to values less or equal than upper Bound
-            for j in range(0, self.numFrames):
-                if yPlot[i][j] > self.upperB: yPlot[i][j] = self.upperB
+            if cutUpperB:
+                for j in range(0, self.numFrames):
+                    if yPlot[i][j] > self.upperB: yPlot[i][j] = self.upperB
             
         return itr, xPlot, yPlot
         
@@ -291,12 +292,21 @@ class PlotData:
             else:
                 plt.plot(xPlot[i], yPlot[i], '--', color = 'k')
                 
-        plt.title(titleG)
-        plt.xlabel(xLabel)
+        plt.title(titleG, size = 17)
+        plt.xlabel(xLabel, size = 15)
         if xLim != 0: xlim(0, xLim)
-        plt.ylabel(yLabel)
-        if yLim != 0: ylim(0,yLim)
+        plt.ylabel(yLabel, size = 15)
+        if yLim != 0: ylim(0, yLim)
         plt.legend(self.predList, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        
+        #Compute yDistance to put a text box for the frame directory
+        if yLim != 0:
+            yDistance = yLim
+        else:
+            yDistance = self.maxMatrix(yPlot)
+        
+        plt.text(0, yDistance + yDistance/8, self.frameDir, horizontalalignment='left',
+        verticalalignment='bottom', size = 8)
         
         self.saveGraph(gName)
         if self.showBool: plt.show()
@@ -366,6 +376,7 @@ class PlotData:
         self.oracleN = per.oracleN
         self.predictorsL = per.predictorsL
         self.frameDirL = per.frameDirL
+        self.tpBoundL = per.tpBoundL
         
     #Method that plots information from Metadata file
     def plotMeta(self, output, argShow):
@@ -778,7 +789,7 @@ class PlotData:
         
         xPlot = arange(len(xLabels)) #Array for x axis
        
-        col = ['b', 'r', 'g', 'k']
+        col = ['b', 'r', 'g', 'c', 'k', 'm', 'y', 'w']
         
         for i in range(0, len(yPlots)):
             
@@ -1128,3 +1139,12 @@ class PlotData:
             plt.savefig(figPath, bbox_inches='tight')
             #Increase size image: dpi = 600
             print 'Figure saved to:', figPath
+            
+    def maxMatrix(self, arr):
+        '''This method finds the largest number in a bi-dimensional array'''
+        maxVal = max(arr[0])
+        for i in range(1, len(arr)):
+            if max(arr[i]) > maxVal:
+                maxVal = max(arr[i])
+                
+        return maxVal
