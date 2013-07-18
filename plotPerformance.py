@@ -121,7 +121,7 @@ class PlotData:
                     yLabel = self.argGraphs[0][5]
                     
                     #Call method to plot graph
-                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel)
+                    self.plotLine(graphN, xPlot, yPlot, titleG, xLabel, yLabel, 0, 0, self.upperB)
                     
                 elif graphN == self.graphNames[1]:
                     #ERROR BY POINT KIND
@@ -155,7 +155,7 @@ class PlotData:
                         yLabel = self.argGraphs[2][5]
                         
                         #Call method to plot graph
-                        self.plotLine(graphN + str(i+1), xPlot, yPlot, titleG, xLabel, yLabel)
+                        self.plotLine(graphN + str(i+1), xPlot, yPlot, titleG, xLabel, yLabel, 0, 0, self.upperB)
                         
                 elif graphN == self.graphNames[3]:
                     #PERCENTAGE OF POINTS
@@ -797,10 +797,22 @@ class PlotData:
             plt.bar(xPlot + width * i, yPlots[i], width, color=col[i%len(col)])            
             plt.xticks( xPlot  + 0.25,  xLabels, rotation=rot, size = fontS)
             
-        plt.title(gTitle, size = 20)
-        xlabel(xl, fontsize = 17)
-        ylabel(yl, fontsize = 17)
+        plt.title(gTitle, size = 17)
+        xlabel(xl, fontsize = 15)
+        ylabel(yl, fontsize = 15)
         plt.legend(leg, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        
+        #Find largest y-value and change ylim
+        yDistance = self.maxMatrix(yPlots)
+        ylim(0, yDistance)
+        
+        #Put directory at the top of the graph
+        if self.frameDir != '':
+            dirTop = self.frameDir
+        else:
+            dirTop = self.directory
+        plt.text(0, yDistance + yDistance/8, dirTop, horizontalalignment='left',
+        verticalalignment='bottom', size = 8)
         
         #Save figure
         if gName == '': gName = gTitle
