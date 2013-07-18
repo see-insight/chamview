@@ -60,10 +60,8 @@ class Performance(Chooser):
         self.predictorsL = 'PREDICTORS: '
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
         self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
-        self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
         self.frameDirL = 'Directory: '
         self.tpBoundL = 'tpBound: '
-        self.infVal = 'INF' #Label that indicates the error is very large
         self.oracleN = 'Oracle' #Label for Oracle predictor
         
         #Define an array that saves all the graph names
