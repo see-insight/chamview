@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Main Chamview testing program
+"""Copy of Chamview class in order to make evaluations of system performance
 
 Usage options:
     -h --help       Print this help message
@@ -17,7 +17,7 @@ Usage options:
     -u --usePred    Determines if user wants to use previous predictions in that file
 Example:
 
-    $ chamview.py -d ./images/Chameleon -o ./points
+    $ chamsim.py -d ./images/Chameleon -o ./points
 
 """
 
@@ -176,24 +176,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
     except NameError:
         pass
 
-    def print_var_info():
-        print '****SELECTED POINTS:****\n', imstack.point
-        print '****PREDICTED POINTS:****\n', predict_point
-        print '****POINT SOURCE HISTORY:****'
-        for frame in imstack.point_sources:
-            print frame
-        #print '****CURRENT FRAME:****\n', imstack.current_frame
-        print '****ACTIVE POINT:****\n', chooser.activePoint
-        print '****PREDICTOR HISTORY:****\n', chooser.selectedPredictions
-        #print '****POINT KINDS:****\n', imstack.point_kind_list
-        #print '****POINT KINDS ADDED:****\n', chooser.added
-        #print '****POINT KINDS DELETED:****\n', chooser.deleted
-
-
-    print_var_info() #***************************************************************************
 
     #Give this result to the chooser to get the initial ground-truth point
     chooser.choose(imstack,predict_point,predictor_name)
+
     if chooser.editedPointKinds:
         predict_point = update_point_array(predict_point,chooser.added,chooser.deleted)
 
@@ -207,17 +193,16 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
             #Give each predictor the current image stack and get a prediction back
             for i in range(0,len(predictor)):
+                #print 'Predicting using:', predictor_name[i]
                 predict_point[i] = predictor[i].predict(imstack,chooser.editedPointKinds)
 
             #Save predictions in predictions array of imstack
-            if imstack.current_frame < imstack.total_frames:
-                imstack.predictions[imstack.current_frame] = predict_point
+            #if imstack.current_frame < imstack.total_frames:
+            imstack.predictions[imstack.current_frame] = predict_point
 
         else:
             #Use predictions previously computed and saved
             predict_point = imstack.predictions[imstack.current_frame]
-
-        print_var_info() #*************************************************************************
 
         #Give this result to the chooser to get the "real" point
         chooser.choose(imstack,predict_point,predictor_name)
@@ -233,10 +218,6 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
 
     #Save predicted points in a text file
     if argSavePred != '': imstack.save_predictions(argSavePred, predictor_name)
-
-#    print '\n###### FINAL VARIABLE VALUES ######\n'
-#    print_var_info()
-
 
     #Run System Inspector
     if argSysInspector:
@@ -282,6 +263,10 @@ def run(argDir,argChooser,argPreproc,argOutput,argPKind,argPPos,argSysInspector,
                            ('TOTAL_TIME',time.strftime('%H:%M:%S', time.gmtime(totalTime))),
                            ('TIME/POINT',timePerPoint),
                            ('TIME/FRAME',timePerFrame)])
+                           
+        if argUsePred != '':
+            #Append a message that tells us if saved predictions were used
+            attributes.append(('THEORETICAL_TIME', True))
 
         #Create SystemInspector object and pass it the additional chamview
         #specific attributes then write the object to a file

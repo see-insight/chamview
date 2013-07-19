@@ -12,10 +12,11 @@ from mpl_toolkits.mplot3d import axes3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
+import matplotlib.patches as patches
 
 '''This file implements classes where the performance of predictors is computed.
-Input: A stack of images, ground truth data, and a predictor
-Output: A list and graphs that show the performance of predictors
+Input: A stack of images, ground truth data, and a set of predictors
+Output: An output text file and graphs that show predictors performance
 '''
 
 class Performance(Chooser):
@@ -24,7 +25,8 @@ class Performance(Chooser):
     The error is according frames or according kind_point.
     '''
     
-    def setup(self):     
+    def setup(self):
+        '''This method instantiates all class attributes'''
         
         self.x = [] #Frame number
         self.errorKindX = [] #Kind point number
@@ -32,7 +34,8 @@ class Performance(Chooser):
         self.errorFrame = [] #Error compute by frame
         self.confidence = [] #Multidimensional array that saves the confidence
         self.outputName = '' #Name of output directory
-        self.showBool = True #Boolean that determines if show or not graphs
+        self.frameDir = ''
+        self.showBool = True #Boolean that determines if show or don't graphs
         
         
         #Variables from Image Stack class
@@ -51,19 +54,45 @@ class Performance(Chooser):
         
         #Variables used to save information into a text file
         self.fo = None 
-        self.division = '--\n' #String that determines the division between two evaluations
         self.predLabel = 'Predictor: ' #String that saves the label for predictors in text file
         self.pointKLabel = 'Point Kind: ' #String that saves the label for point kind in text file
         self.numPredictorsL = 'Number_of_Predictors: ' #Label for number of predictors 
+        self.predictorsL = 'PREDICTORS: '
         self.numFramesL = 'Number_of_Frames: ' #Label for number of frames
         self.numPointKL = 'Number_of_Point_Kinds: ' #Label for number of point kinds
-        self.upperBoundL = 'Upper_Bound: ' #Label for the upper bound
-        self.infVal = 'INF' #Label that indicates the error is very large
+        self.frameDirL = 'Directory: '
+        self.tpBoundL = 'tpBound: '
+        self.oracleN = 'Oracle' #Label for Oracle predictor
+        
         #Define an array that saves all the graph names
-        self.oracleN = 'Oracle'
-        self.graphNames = ['ERROR BY FRAME\n', 'ERROR BY POINT KIND\n', 'PERCENTAGE OF POINTS\n']
-        self.graphNames.append('RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE\n')
-        self.graphNames.append('ACCURACY IN PREDICTION\n')
+        self.graphNames = ['ERROR_BY_FRAME', 'ERROR_BY_POINT_KIND']
+        self.graphNames.append('ERROR_FOR_EACH_POINT_KIND')
+        self.graphNames.append('PERCENTAGE_OF_POINTS')
+        self.graphNames.append('ACCURACY_IN_PREDICTION')
+        self.graphNames.append('RECEIVER_OPERATING CHARACTERISTIC_(ROC)_CURVE')
+        
+        #Define an array that saves all the arguments for graphs
+        self.argGraphs = []
+        #Error by frame
+        self.argGraphs.append([self.graphNames[0],
+            'Average Distance Error by Frame (in Pixels)', 'Errors are up to ', ' pixels',
+            'Frame', 'Distance Error in Pixels', ''])
+        #Error by point kind
+        self.argGraphs.append([self.graphNames[1],
+            'Average Distance Error by Point Kind (in Pixels)', 'Errors are up to ', ' pixels',
+            'Point Kind', 'Distance Error in Pixels', ''])
+        #Error by each point kind
+        self.argGraphs.append([self.graphNames[2],
+            'Distance Error (in Pixels). Point Kind: ', 'Errors are up to ', ' pixels',
+            'Frame', 'Distance Error in Pixels', ''])
+        #Percentage of error
+        self.argGraphs.append([self.graphNames[3],
+            'Percentage of Predicted Points within', 'a Given Radius from the Ground Truth Point', '',
+            'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points', ''])
+        #Accuracy
+        self.argGraphs.append([self.graphNames[4],
+            'Percentage of Predictions', 'Within ', ' Pixels Over Time',
+            'Frame', 'Percent',  '', ''])
         
         #Variables used to match with chamview.py requirements
         self.editedPointKinds = False
@@ -72,6 +101,8 @@ class Performance(Chooser):
         self.stagedToSave = ['', '']
 
     def setupPar(self,argEvaluate):
+        '''This method instantiates arguments obtained from evaluatePredictor class and are special
+        for this class'''
         
         #Get parameters: Output-upperBound-TruePositiveBound
         parameters = argEvaluate.split('-')
@@ -79,15 +110,16 @@ class Performance(Chooser):
         #Update variables
         if parameters[0] != '': self.outputName = parameters[0]
         if parameters[1] != '': self.upperB = int(parameters[1])
-        if parameters[2] != '': self.tpBound = int(parameters[2])
-        
+        if parameters[2] != '': self.tpBound = int(parameters[2])        
         if parameters[3] == 'False': self.showBool = False
+        if parameters[4] != '': self.frameDir = parameters[4]
         
         #Make outputName correct
-        if self.outputName != '':
-            self.outputName = self.outputName + '/'
+        if self.outputName != '': self.outputName = self.outputName + '/'
 
     def teardown(self):
+        '''Final called method of this class, it saves an output file and calls methods
+        to display all the graphs'''
 
         #Define Oracle predictor, build it, and append results to other predictors results
         self.appendOracle()
@@ -104,9 +136,15 @@ class Performance(Chooser):
         self.fo.write('THIS FILE CONTAINS RESULTS OBTAINED OF PREDICTORS EVALUATION\n')
                
         #Save important values in text file
+        self.fo.write(self.frameDirL + self.frameDir + '\n')
         self.fo.write(self.numPredictorsL + str(self.totalPredictors) + '\n')
         self.fo.write(self.numFramesL + str(self.totalFrames) + '\n')
         self.fo.write(self.numPointKL + str(self.totalPointK) + '\n')
+        self.fo.write(self.predictorsL + str(self.name) + '\n')
+        
+        #Update the image directories to be displayed on graphs
+        for i in range(0, len(self.argGraphs)):
+            self.argGraphs[i][6] = self.argGraphs[i][6] + self.frameDir
         
         #TURN ON OR OFF THE GRAPHS THAT NEED TO BE DISPLAYED
         
@@ -125,9 +163,11 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
-        print 'Results saved in ' + self.outputName
+        print 'Results saved in ' + outTextFile
 
     def choose(self,stack,predicted,predictor_name):
+        '''This method uses chamview implementation to compute predictions and then measure
+        the error of ground truth data and predictions'''
         
         #Have we yet to take in Predictor info?
         if self.filledLists == False:
@@ -191,9 +231,10 @@ class Performance(Chooser):
             stack.exit = True              
                                  
     def showErrorByFrame(self):
+        '''This method computes the average error by frame and displays a graph'''
                 
         #Save title in text file and in graphNames array
-        gName = 'ERROR BY FRAME'
+        gName = self.graphNames[0]
         self.fo.write('\n' + gName + '\n')
         
         #Define a new figure
@@ -225,25 +266,22 @@ class Performance(Chooser):
                 plt.plot(self.x[i], yPlot)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k')
-            
-        #Write division into file
-        self.fo.write(self.division)
         
-        title('Average Distance in Pixels by Frame\nThis graph shows errors less or equal than '
-               +str(self.upperB)+' pixels')
-        xlabel('Frame')
-        ylabel('Distance in Pixels')      
-        plt.legend(self.name, prop={'size':8})
+        titleLa = self.argGraphs[0][1] + '\n' + self.argGraphs[0][2] + str(self.upperB) +self.argGraphs[0][3]
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[0][4], self.argGraphs[0][5], self.name, self.upperB) 
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()                 
         
     def showErrorByPointKind(self):
+        '''This method computes the average error by point kind and displays a bar graph'''
         
         #Save title in text file and in graphNames array
-        gName = 'ERROR BY POINT KIND'
+        gName = self.graphNames[1]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
@@ -288,25 +326,23 @@ class Performance(Chooser):
                 plt.bar(xPlot + width * i, yPlot, width, color='k')
                 
             plt.xticks( xPlot + 0.5,  self.pointKList)
-            
-        #Write division into file
-        self.fo.write(self.division)
-            
-        title('Average Distance in Pixels by Point Kind\nThis graph shows errors less or equal than '
-               +str(self.upperB)+' pixels')
-        xlabel('Point Kind')
-        ylabel('Distance in Pixels')
-        plt.legend(self.name, prop = {'size':8})
+        
+        titleLa = self.argGraphs[1][1] + '\n' + self.argGraphs[1][2] + str(self.upperB) + self.argGraphs[1][3]
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[1][4], self.argGraphs[1][5], self.name, self.upperB)
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()
 
     def showErrorEachPointK(self):
+        '''This method computes the error by frame for each point kind
+        and displays a graph for each point kind'''
         
         #Save title in text file and in graphNames array
-        gName = 'ERROR FOR EACH POINT KIND'
+        gName = self.graphNames[2]
         self.fo.write('\n' + gName + '\n')
         
         #Go through each point kind
@@ -345,24 +381,22 @@ class Performance(Chooser):
                 else:
                     plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
             
-            title('Distance in Pixels. Point Kind: ' + self.pointKList[pointK]+
-                  '\nThis graph shows errors less or equal than ' + str(self.upperB)+' pixels')
-            xlabel('Frame')
-            ylabel('Distance in Pixels')
-            plt.legend(self.name, prop={'size':8})
+            titleLa = self.argGraphs[2][1] + self.pointKList[pointK] + '\n' + self.argGraphs[2][2] + str(self.upperB) + self.argGraphs[2][3]
+
+            #Put labels in graph
+            self.putLabels(titleLa, self.argGraphs[2][4], self.argGraphs[2][5], self.name, self.upperB)
         
             #Save figure
-            plt.savefig(self.outputName + gName + str(pointK + 1) + '.jpg')
+            self.saveGraph(gName, str(pointK + 1))
         
             if self.showBool: plt.show()
-        
-        #Write division into file
-        self.fo.write(self.division)
             
     def showPercentageError(self):
+        '''This method computes the percentage of points whithin a given interval of error and
+        displays a graph'''
         
         #Save title in text file and in graphNames array
-        gName = 'PERCENTAGE OF POINTS'
+        gName = self.graphNames[3]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
@@ -425,27 +459,27 @@ class Performance(Chooser):
                 plt.scatter(xPlot, yPlot, s=5)
             else:
                 plt.plot(xPlot,yPlot, '--', color = 'k', lw = 1)
-            
-        #Write division into file
-        self.fo.write(self.division)
         
-        title('Percentage of Points\n(For a given error from 1 to ' + 
-              str(self.upperB) + ' pixels,\nthe next graph shows the percentage of ' +
-              'points with at most that error)') 
-        xlabel('Distance in Pixels')
-        ylabel('Percentage of Points')
-        plt.legend(self.name, prop={'size':8})
+        titleLa = self.argGraphs[3][1] + '\n' + self.argGraphs[3][2]
+        yLimit = 100
+        xlim(0,self.upperB)
+        ylim(0, yLimit)
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[3][4], self.argGraphs[3][5], self.name, yLimit)
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()
         
     def showAccuracy(self):
+        '''This method computes the accuracy of predictors and display a graph'''
                 
         #Save title in text file and in graphNames array
-        gName = 'ACCURACY IN PREDICTION'
+        gName = self.graphNames[4]
         self.fo.write('\n' + gName + '\n')
+        self.fo.write(self.tpBoundL + str(self.tpBound) + '\n')
         
         self.numPlots += 1
         
@@ -470,9 +504,9 @@ class Performance(Chooser):
                 yPlot[frame] += yPlot[frame - 1] * frame * self.totalPointK
                 #Compute new accuracy
                 yPlot[frame] /= (frame + 1) * self.totalPointK 
-
-            #Sort array to get a nice graph
-            yPlot.sort()
+                
+            #Multiply by 100 to get percentage
+            yPlot *= 100
             
             #Save data to file
             for j in range(0,self.x[i].shape[0]):
@@ -483,21 +517,22 @@ class Performance(Chooser):
                 plt.plot(self.x[i], yPlot, lw = 1)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
-           
-        #Write division into file
-        self.fo.write(self.division) 
-  
-        title(gName + '\nThis graph shows how accuracy changes through frames')
-        xlabel('Frame')
-        ylabel('Accuracy')
-        plt.legend(self.name, prop={'size':8})
+        
+        titleLa = self.argGraphs[4][1] + '\n' + self.argGraphs[4][2] + str(self.tpBound) + self.argGraphs[4][3]
+        yLimit = 100
+        ylim(0, yLimit)
+        
+        #Put labels in graph
+        self.putLabels(titleLa, self.argGraphs[4][4], self.argGraphs[4][5], self.name, yLimit)
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()
         
     def showAccuracyConfidence(self):
+        '''This graph computes the accuracy * confidence of predictors and display a graph
+        Now, it is not working because confidence of some predictor is missing'''
        
         #Save title in text file and in graphNames array
         gName = 'ACCURACY WITH CONFIDENCE'
@@ -548,24 +583,20 @@ class Performance(Chooser):
                 plt.plot(self.x[i], yPlot, lw = 1)
             else:
                 plt.plot(self.x[i], yPlot, '--', color = 'k', lw = 1)
-            
-        #Write division into file
-        self.fo.write(self.division)
 
-        title('Accuracy and Confidence on Prediction')
-        xlabel('Frame')
-        ylabel('Accuracy * Confidence')
-        plt.legend(self.name, prop={'size':8})
+        #Put labels in graph
+        self.putLabels(titleLa, 'Frame', 'Accuracy * Confidence', self.name, 100)
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()     
     
     def showROC(self):
+        '''This method computes true and false positives rate and display an ROC curve'''
    
         #Save title in text file and in graphNames array
-        gName = 'RECEIVER OPERATING CHARACTERISTIC (ROC) CURVE'
+        gName = self.graphNames[5]
         self.fo.write('\n' + gName + '\n')
         
         self.numPlots += 1
@@ -625,23 +656,21 @@ class Performance(Chooser):
                 self.fo.write('  ' + str(xPlot[i]) + ', ' + str(yPlot[i]) + '\n')                           
                                                                                  
             #Plot the error
-            plt.plot(xPlot, yPlot, lw = 1)
-         
-        #Write division into file
-        self.fo.write(self.division)   
+            plt.plot(xPlot, yPlot, lw = 1)  
                   
-        title('Receiver Operating Characteristic (ROC) Curve\n'+
-              'A predictor is better if its curve is above other')
-        xlabel('False Positive Rate')
-        ylabel('True Positive Rate')
-        plt.legend(self.name, prop={'size':8})
+        titleLa = 'Receiver Operating Characteristic (ROC) Curve\nA predictor is better if its curve is above other'
+
+        #Put labels in graph
+        self.putLabels(titleLa, 'False Positive Rate', 'True Positive Rate', self.name, 1)
         
         #Save figure
-        plt.savefig(self.outputName + gName + '.jpg')
+        self.saveGraph(gName)
         
         if self.showBool: plt.show()          
       
     def showError3D(self):
+        '''This method display a 3D plot that shows predictors error, where the x and y dimensions
+        are frame and point kind'''
         
         #Write title in text file
         self.fo.write('\nERROR FOR EACH PREDICTOR IN 3D\n')
@@ -684,18 +713,19 @@ class Performance(Chooser):
             fig.colorbar(surf, shrink=0.5, aspect=5)
             
             #Messages for plot
-            title('Error in Predictor: ' + self.name[i])
-            xlabel('Frames')
-            ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8})
-        
+            titleLa = 'Error in Predictor: ' + self.name[i]
+ 
+            #Put labels in graph
+            self.putLabels(titleLa, 'Frame', 'Point Kinds', self.name, self.upperB)
+            
             #Save figure
-            plt.savefig(self.outputName + gName + '.jpg')
+            self.saveGraph(gName)
             
             if self.showBool: plt.show() 
                             
 
     def computeErrorByFrame(self):
+        '''This method is used to compute the average error by frame'''
         
         #Create a 2-dimensional array, predictors x frames
         self.errorFrame = zeros((len(self.name), self.totalFrames))
@@ -720,8 +750,8 @@ class Performance(Chooser):
                     self.errorFrame[pred][frame] /= count
         
     def appendOracle(self):
-        #This method adds a new 2-dimensional array to y with the smallest error
-        #for each frame and point kind. We call this "predictor" Oracle
+        '''This method adds a new 2-dimensional array to y with the smallest error
+        for each frame and point kind. We call this "predictor" Oracle'''
         
         yOracle = zeros((self.totalFrames, self.totalPointK))
         for i in range(0, self.totalFrames):
@@ -740,7 +770,7 @@ class Performance(Chooser):
         self.y = concatenate((self.y, [yOracle]))
         
     def minError(self, i, j):
-        #This method return the minimum error for a frame and a point kind
+        '''This method return the minimum error for a frame and a point kind'''
         
         minVal = self.y[0][i][j]
 
@@ -762,7 +792,7 @@ class Performance(Chooser):
         return array
         
     def showConfidence(self):
-        #This method shows a graph with predictor confidence
+        '''This method shows a graph with predictor confidence'''
         
         #For each predictor
         for i in range(0,self.totalPredictors):
@@ -801,9 +831,26 @@ class Performance(Chooser):
             title('Confidence of Predictor: ' + self.name[i])
             xlabel('Frames')
             ylabel('Point Kinds')
-            plt.legend(self.name, prop={'size':8})
+            plt.legend(self.name, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
             #Save figure
-            plt.savefig(self.outputName + gName + '.jpg')
+            self.saveGraph(gName)
             
             if self.showBool: plt.show()
+            
+    def saveGraph(self, name, name2 = ''):
+        '''This method saves a graph as an image'''
+        if self.outputName != '':
+            plt.savefig(self.outputName + name + name2 + '.png', bbox_inches='tight')
+            #Increase size image: dpi = 600
+            
+    def putLabels(self, titleLa, xL, yL, leg, yDistance):
+        '''This method receives several labels to be placed in the graph'''
+        
+        plt.title(titleLa, size = 17)
+        plt.xlabel(xL, size=15)
+        plt.ylabel(yL, size = 15)     
+        plt.legend(leg, prop={'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
+        
+        plt.text(0, yDistance + yDistance/8, 'Directory: ' + self.frameDir, horizontalalignment='left',
+        verticalalignment='bottom', size = 8)

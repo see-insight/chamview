@@ -81,10 +81,11 @@ class Template:
         x = x + self.size / 2
         y = y + self.size / 2
 
-        #confidence = self.confidence(self.template)
+        confidence = self.confidence(self.template)
+        return [x,y,confidence]
         
         #Confidence is the maximum number in result
-        return [x,y,amax(result)]
+        #return [x,y,amax(result)]
 
     def train(self,img,x,y):
         #Look at the image at the specified position and grab the template there

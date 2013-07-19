@@ -47,8 +47,7 @@ def main(argc,argv):
     argSysInspector = False
     argPred = []
     argEvaluate = ''
-    argSavePred = ''
-    argUsePred = ''
+
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
