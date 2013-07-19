@@ -88,7 +88,7 @@ class Performance(Chooser):
         #Percentage of error
         self.argGraphs.append([self.graphNames[3],
             'Percentage of Predicted Points within', 'a Given Radius from the Ground Truth Point', '',
-            'Maximum Distance Away from Ground Truth Point (in Pixels)', 'Percentage of Predicted Points', ''])
+            'Radius in Pixels', 'Percent', ''])
         #Accuracy
         self.argGraphs.append([self.graphNames[4],
             'Percentage of Predictions', 'Within ', ' Pixels Over Time',
