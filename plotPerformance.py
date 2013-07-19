@@ -800,7 +800,7 @@ class PlotData:
         plt.legend(leg, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Find largest y-value and change ylim
-        yDistance = self.maxMatrix(yPlots)
+        yDistance = self.maxMatrix(yPlots) + 2
         ylim(0, yDistance)
         
         #Put directory at the top of the graph
@@ -1030,7 +1030,7 @@ class PlotData:
         plt.title(gName, size = 20)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
         xlim(0,xLength)
-        yDistance = 100
+        yDistance = 102
         ylim(0, yDistance)
         
         #Put directory at the top of the graph
