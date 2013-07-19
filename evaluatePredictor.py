@@ -21,7 +21,7 @@ Usage options:
     -c --comDataSet Directory of datasets used to compare evaluations on them
     -v --savePreds  File to save the Predicted Points to for re-use later
     -f --usePreds   Previously saved predicted points file to use as predicted points to save time
-    -e --tTime      Indicates that chamview interface will be displayed to compute theoretical time
+    -a --runCham    Indicates that chamview interface will be displayed to save or use predictions
 
 Example:
 
@@ -64,14 +64,14 @@ def main(argc,argv):
     argComDataSet = ''
     argSavePred = ''
     argUsePred = ''
-    argTTime = False
+    argRunCham = False
 
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], 'hd:i:p:o:w:r:u:t:s:m:k:nc:v:f:e', ['help','dirImg=',
+            opts, args = getopt.getopt(argv[1:], 'hd:i:p:o:w:r:u:t:s:m:k:nc:v:f:a', ['help','dirImg=',
                          'prep=', 'dirGT=','output=', 'inspectout=', 'predictor=','upBound=','truePos=',
                          'savedGraph=', 'metadata=', 'pkind=', 'dontShow', 'argComDataSet=',
-                         'savePreds=', 'usePreds=', 'tTime='])
+                         'savePreds=', 'usePreds=', 'runCham='])
 
         except getopt.error, msg:
             raise Usage(msg)
@@ -110,8 +110,8 @@ def main(argc,argv):
                 argSavePred = arg
             elif opt in ('-f', '--usePreds'):
                 argUsePred = arg
-            elif opt in ('-e', '--tTime'):
-                argTTime = True
+            elif opt in ('-a', '--runCham'):
+                argRunCham = True
 
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
@@ -128,7 +128,7 @@ def main(argc,argv):
             pd = PlotData(argComDataSet)
             pd.compareMetas(argOutput, argShow)
 
-        elif argTTime:
+        elif argRunCham:
             
             #Run chamview gui because user wants to save or use predictions in a text file
             runChamview(argFrameDir, 'BasicGui', argPreproc, argOutput, argPKind, argGroundT, argSysInspector, argPred, argUpBound, argTruePos, argShow, argSavePred, argUsePred)
@@ -147,7 +147,7 @@ def main(argc,argv):
     
         else:
                 
-            print 'No files were found to do the evaluation'
+            print 'No arguments were found to do the evaluation'
 
     except Usage, err:
         print >>sys.stderr, err.msg
