@@ -1029,16 +1029,15 @@ class PlotData:
         plt.xlabel('Data Sets', fontsize = 17)
         plt.title(gName, size = 20)
         plt.xticks(xPlot + 0.25, names, rotation=rot, fontsize = fontS)
+        plt.yticks(np.arange(0, 105, 5), np.arange(0, 105, 5))
         xlim(0,xLength)
-        yDistance = 102
+        yDistance = 103
         ylim(0, yDistance)
         
         #Put directory at the top of the graph
         plt.text(0, yDistance + yDistance/16, 'Directory: ' + self.directory, horizontalalignment='left',
         verticalalignment='bottom', size = 8)
-        
-        
-        plt.yticks(np.arange(0,100,5))
+
         plt.legend(predictors, prop = {'size':8}, bbox_to_anchor=(1, 1), loc=2, borderaxespad=0)
         
         #Save figure
