@@ -35,6 +35,7 @@ class ImageStack:
         self.label_list = []
         self.img_current = None
         self.img_previous = None
+        self.name_current = None
         self.current_frame = 0
         self.total_frames = 0
         self.single_img = False
@@ -59,9 +60,11 @@ class ImageStack:
     def get_img_list(self,directory):
         #Creates a list of every image file that can be used in the specified
         #directory, and uses this to set self.img_list[] and self.total_frames.
-        #Valid extensions include bmp,jpg,png,gif
+        #Valid extensions include ppm,bmp,jpg,png,gif
         for sep in ['/','\\']:
             directory = directory.replace(sep,os.path.sep)
+        if os.path.sep not in directory[-2:]:
+            directory += os.path.sep
         self.img_list = []
         self.current_frame = 0
         self.total_frames = 0
@@ -71,11 +74,10 @@ class ImageStack:
             directory = './'
         else:
             file_list = dircache.listdir(directory)
-        #print file_list
         for filename in file_list:
             extension = os.path.splitext(filename)[1].lower()
             if extension in valid_extensions:
-                self.img_list.append(directory+os.path.sep+filename)
+                self.img_list.append(directory+filename)
         self.total_frames = len(self.img_list)
         if self.total_frames == 1:
             self.single_img = True
@@ -154,8 +156,18 @@ class ImageStack:
                 file_in.close()
                 self.load_points_legacy(filename)
                 return False
+            #Else
             line_list = line.split(',')
-            frame = int(line_list[0])
+            #If the points file is written in the new file-based format
+            if os.path.isfile( line_list[0] ) or '.' in line_list[0]:
+                im_file = line_list[0]
+                try:
+                    frame = [os.path.basename(x) for x in self.img_list].index( os.path.basename(im_file) )
+                except ValueError:
+                    continue
+            #Else it is written in the frame based format
+            else:
+                frame = int(line_list[0])
             kind = line_list[1]
             try:
                 kind_index = self.point_kind_list.index(kind)
@@ -280,12 +292,16 @@ class ImageStack:
         self.point = array(new_point)
         self.point_sources = new_sources
 
-
     def clearFrame(self):
-        pass
+        self.point[self.current_frame] *= 0
+        for i in range(len(self.point_sources[self.current_frame])):
+            self.point_sources[self.current_frame][i] = -1
 
     def clearAll(self):
-        pass
+        self.point *= 0
+        for frame in self.point_sources:
+            for i in range(len(frame)):
+                frame[i] = -1
 
     def load_img(self):
         #Loads the correct self.img_current and self.img_previous into memory
@@ -317,7 +333,7 @@ class ImageStack:
         for frame in range(self.total_frames):
             for kind_index in range(self.point_kinds):
                 kind = self.point_kind_list[kind_index]
-                file_out.write(str(frame)+','+kind+','+
+                file_out.write(str( self.img_list[frame] )+','+kind+','+
                     str(int(self.point[frame,kind_index,0]))+','+
                     str(int(self.point[frame,kind_index,1]))+','+
                     str(self.label_list[frame])+'\n')

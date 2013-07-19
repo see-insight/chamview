@@ -293,7 +293,7 @@ class BasicGui(Chooser):
         label.config(borderwidth=0)
         #Current frame label
         self.label_goto = Entry(self.fframe,
-                                width=5,
+                                width=7,
                                 textvariable=self.currentFrame,
                                 justify=RIGHT)
         self.label_goto.grid(row=0,column=1)
@@ -790,7 +790,7 @@ class BasicGui(Chooser):
 
     def delete(self,event=''):
         '''Reset the selected point.'''
-        self.selectedPredictions[self.pointKind] = -1
+        self.imstack.point_sources[self.imstack.current_frame,self.pointKind] = -1
         self.imstack.point[self.imstack.current_frame,self.pointKind,0] = 0
         self.imstack.point[self.imstack.current_frame,self.pointKind,1] = 0
         # reset Point Kind source history
@@ -816,9 +816,7 @@ class BasicGui(Chooser):
         if tkMessageBox.askyesno(icon='warning',title='Warning',default='no',
                     message='This action will delete ALL points on the current frame.\nWould you like to proceed?',
                     parent=self.master):
-            self.imstack.point[self.imstack.current_frame] *= 0
-            for i in range(len(self.imstack.point_sources[self.imstack.current_frame])):
-                self.imstack.point_sources[self.imstack.current_frame][i] = -1
+            self.imstack.clearFrame()
             # reset Point source history
             for i in range(len(self.selectedPredictions)):
                 self.selectedPredictions[i] = -1
@@ -831,10 +829,7 @@ class BasicGui(Chooser):
         if tkMessageBox.askyesno(icon='warning',title='Warning',default='no',
                     message='This action will delete ALL point data from ALL frames.\nWould you like to proceed?',
                     parent=self.master):
-            self.imstack.point *= 0
-            for frame in self.imstack.point_sources:
-                for i in range(len(frame)):
-                    frame[i] = -1
+            self.imstack.clearAll()
             # reset Point source history
             for i in range(len(self.selectedPredictions)):
                 self.selectedPredictions[i] = -1
