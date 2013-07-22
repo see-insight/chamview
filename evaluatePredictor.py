@@ -132,8 +132,7 @@ def main(argc,argv):
             
             if argSavePred == '' and argUsePred == '':
                 #If both arguments are empty, then user can use chamview.py instead
-                print 'If you do not want to save or use predictions, use the current version of '
-                + 'chamview.py'
+                print 'If you do not want to save or use predictions, use the current version of chamview.py'
                 
             else:
             
