@@ -15,7 +15,8 @@ import string
 
 class PlotData:
     '''This class implements methods to plot data given in text files. It displays error and 
-    accuracy graphs. Also, information gotten from metadata files'''
+    accuracy graphs. Also, information gotten from metadata files,such as, running time and
+    predictor usage'''
     
     def __init__(self,directory='', upBound=50):
         '''Constructor class that builds an object and instantiate attributes'''
