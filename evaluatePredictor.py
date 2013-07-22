@@ -11,17 +11,17 @@ Usage options:
     -k --pkind      Point kind file. Default is (defaultPointKinds.txt).
     -p --dirGT      Ground Truth points directory. Default is (none).
     -r --predictor  Predictor Name that will be evaluated. Default is all the predictors.
-    -w --inspectout Specifies a file to save system and running time data
     -o --output     Output directory where results are saved. Default is None.
     -u --upBound    Determines the upper bound of results we can see. Default is 50.
-    -t --truePos    Determines the maximum value of a prediction to be considered as true positive. Default is 5.
+    -t --truePos    Determines the maximum error in pixels of a prediction to be considered as true positive. Default is 5.
     -n --dontShow   It indicates that user doesn't want to see the graphs created at the moment
     -s --savedGraph Data results previously saved in text file that is used to graph.
-    -m --metadata   File of metadata.txt to plot graphs using the information in it.
+    -m --metadata   File of metadata.txt to plot graphs using the information in it. 
     -c --comDataSet Directory of datasets used to compare evaluations on them
+    -a --runCham    Indicates that chamview interface will be displayed to save or use predictions
     -v --savePreds  File to save the Predicted Points to for re-use later
     -f --usePreds   Previously saved predicted points file to use as predicted points to save time
-    -a --runCham    Indicates that chamview interface will be displayed to save or use predictions
+    -w --inspectout Specifies a file to save system and running time data
 
 Example:
 
@@ -116,7 +116,7 @@ def main(argc,argv):
         #Determine if user wants to compute errors or plot a previously saved data
         if argSavedGraph != '':
             
-            # -s Option
+            #-s Option
             #Plot dataset from a text file
             pd = PlotData(argSavedGraph, argUpBound)
             pd.plotSavedG(argOutput, argShow)
@@ -130,13 +130,20 @@ def main(argc,argv):
 
         elif argRunCham:
             
-            #Run chamview gui because user wants to save or use predictions in a text file
-            runChamview(argFrameDir, 'BasicGui', argPreproc, argOutput, argPKind, argGroundT, argSysInspector, argPred, argUpBound, argTruePos, argShow, argSavePred, argUsePred)
+            if argSavePred == '' and argUsePred == '':
+                #If both arguments are empty, then user can use chamview.py instead
+                print 'If you do not want to save or use predictions, use the current version of '
+                + 'chamview.py'
+                
+            else:
+            
+                #Run chamview gui because user wants to save or use predictions in a text file
+                runChamview(argFrameDir, 'BasicGui', argPreproc, argOutput, argPKind, argGroundT, argSysInspector, argPred, argUpBound, argTruePos, argShow, argSavePred, argUsePred)
 
         elif argGroundT != '' or argMetadata != '':
             
             if argMetadata != '':
-                # -m Option
+                #-m Option
                 #Show graphs using Metadata info
                 pd = PlotData(argMetadata)
                 pd.plotMeta(argOutput, argShow)
