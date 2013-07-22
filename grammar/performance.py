@@ -163,7 +163,7 @@ class Performance(Chooser):
         
         #Close text file
         self.fo.close()
-        print 'Results saved in ' + outTextFile
+        print 'Results saved in ' +self. outputName
 
     def choose(self,stack,predicted,predictor_name):
         '''This method uses chamview implementation to compute predictions and then measure
