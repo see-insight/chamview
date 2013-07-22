@@ -467,7 +467,8 @@ class PlotData:
         gName = 'METADATA INFORMATION'
         text(.25, .9, gName, size = 24)
         
-        text(0.05, 0.5, 'Total Points: ' + str(totalPoints) + '\n'
+        text(0.05, 0.5, 'Directory: ' + self.directory + '\n'
+              'Total Points: ' + str(totalPoints) + '\n'
               'Points Modified: ' + str(pointsModified) + '\n'
               'Total Frames: ' + str(totalFrames) + '\n'
               'Frames Modified: ' + str(framesModified) + '\n'
@@ -503,6 +504,12 @@ class PlotData:
         xticks( x + 0.4, xPlot )
         gName = 'Use of Predictors'
         title(gName + '\nPoints modified: ' + str(pointsModified))
+        
+        yDistance = max(yPlot) + 3
+        ylim(0, yDistance)
+        
+        plt.text(0, yDistance + yDistance/8, 'Directory: ' + self.directory, horizontalalignment='left',
+        verticalalignment='bottom', size = 8)
         
         #Save figure if output file is given
         self.saveGraph(gName)
