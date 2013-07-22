@@ -154,7 +154,7 @@ def main(argc,argv):
     
         else:
                 
-            print 'No arguments were found to do the evaluation'
+            print 'No enough arguments were found to do the evaluation'
 
     except Usage, err:
         print >>sys.stderr, err.msg
