@@ -458,8 +458,11 @@ class PlotData:
     
     def plotTimes(self, totalPoints, pointsModified, totalFrames, framesModified,totalTime, timePerPoint, timePerFrame):
         '''Plot running time information given by metadata file'''
+
+        self.numPlots += 1
+        #Define a new figure
+        fig = plt.figure(self.numPlots)
         
-        fig = plt.figure()
         ax = fig.add_axes([0., 0., 1., 1.])
         gName = 'METADATA INFORMATION'
         text(.25, .9, gName, size = 24)
@@ -483,7 +486,9 @@ class PlotData:
     def plotUsePredictors(self, predictorUse, pointsModified):
         '''This method plots how many time each predictor was used for annotating points'''        
         
-        plt.figure()
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
         
         xPlot = []
         yPlot = zeros(len(predictorUse))
@@ -785,6 +790,10 @@ class PlotData:
     def plotConsecutiveBars(self, xLabels, yPlots, gTitle, xl, yl, leg, rot, fontS = 10, gName = ''):
         '''This method makes a graph with consecutive bars for each single x value'''
         
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
+        
         xPlot = arange(len(xLabels)) #Array for x axis
        
         col = ['b', 'r', 'g', 'c', 'k', 'm', 'y', 'w']
@@ -1008,6 +1017,10 @@ class PlotData:
     def plotBarsStack(self, gName, xLength, names, numPred, predictors, dataInfoG, rot, fontS):
         '''This method takes lists of data and plots a bar graph where each bar is a stack
         showing the of each predictor'''
+        
+        self.numPlots += 1
+        #Define a new figure
+        plt.figure(self.numPlots)
         
         xPlot = np.arange(xLength)    #the x locations for the groups
         width = 0.5                   #width of the bars
