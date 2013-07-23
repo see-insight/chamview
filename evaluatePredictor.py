@@ -2,7 +2,7 @@
 #This file allows to run evaluators through command line
 #Manuel E. Dosal
 #June 5, 2013
-"""Evaluator for Chamview predictors
+"""Chamview Evaluator
 
 Usage options:
     -h --help       Print this help message.
