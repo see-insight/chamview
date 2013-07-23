@@ -1,4 +1,4 @@
-#This class takes a text file and graphs errors on predictors
+#This class takes a text file and graphs errors, running times, or predictors usage
 #Manuel E. Dosal
 #June 10, 2013
 
